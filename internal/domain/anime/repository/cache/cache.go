@@ -51,7 +51,16 @@ func (c *Cache) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int
 
 // Update to update data.
 func (c *Cache) Update(ctx context.Context, data entity.Anime) (int, error) {
-	return c.repo.Update(ctx, data)
+	if code, err := c.repo.Update(ctx, data); err != nil {
+		return code, errors.Wrap(ctx, err)
+	}
+
+	key := utils.GetKey("anime", data.ID)
+	if err := c.cacher.Delete(key); err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+	}
+
+	return http.StatusOK, nil
 }
 
 // IsOld to check if old.
