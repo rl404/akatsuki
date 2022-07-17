@@ -68,19 +68,19 @@ func (c *Cache) IsOld(ctx context.Context, id int64) (bool, int, error) {
 	return c.repo.IsOld(ctx, id)
 }
 
-// GetOldReleasing to get old releasing anime.
-func (c *Cache) GetOldReleasing(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return c.repo.GetOldReleasing(ctx, limit)
+// GetOldReleasingIDs to get old releasing anime ids.
+func (c *Cache) GetOldReleasingIDs(ctx context.Context) ([]int64, int, error) {
+	return c.repo.GetOldReleasingIDs(ctx)
 }
 
-// GetOldFinished to get old finished anime.
-func (c *Cache) GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return c.repo.GetOldFinished(ctx, limit)
+// GetOldFinishedIDs to get old finished anime ids.
+func (c *Cache) GetOldFinishedIDs(ctx context.Context) ([]int64, int, error) {
+	return c.repo.GetOldFinishedIDs(ctx)
 }
 
-// GetOldNotYet to get old not yet released anime.
-func (c *Cache) GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return c.repo.GetOldNotYet(ctx, limit)
+// GetOldNotYetIDs to get old not yet released anime ids.
+func (c *Cache) GetOldNotYetIDs(ctx context.Context) ([]int64, int, error) {
+	return c.repo.GetOldNotYetIDs(ctx)
 }
 
 // GetMaxID to get max id.

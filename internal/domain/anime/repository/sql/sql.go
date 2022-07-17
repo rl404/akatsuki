@@ -200,27 +200,27 @@ func (sql *SQL) IsOld(ctx context.Context, id int64) (bool, int, error) {
 	return res.RowsAffected == 0, http.StatusOK, nil
 }
 
-func (sql *SQL) getOld(ctx context.Context, status entity.Status, age time.Duration, limit int) ([]*entity.Anime, int, error) {
-	var a []Anime
-	if err := sql.db.WithContext(ctx).Where("status = ? and updated_at <= ?", status, time.Now().Add(-age)).Find(&a).Error; err != nil {
+func (sql *SQL) getOldIDs(ctx context.Context, status entity.Status, age time.Duration) ([]int64, int, error) {
+	var ids []int64
+	if err := sql.db.WithContext(ctx).Model(&Anime{}).Where("status = ? and updated_at <= ?", status, time.Now().Add(-age)).Pluck("id", &ids).Error; err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
-	return sql.animeToEntities(a), http.StatusOK, nil
+	return ids, http.StatusOK, nil
 }
 
-// GetOldReleasing to get old releasing anime.
-func (sql *SQL) GetOldReleasing(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return sql.getOld(ctx, entity.StatusReleasing, sql.releasingAge, limit)
+// GetOldReleasingIDs to get old releasing anime ids.
+func (sql *SQL) GetOldReleasingIDs(ctx context.Context) ([]int64, int, error) {
+	return sql.getOldIDs(ctx, entity.StatusReleasing, sql.releasingAge)
 }
 
-// GetOldFinished to get old finished anime.
-func (sql *SQL) GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return sql.getOld(ctx, entity.StatusFinished, sql.finishedAge, limit)
+// GetOldFinishedIDs to get old finished anime ids.
+func (sql *SQL) GetOldFinishedIDs(ctx context.Context) ([]int64, int, error) {
+	return sql.getOldIDs(ctx, entity.StatusFinished, sql.finishedAge)
 }
 
-// GetOldNotYet to get old not yet released anime.
-func (sql *SQL) GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return sql.getOld(ctx, entity.StatusNotYet, sql.notYetAge, limit)
+// GetOldNotYetIDs to get old not yet released anime ids.
+func (sql *SQL) GetOldNotYetIDs(ctx context.Context) ([]int64, int, error) {
+	return sql.getOldIDs(ctx, entity.StatusNotYet, sql.notYetAge)
 }
 
 // GetMaxID to get max id.

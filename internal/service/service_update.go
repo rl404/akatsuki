@@ -11,63 +11,6 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 )
 
-// UpdateOldReleasingAnime to update old releasing anime data.
-func (s *service) UpdateOldReleasingAnime(ctx context.Context, limit int) (int, int, error) {
-	var cnt int
-
-	releasingAnime, code, err := s.anime.GetOldReleasing(ctx, limit)
-	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
-	}
-
-	for _, anime := range releasingAnime {
-		if code, err := s.updateData(ctx, anime.ID); err != nil {
-			return cnt, code, errors.Wrap(ctx, err)
-		}
-		cnt++
-	}
-
-	return cnt, http.StatusOK, nil
-}
-
-// UpdateOldFinishedAnime to update old finished anime data.
-func (s *service) UpdateOldFinishedAnime(ctx context.Context, limit int) (int, int, error) {
-	var cnt int
-
-	finishedAnime, code, err := s.anime.GetOldFinished(ctx, limit)
-	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
-	}
-
-	for _, anime := range finishedAnime {
-		if code, err := s.updateData(ctx, anime.ID); err != nil {
-			return cnt, code, errors.Wrap(ctx, err)
-		}
-		cnt++
-	}
-
-	return cnt, http.StatusOK, nil
-}
-
-// UpdateOldNotYetAnime to update old not yet released anime data.
-func (s *service) UpdateOldNotYetAnime(ctx context.Context, limit int) (int, int, error) {
-	var cnt int
-
-	finishedAnime, code, err := s.anime.GetOldFinished(ctx, limit)
-	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
-	}
-
-	for _, anime := range finishedAnime {
-		if code, err := s.updateData(ctx, anime.ID); err != nil {
-			return cnt, code, errors.Wrap(ctx, err)
-		}
-		cnt++
-	}
-
-	return cnt, http.StatusOK, nil
-}
-
 func (s *service) updateData(ctx context.Context, id int64) (int, error) {
 	// Call mal api.
 	anime, code, err := s.mal.GetAnimeByID(ctx, int(id))
