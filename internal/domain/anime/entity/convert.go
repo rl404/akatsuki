@@ -95,7 +95,7 @@ func AnimeFromMal(anime *mal.Anime) (*Anime, error) {
 			Year:  endY,
 		},
 		Synopsis: anime.Synopsis,
-		NSFW:     anime.NSFW == "white",
+		NSFW:     anime.NSFW != "white",
 		Type:     malToType(anime.MediaType),
 		Status:   malToStatus(anime.Status),
 		Episode: Episode{
