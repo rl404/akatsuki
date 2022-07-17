@@ -30,12 +30,14 @@ type config struct {
 	DB     dbConfig     `envconfig:"DB"`
 	PubSub pubsubConfig `envconfig:"PUBSUB"`
 	Mal    malConfig    `envconfig:"MAL"`
+	Cron   cronConfig   `envconfig:"CRON"`
 	Log    logConfig    `envconfig:"LOG"`
 }
 
 type appConfig struct {
-	Env    string `envconfig:"ENV" validate:"required,oneof=dev prod" mod:"default=dev,no_space,lcase"`
-	OldAge int    `envconfig:"OLD_AGE" validate:"required,gt=0" mod:"default=30"` // days
+	Env       string `envconfig:"ENV" validate:"required,oneof=dev prod" mod:"default=dev,no_space,lcase"`
+	AiringAge int    `envconfig:"AIRING_AGE" validate:"required,gt=0" mod:"default=1"` // days
+	OldAge    int    `envconfig:"OLD_AGE" validate:"required,gt=0" mod:"default=30"`   // days
 }
 
 type httpConfig struct {
@@ -76,6 +78,10 @@ type pubsubConfig struct {
 
 type malConfig struct {
 	ClientID string `envconfig:"CLIENT_ID" validate:"required" mod:"no_space"`
+}
+
+type cronConfig struct {
+	UpdateLimit int `envconfig:"UPDATE_LIMIT" validate:"required,gte=0" mod:"default=10"`
 }
 
 type logConfig struct {

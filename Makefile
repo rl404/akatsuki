@@ -88,6 +88,12 @@ consumer: build
 	@cd $(CMD_PATH); \
 	./$(BINARY_NAME) consumer
 
+# Build and run cron update.
+.PHONY: cron-update
+cron-update: build
+	@cd $(CMD_PATH); \
+	./$(BINARY_NAME) cron update
+
 # Run test.
 .PHONY: test
 test:

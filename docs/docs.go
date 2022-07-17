@@ -654,8 +654,229 @@ const docTemplate = `{
         "service.Anime": {
             "type": "object",
             "properties": {
+                "alternative_titles": {
+                    "$ref": "#/definitions/service.alternativeTitles"
+                },
+                "background": {
+                    "type": "string"
+                },
+                "broadcast": {
+                    "$ref": "#/definitions/service.broadcast"
+                },
+                "end_date": {
+                    "$ref": "#/definitions/service.date"
+                },
+                "episode": {
+                    "$ref": "#/definitions/service.episode"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.genre"
+                    }
+                },
                 "id": {
                     "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "nsfw": {
+                    "type": "boolean"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "pictures": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "string"
+                },
+                "related": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.related"
+                    }
+                },
+                "season": {
+                    "$ref": "#/definitions/service.season"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "$ref": "#/definitions/service.date"
+                },
+                "stats": {
+                    "$ref": "#/definitions/service.stats"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "studio": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.studio"
+                    }
+                },
+                "synopsis": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "voter": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.alternativeTitles": {
+            "type": "object",
+            "properties": {
+                "english": {
+                    "type": "string"
+                },
+                "japanese": {
+                    "type": "string"
+                },
+                "synonyms": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "service.broadcast": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.date": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.episode": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.genre": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.related": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "relation": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.season": {
+            "type": "object",
+            "properties": {
+                "season": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.stats": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/service.statsStatus"
+                }
+            }
+        },
+        "service.statsStatus": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "type": "integer"
+                },
+                "dropped": {
+                    "type": "integer"
+                },
+                "on_hold": {
+                    "type": "integer"
+                },
+                "planned": {
+                    "type": "integer"
+                },
+                "watching": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.studio": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

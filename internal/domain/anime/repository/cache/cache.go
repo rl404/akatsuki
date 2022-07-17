@@ -49,12 +49,22 @@ func (c *Cache) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int
 	return c.repo.GetByIDs(ctx, ids)
 }
 
-// IsDataOld to check if data is old.
-func (c *Cache) IsDataOld(ctx context.Context, id int64) (bool, int, error) {
-	return c.repo.IsDataOld(ctx, id)
-}
-
 // Update to update data.
 func (c *Cache) Update(ctx context.Context, data entity.Anime) (int, error) {
 	return c.repo.Update(ctx, data)
+}
+
+// IsOld to check if old.
+func (c *Cache) IsOld(ctx context.Context, id int64) (bool, int, error) {
+	return c.repo.IsOld(ctx, id)
+}
+
+// GetOldAiring to get old airing anime.
+func (c *Cache) GetOldAiring(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return c.repo.GetOldAiring(ctx, limit)
+}
+
+// GetOldData to get old airing data.
+func (c *Cache) GetOldData(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return c.repo.GetOldData(ctx, limit)
 }

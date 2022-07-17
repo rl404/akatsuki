@@ -5,40 +5,40 @@ import (
 	"net/http"
 	"time"
 
-	animeEntity "github.com/rl404/akatsuki/internal/domain/anime/entity"
-	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
+	"github.com/rl404/akatsuki/internal/domain/anime/entity"
+	publisherEntity "github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
 )
 
 // Anime is anime model.
 type Anime struct {
-	ID                int64              `json:"id"`
-	Title             string             `json:"title"`
-	AlternativeTitles alternativeTitles  `json:"alternative_titles"`
-	Picture           string             `json:"picture"`
-	StartDate         date               `json:"start_date"`
-	EndDate           date               `json:"end_date"`
-	Synopsis          string             `json:"synopsis"`
-	Background        string             `json:"background"`
-	NSFW              bool               `json:"nsfw"`
-	Type              animeEntity.Type   `json:"type"`
-	Status            animeEntity.Status `json:"status"`
-	Episode           episode            `json:"episode"`
-	Season            *season            `json:"season"`
-	Broadcast         *broadcast         `json:"broadcast"`
-	Source            animeEntity.Source `json:"source"`
-	Rating            animeEntity.Rating `json:"rating"`
-	Mean              float64            `json:"mean"`
-	Rank              int                `json:"rank"`
-	Popularity        int                `json:"popularity"`
-	Member            int                `json:"member"`
-	Voter             int                `json:"voter"`
-	Stats             stats              `json:"stats"`
-	Genres            []genre            `json:"genres"`
-	Pictures          []string           `json:"pictures"`
-	Related           []related          `json:"related"`
-	Studios           []studio           `json:"studio"`
-	UpdatedAt         time.Time          `json:"updated_at"`
+	ID                int64             `json:"id"`
+	Title             string            `json:"title"`
+	AlternativeTitles alternativeTitles `json:"alternative_titles"`
+	Picture           string            `json:"picture"`
+	StartDate         date              `json:"start_date"`
+	EndDate           date              `json:"end_date"`
+	Synopsis          string            `json:"synopsis"`
+	Background        string            `json:"background"`
+	NSFW              bool              `json:"nsfw"`
+	Type              entity.Type       `json:"type"`
+	Status            entity.Status     `json:"status"`
+	Episode           episode           `json:"episode"`
+	Season            *season           `json:"season"`
+	Broadcast         *broadcast        `json:"broadcast"`
+	Source            entity.Source     `json:"source"`
+	Rating            entity.Rating     `json:"rating"`
+	Mean              float64           `json:"mean"`
+	Rank              int               `json:"rank"`
+	Popularity        int               `json:"popularity"`
+	Member            int               `json:"member"`
+	Voter             int               `json:"voter"`
+	Stats             stats             `json:"stats"`
+	Genres            []genre           `json:"genres"`
+	Pictures          []string          `json:"pictures"`
+	Related           []related         `json:"related"`
+	Studios           []studio          `json:"studio"`
+	UpdatedAt         time.Time         `json:"updated_at"`
 }
 
 // GetAnimeByID to get anime by id.
@@ -52,7 +52,7 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 	if err != nil {
 		if code == http.StatusNotFound {
 			// Queue to parse.
-			if err := s.publisher.PublishParseAnime(ctx, entity.ParseAnimeRequest{ID: id}); err != nil {
+			if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{ID: id}); err != nil {
 				return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalServer, err)
 			}
 			return nil, http.StatusAccepted, nil
@@ -80,7 +80,7 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 
 	// Get related.
 	if len(animeDB.Related) > 0 {
-		relatedMap := make(map[int64]animeEntity.Relation)
+		relatedMap := make(map[int64]entity.Relation)
 		relatedIDs := make([]int64, len(animeDB.Related))
 		for i, r := range animeDB.Related {
 			relatedIDs[i] = r.ID
@@ -127,14 +127,12 @@ func (s *service) validateID(ctx context.Context, id int64) (int, error) {
 		return http.StatusBadRequest, errors.Wrap(ctx, errors.ErrInvalidAnimeID)
 	}
 
-	isEmpty, code, err := s.emptyID.IsEmpty(ctx, id)
-	if err != nil {
+	if _, code, err := s.emptyID.Get(ctx, id); err != nil {
+		if code == http.StatusNotFound {
+			return http.StatusOK, nil
+		}
 		return code, errors.Wrap(ctx, err)
 	}
 
-	if isEmpty {
-		return http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound)
-	}
-
-	return http.StatusOK, nil
+	return http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound)
 }

@@ -1,11 +1,7 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
-	_consumer "github.com/rl404/akatsuki/internal/delivery/consumer"
+	"github.com/rl404/akatsuki/internal/delivery/cron"
 	animeRepository "github.com/rl404/akatsuki/internal/domain/anime/repository"
 	animeCache "github.com/rl404/akatsuki/internal/domain/anime/repository/cache"
 	animeSQL "github.com/rl404/akatsuki/internal/domain/anime/repository/sql"
@@ -28,7 +24,7 @@ import (
 	"github.com/rl404/fairy/pubsub"
 )
 
-func consumer() error {
+func cronUpdate() error {
 	// Get config.
 	cfg, err := getConfig()
 	if err != nil {
@@ -97,24 +93,12 @@ func consumer() error {
 	service := service.New(anime, genre, studio, emptyID, publisher, mal)
 	utils.Info("service initialized")
 
-	// Init consumer.
-	consumer, err := _consumer.New(service, ps, pubsubTopic)
-	if err != nil {
-		return err
-	}
-	utils.Info("consumer initialized")
-	defer consumer.Close()
-
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	// Start subscribe.
-	if err := consumer.Subscribe(); err != nil {
+	// Run cron.
+	utils.Info("updating old data...")
+	if err := cron.New(service).Update(cfg.Cron.UpdateLimit); err != nil {
 		return err
 	}
 
-	utils.Info("consumer ready")
-	<-sigChan
-
+	utils.Info("done")
 	return nil
 }

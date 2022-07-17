@@ -2,6 +2,7 @@ package sql
 
 import (
 	"context"
+	_errors "errors"
 	"net/http"
 
 	"github.com/rl404/akatsuki/internal/errors"
@@ -20,13 +21,16 @@ func New(db *gorm.DB) *SQL {
 	}
 }
 
-// IsEmpty to check if id is empty.
-func (sql *SQL) IsEmpty(ctx context.Context, id int64) (bool, int, error) {
-	res := sql.db.WithContext(ctx).Where("anime_id = ?", id).Limit(1).Find(&[]EmptyID{})
-	if res.Error != nil {
-		return true, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, res.Error)
+// Get to get empty id.
+func (sql *SQL) Get(ctx context.Context, id int64) (int64, int, error) {
+	var emptyID EmptyID
+	if err := sql.db.WithContext(ctx).Where("anime_id = ?", id).First(&emptyID).Error; err != nil {
+		if _errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound, err)
+		}
+		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
-	return res.RowsAffected != 0, http.StatusOK, nil
+	return emptyID.AnimeID, http.StatusOK, nil
 }
 
 // Create to create empty id.

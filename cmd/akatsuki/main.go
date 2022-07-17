@@ -41,6 +41,21 @@ func main() {
 		},
 	})
 
+	cronCmd := cobra.Command{
+		Use:   "cron",
+		Short: "Cron",
+	}
+
+	cronCmd.AddCommand(&cobra.Command{
+		Use:   "update",
+		Short: "Update old data",
+		RunE: func(*cobra.Command, []string) error {
+			return cronUpdate()
+		},
+	})
+
+	cmd.AddCommand(&cronCmd)
+
 	if err := cmd.Execute(); err != nil {
 		utils.Fatal(err.Error())
 	}

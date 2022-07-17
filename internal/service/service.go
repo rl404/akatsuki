@@ -20,6 +20,9 @@ type Service interface {
 	GetMalAnimeByID(ctx context.Context, id int) (*mal.Anime, int, error)
 
 	ConsumeMessage(ctx context.Context, msg entity.Message) error
+
+	UpdateAiringAnime(ctx context.Context, limit int) (int, int, error)
+	UpdateOldData(ctx context.Context, limit int) (int, int, error)
 }
 
 type service struct {

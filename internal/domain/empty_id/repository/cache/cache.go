@@ -24,24 +24,24 @@ func New(cacher cache.Cacher, repo repository.Repository) *Cache {
 	}
 }
 
-// IsEmpty to check if id is empty.
-func (c *Cache) IsEmpty(ctx context.Context, id int64) (bool, int, error) {
+// Get to get empty id.
+func (c *Cache) Get(ctx context.Context, id int64) (int64, int, error) {
 	key := utils.GetKey("empty-id", id)
-	var data bool
+	var data int64
 	if c.cacher.Get(key, &data) == nil {
 		return data, http.StatusOK, nil
 	}
 
-	isEmpty, code, err := c.repo.IsEmpty(ctx, id)
+	emptyID, code, err := c.repo.Get(ctx, id)
 	if err != nil {
-		return true, code, errors.Wrap(ctx, err)
+		return 0, code, errors.Wrap(ctx, err)
 	}
 
-	if err := c.cacher.Set(key, isEmpty); err != nil {
-		return true, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+	if err := c.cacher.Set(key, emptyID); err != nil {
+		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
 	}
 
-	return isEmpty, code, nil
+	return emptyID, code, nil
 }
 
 // Create to create empty id.
