@@ -129,8 +129,10 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	}
 
 	// Create new anime genre.
-	if err := tx.WithContext(ctx).Create(sql.animeGenreFromEntity(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	if len(data.GenreIDs) > 0 {
+		if err := tx.WithContext(ctx).Create(sql.animeGenreFromEntity(data)).Error; err != nil {
+			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		}
 	}
 
 	// Delete existing anime picture.
@@ -139,8 +141,10 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	}
 
 	// Create new anime picture.
-	if err := tx.WithContext(ctx).Create(sql.animePictureFromEntity(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	if len(data.Pictures) > 0 {
+		if err := tx.WithContext(ctx).Create(sql.animePictureFromEntity(data)).Error; err != nil {
+			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		}
 	}
 
 	// Delete existing anime related.
@@ -149,8 +153,10 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	}
 
 	// Create new anime related.
-	if err := tx.WithContext(ctx).Create(sql.animeRelatedFromEntity(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	if len(data.Related) > 0 {
+		if err := tx.WithContext(ctx).Create(sql.animeRelatedFromEntity(data)).Error; err != nil {
+			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		}
 	}
 
 	// Delete existing anime studio.
@@ -159,8 +165,10 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	}
 
 	// Create new anime studio.
-	if err := tx.WithContext(ctx).Create(sql.animeStudioFromEntity(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	if len(data.StudioIDs) > 0 {
+		if err := tx.WithContext(ctx).Create(sql.animeStudioFromEntity(data)).Error; err != nil {
+			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		}
 	}
 
 	// Create new anime stats history.
@@ -213,4 +221,22 @@ func (sql *SQL) GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime,
 // GetOldNotYet to get old not yet released anime.
 func (sql *SQL) GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
 	return sql.getOld(ctx, entity.StatusNotYet, sql.notYetAge, limit)
+}
+
+// GetMaxID to get max id.
+func (sql *SQL) GetMaxID(ctx context.Context) (int64, int, error) {
+	var id int64
+	if err := sql.db.WithContext(ctx).Model(&Anime{}).Select("max(id)").Row().Scan(&id); err != nil {
+		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return id, http.StatusOK, nil
+}
+
+// GetIDs to get all anime ids.
+func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
+	var ids []int64
+	if err := sql.db.WithContext(ctx).Model(&Anime{}).Pluck("id", &ids).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return ids, http.StatusOK, nil
 }

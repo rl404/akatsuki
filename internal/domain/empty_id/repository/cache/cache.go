@@ -71,3 +71,8 @@ func (c *Cache) Delete(ctx context.Context, id int64) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+// GetIDs to get all ids.
+func (c *Cache) GetIDs(ctx context.Context) ([]int64, int, error) {
+	return c.repo.GetIDs(ctx)
+}

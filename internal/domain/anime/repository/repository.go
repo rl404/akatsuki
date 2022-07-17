@@ -16,4 +16,6 @@ type Repository interface {
 	GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime, int, error)
 	GetOldReleasing(ctx context.Context, limit int) ([]*entity.Anime, int, error)
 	GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error)
+	GetMaxID(ctx context.Context) (int64, int, error)
+	GetIDs(ctx context.Context) ([]int64, int, error)
 }

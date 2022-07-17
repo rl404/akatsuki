@@ -88,11 +88,17 @@ consumer: build
 	@cd $(CMD_PATH); \
 	./$(BINARY_NAME) consumer
 
-# Build and run cron update.
+# Build and run cron update anime.
 .PHONY: cron-update
 cron-update: build
 	@cd $(CMD_PATH); \
 	./$(BINARY_NAME) cron update
+
+# Build and run cron fill missing anime.
+.PHONY: cron-fill
+cron-fill: build
+	@cd $(CMD_PATH); \
+	./$(BINARY_NAME) cron fill
 
 # Run test.
 .PHONY: test

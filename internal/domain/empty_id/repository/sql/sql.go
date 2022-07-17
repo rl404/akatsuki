@@ -55,3 +55,12 @@ func (sql *SQL) Delete(ctx context.Context, id int64) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+// GetIDs to get all ids.
+func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
+	var ids []int64
+	if err := sql.db.WithContext(ctx).Model(&EmptyID{}).Pluck("anime_id", &ids).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return ids, http.StatusOK, nil
+}

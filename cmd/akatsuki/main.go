@@ -54,6 +54,14 @@ func main() {
 		},
 	})
 
+	cronCmd.AddCommand(&cobra.Command{
+		Use:   "fill",
+		Short: "Fill missing data",
+		RunE: func(*cobra.Command, []string) error {
+			return cronFill()
+		},
+	})
+
 	cmd.AddCommand(&cronCmd)
 
 	if err := cmd.Execute(); err != nil {

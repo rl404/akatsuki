@@ -7,4 +7,5 @@ type Repository interface {
 	Get(ctx context.Context, id int64) (int64, int, error)
 	Create(ctx context.Context, id int64) (int, error)
 	Delete(ctx context.Context, id int64) (int, error)
+	GetIDs(ctx context.Context) ([]int64, int, error)
 }

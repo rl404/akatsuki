@@ -24,6 +24,8 @@ type Service interface {
 	UpdateOldReleasingAnime(ctx context.Context, limit int) (int, int, error)
 	UpdateOldFinishedAnime(ctx context.Context, limit int) (int, int, error)
 	UpdateOldNotYetAnime(ctx context.Context, limit int) (int, int, error)
+
+	QueueMissingAnime(ctx context.Context, limit int) (int, int, error)
 }
 
 type service struct {

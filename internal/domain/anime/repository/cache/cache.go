@@ -82,3 +82,13 @@ func (c *Cache) GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime,
 func (c *Cache) GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
 	return c.repo.GetOldNotYet(ctx, limit)
 }
+
+// GetMaxID to get max id.
+func (c *Cache) GetMaxID(ctx context.Context) (int64, int, error) {
+	return c.repo.GetMaxID(ctx)
+}
+
+// GetIDs to get all ids.
+func (c *Cache) GetIDs(ctx context.Context) ([]int64, int, error) {
+	return c.repo.GetIDs(ctx)
+}
