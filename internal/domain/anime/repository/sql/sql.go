@@ -13,17 +13,19 @@ import (
 
 // SQL contains functions for anime sql database.
 type SQL struct {
-	db        *gorm.DB
-	airingAge time.Duration
-	oldAge    time.Duration
+	db           *gorm.DB
+	finishedAge  time.Duration
+	releasingAge time.Duration
+	notYetAge    time.Duration
 }
 
 // New to create new anime database.
-func New(db *gorm.DB, airingAge, oldAge int) *SQL {
+func New(db *gorm.DB, finishedAge, releasingAge, notYetAge int) *SQL {
 	return &SQL{
-		db:        db,
-		airingAge: time.Duration(airingAge) * 24 * time.Hour,
-		oldAge:    time.Duration(oldAge) * 24 * time.Hour,
+		db:           db,
+		finishedAge:  time.Duration(finishedAge) * 24 * time.Hour,
+		releasingAge: time.Duration(releasingAge) * 24 * time.Hour,
+		notYetAge:    time.Duration(notYetAge) * 24 * time.Hour,
 	}
 }
 
@@ -176,9 +178,10 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 // IsOld to check if old.
 func (sql *SQL) IsOld(ctx context.Context, id int64) (bool, int, error) {
 	res := sql.db.WithContext(ctx).
-		Where("id = ? and ((status = ? and updated_at >= ?) or (status != ? and updated_at >= ?))", id,
-			entity.StatusReleasing, time.Now().Add(-sql.airingAge),
-			entity.StatusReleasing, time.Now().Add(-sql.oldAge)).
+		Where("id = ? and ((status = ? and updated_at >= ?) or (status = ? and updated_at >= ?) or (status = ? and updated_at >= ?))", id,
+			entity.StatusFinished, time.Now().Add(-sql.finishedAge),
+			entity.StatusReleasing, time.Now().Add(-sql.releasingAge),
+			entity.StatusNotYet, time.Now().Add(-sql.notYetAge)).
 		Limit(1).
 		Find(&[]Anime{})
 
@@ -189,20 +192,25 @@ func (sql *SQL) IsOld(ctx context.Context, id int64) (bool, int, error) {
 	return res.RowsAffected == 0, http.StatusOK, nil
 }
 
-// GetOldAiring to get old airing anime.
-func (sql *SQL) GetOldAiring(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+func (sql *SQL) getOld(ctx context.Context, status entity.Status, age time.Duration, limit int) ([]*entity.Anime, int, error) {
 	var a []Anime
-	if err := sql.db.WithContext(ctx).Where("status = ? and updated_at <= ?", entity.StatusReleasing, time.Now().Add(-sql.airingAge)).Find(&a).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Where("status = ? and updated_at <= ?", status, time.Now().Add(-age)).Find(&a).Error; err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 	return sql.animeToEntities(a), http.StatusOK, nil
 }
 
-// GetOldData to get old anime.
-func (sql *SQL) GetOldData(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	var a []Anime
-	if err := sql.db.WithContext(ctx).Where("updated_at <= ?", time.Now().Add(-sql.oldAge)).Find(&a).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
-	}
-	return sql.animeToEntities(a), http.StatusOK, nil
+// GetOldReleasing to get old releasing anime.
+func (sql *SQL) GetOldReleasing(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return sql.getOld(ctx, entity.StatusReleasing, sql.releasingAge, limit)
+}
+
+// GetOldFinished to get old finished anime.
+func (sql *SQL) GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return sql.getOld(ctx, entity.StatusFinished, sql.finishedAge, limit)
+}
+
+// GetOldNotYet to get old not yet released anime.
+func (sql *SQL) GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return sql.getOld(ctx, entity.StatusNotYet, sql.notYetAge, limit)
 }

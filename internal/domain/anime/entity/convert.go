@@ -1,14 +1,16 @@
 package entity
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/nstratos/go-myanimelist/mal"
+	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
 )
 
 // AnimeFromMal to convert mal to anime.
-func AnimeFromMal(anime *mal.Anime) (*Anime, error) {
+func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 	picture := anime.MainPicture.Large
 	if picture == "" {
 		picture = anime.MainPicture.Medium
@@ -16,37 +18,37 @@ func AnimeFromMal(anime *mal.Anime) (*Anime, error) {
 
 	startY, startM, startD, err := utils.SplitDate(anime.StartDate)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	endY, endM, endD, err := utils.SplitDate(anime.EndDate)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	watching, err := strconv.Atoi(anime.Statistics.Status.Watching)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	completed, err := strconv.Atoi(anime.Statistics.Status.Completed)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	onHold, err := strconv.Atoi(anime.Statistics.Status.OnHold)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	dropped, err := strconv.Atoi(anime.Statistics.Status.Dropped)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	planned, err := strconv.Atoi(anime.Statistics.Status.PlanToWatch)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err)
 	}
 
 	genreIDs := make([]int64, len(anime.Genres))

@@ -11,16 +11,16 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 )
 
-// UpdateAiringAnime to update airing anime data.
-func (s *service) UpdateAiringAnime(ctx context.Context, limit int) (int, int, error) {
+// UpdateOldReleasingAnime to update old releasing anime data.
+func (s *service) UpdateOldReleasingAnime(ctx context.Context, limit int) (int, int, error) {
 	var cnt int
 
-	airings, code, err := s.anime.GetOldAiring(ctx, limit)
+	releasingAnime, code, err := s.anime.GetOldReleasing(ctx, limit)
 	if err != nil {
 		return cnt, code, errors.Wrap(ctx, err)
 	}
 
-	for _, anime := range airings {
+	for _, anime := range releasingAnime {
 		if code, err := s.updateData(ctx, anime.ID); err != nil {
 			return cnt, code, errors.Wrap(ctx, err)
 		}
@@ -30,16 +30,35 @@ func (s *service) UpdateAiringAnime(ctx context.Context, limit int) (int, int, e
 	return cnt, http.StatusOK, nil
 }
 
-// UpdateOldData to update old data.
-func (s *service) UpdateOldData(ctx context.Context, limit int) (int, int, error) {
+// UpdateOldFinishedAnime to update old finished anime data.
+func (s *service) UpdateOldFinishedAnime(ctx context.Context, limit int) (int, int, error) {
 	var cnt int
 
-	oldAnime, code, err := s.anime.GetOldData(ctx, limit)
+	finishedAnime, code, err := s.anime.GetOldFinished(ctx, limit)
 	if err != nil {
 		return cnt, code, errors.Wrap(ctx, err)
 	}
 
-	for _, anime := range oldAnime {
+	for _, anime := range finishedAnime {
+		if code, err := s.updateData(ctx, anime.ID); err != nil {
+			return cnt, code, errors.Wrap(ctx, err)
+		}
+		cnt++
+	}
+
+	return cnt, http.StatusOK, nil
+}
+
+// UpdateOldNotYetAnime to update old not yet released anime data.
+func (s *service) UpdateOldNotYetAnime(ctx context.Context, limit int) (int, int, error) {
+	var cnt int
+
+	finishedAnime, code, err := s.anime.GetOldFinished(ctx, limit)
+	if err != nil {
+		return cnt, code, errors.Wrap(ctx, err)
+	}
+
+	for _, anime := range finishedAnime {
 		if code, err := s.updateData(ctx, anime.ID); err != nil {
 			return cnt, code, errors.Wrap(ctx, err)
 		}
@@ -89,7 +108,7 @@ func (s *service) updateData(ctx context.Context, id int64) (int, error) {
 	}
 
 	// Update anime data.
-	animeE, err := animeEntity.AnimeFromMal(anime)
+	animeE, err := animeEntity.AnimeFromMal(ctx, anime)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(ctx, err)
 	}

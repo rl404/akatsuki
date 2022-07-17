@@ -10,10 +10,11 @@ import (
 // 2020-01 => 2020,1,0
 // 2020 => 2020,0,0
 func SplitDate(date string) (year int, month int, day int, err error) {
-	split := strings.Split(date, "-")
-	if len(split) == 0 {
+	if date == "" {
 		return
 	}
+
+	split := strings.Split(date, "-")
 
 	if len(split) >= 1 {
 		year, err = strconv.Atoi(split[0])

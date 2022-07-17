@@ -13,6 +13,7 @@ type Repository interface {
 	Update(ctx context.Context, data entity.Anime) (int, error)
 
 	IsOld(ctx context.Context, id int64) (bool, int, error)
-	GetOldAiring(ctx context.Context, limit int) ([]*entity.Anime, int, error)
-	GetOldData(ctx context.Context, limit int) ([]*entity.Anime, int, error)
+	GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime, int, error)
+	GetOldReleasing(ctx context.Context, limit int) ([]*entity.Anime, int, error)
+	GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error)
 }

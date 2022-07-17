@@ -87,7 +87,7 @@ func server() error {
 
 	// Init anime.
 	var anime animeRepository.Repository
-	anime = animeSQL.New(db, cfg.App.AiringAge, cfg.App.OldAge)
+	anime = animeSQL.New(db, cfg.Cron.FinishedAge, cfg.Cron.ReleasingAge, cfg.Cron.NotYetAge)
 	anime = animeCache.New(c, anime)
 	utils.Info("repository anime initialized")
 

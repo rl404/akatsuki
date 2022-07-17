@@ -59,12 +59,17 @@ func (c *Cache) IsOld(ctx context.Context, id int64) (bool, int, error) {
 	return c.repo.IsOld(ctx, id)
 }
 
-// GetOldAiring to get old airing anime.
-func (c *Cache) GetOldAiring(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return c.repo.GetOldAiring(ctx, limit)
+// GetOldReleasing to get old releasing anime.
+func (c *Cache) GetOldReleasing(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return c.repo.GetOldReleasing(ctx, limit)
 }
 
-// GetOldData to get old airing data.
-func (c *Cache) GetOldData(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
-	return c.repo.GetOldData(ctx, limit)
+// GetOldFinished to get old finished anime.
+func (c *Cache) GetOldFinished(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return c.repo.GetOldFinished(ctx, limit)
+}
+
+// GetOldNotYet to get old not yet released anime.
+func (c *Cache) GetOldNotYet(ctx context.Context, limit int) ([]*entity.Anime, int, error) {
+	return c.repo.GetOldNotYet(ctx, limit)
 }

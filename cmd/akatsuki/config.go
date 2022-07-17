@@ -35,9 +35,7 @@ type config struct {
 }
 
 type appConfig struct {
-	Env       string `envconfig:"ENV" validate:"required,oneof=dev prod" mod:"default=dev,no_space,lcase"`
-	AiringAge int    `envconfig:"AIRING_AGE" validate:"required,gt=0" mod:"default=1"` // days
-	OldAge    int    `envconfig:"OLD_AGE" validate:"required,gt=0" mod:"default=30"`   // days
+	Env string `envconfig:"ENV" validate:"required,oneof=dev prod" mod:"default=dev,no_space,lcase"`
 }
 
 type httpConfig struct {
@@ -81,7 +79,10 @@ type malConfig struct {
 }
 
 type cronConfig struct {
-	UpdateLimit int `envconfig:"UPDATE_LIMIT" validate:"required,gte=0" mod:"default=10"`
+	UpdateLimit  int `envconfig:"UPDATE_LIMIT" validate:"required,gte=0" mod:"default=10"`
+	ReleasingAge int `envconfig:"RELEASING_AGE" validate:"required,gt=0" mod:"default=1"` // days
+	FinishedAge  int `envconfig:"FINISHED_AGE" validate:"required,gt=0" mod:"default=30"` // days
+	NotYetAge    int `envconfig:"NOT_YET_AGE" validate:"required,gt=0" mod:"default=7"`   // days
 }
 
 type logConfig struct {
