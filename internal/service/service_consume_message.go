@@ -36,7 +36,7 @@ func (s *service) consumeParseAnime(ctx context.Context, data []byte) error {
 		}
 
 		if !isOld {
-			return errors.Wrap(ctx, errors.ErrDataStillNew)
+			return nil
 		}
 	} else {
 		// Delete existing empty id.

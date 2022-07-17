@@ -82,29 +82,33 @@ func (s *service) updateData(ctx context.Context, id int64) (int, error) {
 	}
 
 	// Update genre data.
-	genres := make([]genreEntity.Genre, len(anime.Genres))
-	for i, g := range anime.Genres {
-		genres[i] = genreEntity.Genre{
-			ID:   int64(g.ID),
-			Name: g.Name,
+	if len(anime.Genres) > 0 {
+		genres := make([]genreEntity.Genre, len(anime.Genres))
+		for i, g := range anime.Genres {
+			genres[i] = genreEntity.Genre{
+				ID:   int64(g.ID),
+				Name: g.Name,
+			}
 		}
-	}
 
-	if code, err := s.genre.BatchUpdate(ctx, genres); err != nil {
-		return code, errors.Wrap(ctx, err)
+		if code, err := s.genre.BatchUpdate(ctx, genres); err != nil {
+			return code, errors.Wrap(ctx, err)
+		}
 	}
 
 	// Update studio data.
-	studios := make([]studioEntity.Studio, len(anime.Studios))
-	for i, s := range anime.Studios {
-		studios[i] = studioEntity.Studio{
-			ID:   int64(s.ID),
-			Name: s.Name,
+	if len(anime.Studios) > 0 {
+		studios := make([]studioEntity.Studio, len(anime.Studios))
+		for i, s := range anime.Studios {
+			studios[i] = studioEntity.Studio{
+				ID:   int64(s.ID),
+				Name: s.Name,
+			}
 		}
-	}
 
-	if code, err := s.studio.BatchUpdate(ctx, studios); err != nil {
-		return code, errors.Wrap(ctx, err)
+		if code, err := s.studio.BatchUpdate(ctx, studios); err != nil {
+			return code, errors.Wrap(ctx, err)
+		}
 	}
 
 	// Update anime data.
