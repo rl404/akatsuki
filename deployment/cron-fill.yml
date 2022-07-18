@@ -1,0 +1,9 @@
+version: "2.4"
+
+services:
+  akatsuki-cron-fill:
+    container_name: akatsuki-cron-fill
+    image: akatsuki:latest
+    command: ./akatsuki cron fill
+    env_file: ./../.env
+    network_mode: host

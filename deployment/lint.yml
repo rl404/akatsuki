@@ -1,0 +1,9 @@
+version: "2.4"
+
+services:
+  akatsuki-lint:
+    container_name: akatsuki-lint
+    image: golangci/golangci-lint:latest
+    working_dir: /akatsuki
+    volumes:
+      - ../:/akatsuki

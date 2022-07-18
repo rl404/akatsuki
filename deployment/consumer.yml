@@ -1,0 +1,10 @@
+version: "2.4"
+
+services:
+  akatsuki-consumer:
+    container_name: akatsuki-consumer
+    image: akatsuki:latest
+    command: ./akatsuki consumer
+    restart: always
+    env_file: ./../.env
+    network_mode: host

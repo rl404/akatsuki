@@ -1,0 +1,8 @@
+version: "2.4"
+
+services:
+  akatsuki-build:
+    image: akatsuki:latest
+    build:
+      context: ./..
+      dockerfile: ./build/package/Dockerfile

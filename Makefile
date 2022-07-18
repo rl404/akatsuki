@@ -1,14 +1,9 @@
 # Base Go commands.
 GO_CMD     := go
 GO_FMT     := $(GO_CMD) fmt
-GO_GET     := $(GO_CMD) get
 GO_INSTALL := $(GO_CMD) install
-GO_MOD     := $(GO_CMD) mod
 GO_CLEAN   := $(GO_CMD) clean
 GO_BUILD   := $(GO_CMD) build -mod vendor
-GO_RUN     := $(GO_CMD) run -mod vendor
-GO_TEST    := $(GO_CMD) test
-GO_COVER   := $(GO_CMD) tool cover
 
 # Coverage output.
 COVER_OUT := cover.out
@@ -100,8 +95,63 @@ cron-fill: build
 	@cd $(CMD_PATH); \
 	./$(BINARY_NAME) cron fill
 
-# Run test.
-.PHONY: test
-test:
-	@$(GO_TEST) ./... -coverprofile $(COVER_OUT)
-	@$(GO_COVER) -func $(COVER_OUT)
+# Docker base command.
+DOCKER_CMD   := docker
+DOCKER_IMAGE := $(DOCKER_CMD) image
+
+# Docker-compose base command and docker-compose.yml path.
+COMPOSE_CMD                 := docker-compose
+COMPOSE_BUILD               := deployment/build.yml
+COMPOSE_API                 := deployment/api.yml
+COMPOSE_CONSUMER            := deployment/consumer.yml
+COMPOSE_CRON_UPDATE         := deployment/cron-update.yml
+COMPOSE_CRON_FILL           := deployment/cron-fill.yml
+COMPOSE_CRON_CALLBACK_RETRY := deployment/cron-callback-retry.yml
+COMPOSE_MIGRATE             := deployment/migrate.yml
+COMPOSE_LINT                := deployment/lint.yml
+
+# Build docker images and container for the project
+# then delete builder image.
+.PHONY: docker-build
+docker-build:
+	@$(COMPOSE_CMD) -f $(COMPOSE_BUILD) build
+	@$(DOCKER_IMAGE) prune -f --filter label=stage=akatsuki_builder
+
+# Start built docker containers for api.
+.PHONY: docker-api
+docker-api:
+	@$(COMPOSE_CMD) -f $(COMPOSE_API) -p akatsuki-api up -d
+	@$(COMPOSE_CMD) -f $(COMPOSE_API) -p akatsuki-api logs --follow --tail 20
+
+# Start built docker containers for consumer.
+.PHONY: docker-consumer
+docker-consumer:
+	@$(COMPOSE_CMD) -f $(COMPOSE_CONSUMER) -p akatsuki-consumer up -d
+	@$(COMPOSE_CMD) -f $(COMPOSE_CONSUMER) -p akatsuki-consumer logs --follow --tail 20
+
+# Start built docker containers for cron update anime.
+.PHONY: docker-cron-update
+docker-cron-update:
+	@$(COMPOSE_CMD) -f $(COMPOSE_CRON_UPDATE) -p akatsuki-cron-update up
+
+# Start built docker containers for cron fill missing anime.
+.PHONY: docker-cron-fill
+docker-cron-fill:
+	@$(COMPOSE_CMD) -f $(COMPOSE_CRON_FILL) -p akatsuki-cron-fill up
+
+# Start built docker containers for migrate.
+.PHONY: docker-migrate
+docker-migrate:
+	@$(COMPOSE_CMD) -f $(COMPOSE_MIGRATE) -p akatsuki-migrate up
+
+# Start docker to run lint check.
+.PHONY: docker-lint
+docker-lint:
+	@$(COMPOSE_CMD) -f $(COMPOSE_LINT) -p akatsuki-lint run --rm akatsuki-lint $(GCL_RUN) -D errcheck --timeout 5m
+
+# Update docker containers.
+.PHONY: docker-update
+docker-update:
+	@$(COMPOSE_CMD) -f $(COMPOSE_API) -p akatsuki-api up -d
+	@$(COMPOSE_CMD) -f $(COMPOSE_CONSUMER) -p akatsuki-consumer up -d
+	@$(DOCKER_IMAGE) prune -f --filter label=stage=akatsuki_binary
