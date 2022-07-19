@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"time"
 
@@ -69,7 +70,7 @@ type dbConfig struct {
 }
 
 type pubsubConfig struct {
-	Dialect  string `envconfig:"DIALECT" validate:"required,oneof=nsq rabbitmq redis" mod:"default=rabbitmq,no_space,lcase"`
+	Dialect  string `envconfig:"DIALECT" validate:"required,oneof=nsq rabbitmq redis google" mod:"default=rabbitmq,no_space,lcase"`
 	Address  string `envconfig:"ADDRESS" validate:"required"`
 	Password string `envconfig:"PASSWORD"`
 }
@@ -113,6 +114,7 @@ var pubsubType = map[string]pubsub.PubsubType{
 	"nsq":      pubsub.NSQ,
 	"rabbitmq": pubsub.RabbitMQ,
 	"redis":    pubsub.Redis,
+	"google":   pubsub.Google,
 }
 
 func getConfig() (*config, error) {
@@ -124,6 +126,15 @@ func getConfig() (*config, error) {
 	// Convert env to struct.
 	if err := envconfig.Process(envPrefix, &cfg); err != nil {
 		return nil, err
+	}
+
+	// Handle google pubsub credential.
+	if cfg.PubSub.Dialect == "google" {
+		credFilename, err := generateGoogleServiceAccountJSON("gcp-service-account.json", cfg.PubSub.Password)
+		if err != nil {
+			return nil, err
+		}
+		cfg.PubSub.Password = credFilename
 	}
 
 	// Validate.
@@ -184,4 +195,11 @@ func newDB(cfg dbConfig) (*gorm.DB, error) {
 	tmp.SetConnMaxLifetime(time.Duration(cfg.MaxConnLifetime) * time.Second)
 
 	return db, nil
+}
+
+func generateGoogleServiceAccountJSON(filename, value string) (string, error) {
+	if err := ioutil.WriteFile(filename, []byte(value), 0644); err != nil {
+		return "", err
+	}
+	return filename, nil
 }

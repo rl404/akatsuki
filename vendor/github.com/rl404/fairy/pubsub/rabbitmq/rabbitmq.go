@@ -89,7 +89,7 @@ func (c *Client) Publish(queue string, data interface{}) error {
 
 // Subscribe to subscribe queue.
 //
-// Need to convert the return type to fairy.Channel.
+// Need to convert the return type to pubsub.Channel.
 func (c *Client) Subscribe(queue string) (interface{}, error) {
 	ch, err := c.subscribe(queue)
 	if err != nil {

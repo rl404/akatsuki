@@ -19,3 +19,6 @@ cmd/akatsuki/akatsuki
 
 # Env
 .env
+
+# Config
+gcp-service-account.json

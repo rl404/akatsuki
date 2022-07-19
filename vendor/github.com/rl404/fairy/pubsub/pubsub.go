@@ -3,6 +3,7 @@ package pubsub
 import (
 	"errors"
 
+	"github.com/rl404/fairy/pubsub/google"
 	"github.com/rl404/fairy/pubsub/nsq"
 	"github.com/rl404/fairy/pubsub/rabbitmq"
 	"github.com/rl404/fairy/pubsub/redis"
@@ -43,6 +44,7 @@ const (
 	Redis PubsubType = iota + 1
 	RabbitMQ
 	NSQ
+	Google
 )
 
 // ErrInvalidPubsubType is error for invalid pubsub type.
@@ -57,6 +59,8 @@ func New(pubsubType PubsubType, address string, password string) (PubSub, error)
 		return rabbitmq.New(address)
 	case NSQ:
 		return nsq.New(address)
+	case Google:
+		return google.New(address, password)
 	default:
 		return nil, ErrInvalidPubsubType
 	}

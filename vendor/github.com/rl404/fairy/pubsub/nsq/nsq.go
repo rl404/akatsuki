@@ -53,7 +53,7 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 // Subscribe to subscribe to a topic.
 //
-// Need to convert the return type to fairy.Channel.
+// Need to convert the return type to pubsub.Channel.
 func (c *Client) Subscribe(topic string) (interface{}, error) {
 	cc, err := nsq.NewConsumer(topic, "channel", c.config)
 	if err != nil {

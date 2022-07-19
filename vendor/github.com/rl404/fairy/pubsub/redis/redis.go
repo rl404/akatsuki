@@ -63,7 +63,7 @@ func (c *Client) Publish(channel string, data interface{}) error {
 
 // Subscribe to subscribe channel.
 //
-// Need to convert the return type to fairy.Channel.
+// Need to convert the return type to pubsub.Channel.
 func (c *Client) Subscribe(channel string) (interface{}, error) {
 	return &Channel{
 		channel: c.client.Subscribe(context.Background(), channel),
