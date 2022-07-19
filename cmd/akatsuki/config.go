@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -126,6 +127,11 @@ func getConfig() (*config, error) {
 	// Convert env to struct.
 	if err := envconfig.Process(envPrefix, &cfg); err != nil {
 		return nil, err
+	}
+
+	// Override PORT env.
+	if port := os.Getenv("PORT"); port != "" {
+		cfg.HTTP.Port = port
 	}
 
 	// Handle google pubsub credential.
