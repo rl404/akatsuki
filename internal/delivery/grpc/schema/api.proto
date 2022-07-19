@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+option go_package = "github.com/rl404/akatsuki/internal/delivery/grpc/schema";
+
+import "google/protobuf/timestamp.proto";
+
+service API {
+    rpc GetAnimeByID(GetAnimeByIDRequest) returns (Anime);
+}
+
+message GetAnimeByIDRequest {
+    int64 id = 1;
+}
+
+message Anime {
+    int64 id = 1;
+    string title = 2;
+    AlternativeTitles alternative_titles = 3;
+    string picture = 4;
+    Date start_date = 5;
+    Date end_date = 6;
+    string synopsis = 7;
+    string background= 8;
+    bool nsfw = 9;
+    string type = 10;
+    string status = 11;
+    Season season = 12;
+    Broadcast broadcast = 13;
+    string source = 14;
+    string rating = 15;
+    double mean = 16;
+    int32 rank = 17;
+    int32 popularity = 18;
+    int32 member = 19;
+    int32 voter = 20;
+    Stats stats = 21;
+    repeated Genre genres = 22;
+    repeated string pictures = 23;
+    repeated Related related = 24;
+    repeated Studio studios = 25;
+    google.protobuf.Timestamp updated_at = 26;
+}
+
+message AlternativeTitles {
+    repeated string synonyms = 1;
+    string english = 2;
+    string japanese = 3;
+}
+
+message Date {
+    int32 year = 1;
+    int32 month = 2;
+    int32 day = 3;
+}
+
+message Episode {
+    int32 count = 1;
+    int32 duration = 2;
+}
+
+message Season {
+    string season = 1;
+    int32 year = 2;
+}
+
+message Broadcast {
+    Date day = 1;
+    string time = 2;
+}
+
+message Stats {
+    StatsStatus status = 1;
+}
+
+message StatsStatus {
+    int32 watching = 1;
+    int32 completed = 2;
+    int32 on_hold = 3;
+    int32 dropped = 4;
+    int32 planned = 5;
+}
+
+message Genre {
+    int64 id = 1;
+    string name = 2;
+}
+
+message Related {
+    int64 id = 1;
+    string title = 2;
+    string picture = 3;
+    string relation = 4;
+}
+
+message Studio {
+    int64 id = 1;
+    string name = 2;
+}

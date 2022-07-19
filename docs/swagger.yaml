@@ -1,0 +1,579 @@
+basePath: /
+definitions:
+  mal.Anime:
+    properties:
+      alternative_titles:
+        $ref: '#/definitions/mal.Titles'
+      average_episode_duration:
+        type: integer
+      background:
+        type: string
+      broadcast:
+        $ref: '#/definitions/mal.Broadcast'
+      created_at:
+        type: string
+      end_date:
+        type: string
+      genres:
+        items:
+          $ref: '#/definitions/mal.Genre'
+        type: array
+      id:
+        type: integer
+      main_picture:
+        $ref: '#/definitions/mal.Picture'
+      mean:
+        type: number
+      media_type:
+        type: string
+      my_list_status:
+        $ref: '#/definitions/mal.AnimeListStatus'
+      nsfw:
+        type: string
+      num_episodes:
+        type: integer
+      num_list_users:
+        type: integer
+      num_scoring_users:
+        type: integer
+      pictures:
+        items:
+          $ref: '#/definitions/mal.Picture'
+        type: array
+      popularity:
+        type: integer
+      rank:
+        type: integer
+      rating:
+        type: string
+      recommendations:
+        items:
+          $ref: '#/definitions/mal.RecommendedAnime'
+        type: array
+      related_anime:
+        items:
+          $ref: '#/definitions/mal.RelatedAnime'
+        type: array
+      related_manga:
+        items:
+          $ref: '#/definitions/mal.RelatedManga'
+        type: array
+      source:
+        type: string
+      start_date:
+        type: string
+      start_season:
+        $ref: '#/definitions/mal.StartSeason'
+      statistics:
+        $ref: '#/definitions/mal.Statistics'
+      status:
+        type: string
+      studios:
+        items:
+          $ref: '#/definitions/mal.Studio'
+        type: array
+      synopsis:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  mal.AnimeListStatus:
+    properties:
+      comments:
+        type: string
+      is_rewatching:
+        type: boolean
+      num_episodes_watched:
+        type: integer
+      num_times_rewatched:
+        type: integer
+      priority:
+        type: integer
+      rewatch_value:
+        type: integer
+      score:
+        type: integer
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  mal.Author:
+    properties:
+      node:
+        $ref: '#/definitions/mal.Person'
+      role:
+        type: string
+    type: object
+  mal.Broadcast:
+    properties:
+      day_of_the_week:
+        type: string
+      start_time:
+        type: string
+    type: object
+  mal.Genre:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  mal.Magazine:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  mal.Manga:
+    properties:
+      alternative_titles:
+        $ref: '#/definitions/mal.Titles'
+      authors:
+        items:
+          $ref: '#/definitions/mal.Author'
+        type: array
+      background:
+        type: string
+      created_at:
+        type: string
+      genres:
+        items:
+          $ref: '#/definitions/mal.Genre'
+        type: array
+      id:
+        type: integer
+      main_picture:
+        $ref: '#/definitions/mal.Picture'
+      mean:
+        type: number
+      media_type:
+        type: string
+      my_list_status:
+        $ref: '#/definitions/mal.MangaListStatus'
+      nsfw:
+        type: string
+      num_chapters:
+        type: integer
+      num_list_users:
+        type: integer
+      num_scoring_users:
+        type: integer
+      num_volumes:
+        type: integer
+      pictures:
+        items:
+          $ref: '#/definitions/mal.Picture'
+        type: array
+      popularity:
+        type: integer
+      rank:
+        type: integer
+      recommendations:
+        items:
+          $ref: '#/definitions/mal.RecommendedManga'
+        type: array
+      related_anime:
+        items:
+          $ref: '#/definitions/mal.RelatedAnime'
+        type: array
+      related_manga:
+        items:
+          $ref: '#/definitions/mal.RelatedManga'
+        type: array
+      serialization:
+        items:
+          $ref: '#/definitions/mal.Serialization'
+        type: array
+      start_date:
+        type: string
+      status:
+        type: string
+      synopsis:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  mal.MangaListStatus:
+    properties:
+      comments:
+        type: string
+      is_rereading:
+        type: boolean
+      num_chapters_read:
+        type: integer
+      num_times_reread:
+        type: integer
+      num_volumes_read:
+        type: integer
+      priority:
+        type: integer
+      reread_value:
+        type: integer
+      score:
+        type: integer
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  mal.Person:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+    type: object
+  mal.Picture:
+    properties:
+      large:
+        type: string
+      medium:
+        type: string
+    type: object
+  mal.RecommendedAnime:
+    properties:
+      node:
+        $ref: '#/definitions/mal.Anime'
+      num_recommendations:
+        type: integer
+    type: object
+  mal.RecommendedManga:
+    properties:
+      node:
+        $ref: '#/definitions/mal.Manga'
+      num_recommendations:
+        type: integer
+    type: object
+  mal.RelatedAnime:
+    properties:
+      node:
+        $ref: '#/definitions/mal.Anime'
+      relation_type:
+        type: string
+      relation_type_formatted:
+        type: string
+    type: object
+  mal.RelatedManga:
+    properties:
+      node:
+        $ref: '#/definitions/mal.Manga'
+      relation_type:
+        type: string
+      relation_type_formatted:
+        type: string
+    type: object
+  mal.Serialization:
+    properties:
+      node:
+        $ref: '#/definitions/mal.Magazine'
+      role:
+        type: string
+    type: object
+  mal.StartSeason:
+    properties:
+      season:
+        type: string
+      year:
+        type: integer
+    type: object
+  mal.Statistics:
+    properties:
+      num_list_users:
+        type: integer
+      status:
+        $ref: '#/definitions/mal.Status'
+    type: object
+  mal.Status:
+    properties:
+      completed:
+        type: string
+      dropped:
+        type: string
+      on_hold:
+        type: string
+      plan_to_watch:
+        type: string
+      watching:
+        type: string
+    type: object
+  mal.Studio:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  mal.Titles:
+    properties:
+      en:
+        type: string
+      ja:
+        type: string
+      synonyms:
+        items:
+          type: string
+        type: array
+    type: object
+  service.Anime:
+    properties:
+      alternative_titles:
+        $ref: '#/definitions/service.alternativeTitles'
+      background:
+        type: string
+      broadcast:
+        $ref: '#/definitions/service.broadcast'
+      end_date:
+        $ref: '#/definitions/service.date'
+      episode:
+        $ref: '#/definitions/service.episode'
+      genres:
+        items:
+          $ref: '#/definitions/service.genre'
+        type: array
+      id:
+        type: integer
+      mean:
+        type: number
+      member:
+        type: integer
+      nsfw:
+        type: boolean
+      picture:
+        type: string
+      pictures:
+        items:
+          type: string
+        type: array
+      popularity:
+        type: integer
+      rank:
+        type: integer
+      rating:
+        type: string
+      related:
+        items:
+          $ref: '#/definitions/service.related'
+        type: array
+      season:
+        $ref: '#/definitions/service.season'
+      source:
+        type: string
+      start_date:
+        $ref: '#/definitions/service.date'
+      stats:
+        $ref: '#/definitions/service.stats'
+      status:
+        type: string
+      studio:
+        items:
+          $ref: '#/definitions/service.studio'
+        type: array
+      synopsis:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      voter:
+        type: integer
+    type: object
+  service.alternativeTitles:
+    properties:
+      english:
+        type: string
+      japanese:
+        type: string
+      synonyms:
+        items:
+          type: string
+        type: array
+    type: object
+  service.broadcast:
+    properties:
+      day:
+        type: string
+      time:
+        type: string
+    type: object
+  service.date:
+    properties:
+      day:
+        type: integer
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
+  service.episode:
+    properties:
+      count:
+        type: integer
+      duration:
+        type: integer
+    type: object
+  service.genre:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  service.related:
+    properties:
+      id:
+        type: integer
+      picture:
+        type: string
+      relation:
+        type: string
+      title:
+        type: string
+    type: object
+  service.season:
+    properties:
+      season:
+        type: string
+      year:
+        type: integer
+    type: object
+  service.stats:
+    properties:
+      status:
+        $ref: '#/definitions/service.statsStatus'
+    type: object
+  service.statsStatus:
+    properties:
+      completed:
+        type: integer
+      dropped:
+        type: integer
+      on_hold:
+        type: integer
+      planned:
+        type: integer
+      watching:
+        type: integer
+    type: object
+  service.studio:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  utils.Response:
+    properties:
+      data:
+        type: object
+      message:
+        type: string
+      meta:
+        type: object
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Akatsuki API.
+  title: Akatsuki API
+paths:
+  /anime/{animeID}:
+    get:
+      parameters:
+      - description: anime id
+        in: path
+        name: animeID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.Anime'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get anime by id.
+      tags:
+      - Anime
+  /mal/anime/{animeID}:
+    get:
+      parameters:
+      - description: anime id
+        in: path
+        name: animeID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/mal.Anime'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get mal anime by id.
+      tags:
+      - MAL Anime
+schemes:
+- http
+- https
+swagger: "2.0"

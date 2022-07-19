@@ -1,0 +1,10 @@
+version: "2.4"
+
+services:
+  akatsuki-api:
+    container_name: akatsuki-api
+    image: akatsuki:latest
+    command: ./akatsuki server
+    restart: always
+    env_file: ./../.env
+    network_mode: host

@@ -1,0 +1,9 @@
+version: "2.4"
+
+services:
+  akatsuki-cron-update:
+    container_name: akatsuki-cron-update
+    image: akatsuki:latest
+    command: ./akatsuki cron update
+    env_file: ./../.env
+    network_mode: host

@@ -13,3 +13,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Binary
+cmd/akatsuki/akatsuki
+
+# Env
+.env
+
+# Config
+gcp-service-account.json
