@@ -100,4 +100,8 @@ const (
 	RelationParentStory        = "PARENT_STORY"
 	RelationSummary            = "SUMMARY"
 	RelationFullStory          = "FULL_STORY"
+	RelationSpinOff            = "SPIN_OFF"
+	RelationAdaptation         = "ADAPTATION"
+	RelationCharacter          = "CHARACTER"
+	RelationOther              = "OTHER"
 )
