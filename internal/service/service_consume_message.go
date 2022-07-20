@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 
 	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
@@ -26,7 +27,10 @@ func (s *service) consumeParseAnime(ctx context.Context, data []byte) error {
 	}
 
 	if !req.Forced {
-		if _, err := s.validateID(ctx, req.ID); err != nil {
+		if code, err := s.validateID(ctx, req.ID); err != nil {
+			if code == http.StatusNotFound {
+				return nil
+			}
 			return errors.Wrap(ctx, err)
 		}
 
