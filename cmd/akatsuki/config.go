@@ -93,16 +93,11 @@ type logConfig struct {
 	Level log.LogLevel `envconfig:"LEVEL" default:"-1"`
 	JSON  bool         `envconfig:"JSON" default:"false"`
 	Color bool         `envconfig:"COLOR" default:"true"`
-
-	ESHost string `envconfig:"ES_HOST"`
-	ESUser string `envconfig:"ES_USER"`
-	ESPass string `envconfig:"ES_PASS"`
 }
 
 const envPath = "../../.env"
 const envPrefix = "AKATSUKI"
 const pubsubTopic = "akatsuki-pubsub"
-const esIndex = "logs-akatsuki"
 
 var cacheType = map[string]cache.CacheType{
 	"nocache":  cache.NoCache,

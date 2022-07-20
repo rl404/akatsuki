@@ -155,3 +155,9 @@ docker-update:
 	@$(COMPOSE_CMD) -f $(COMPOSE_API) -p akatsuki-api up -d
 	@$(COMPOSE_CMD) -f $(COMPOSE_CONSUMER) -p akatsuki-consumer up -d
 	@$(DOCKER_IMAGE) prune -f --filter label=stage=akatsuki_binary
+
+# Stop running docker containers.
+.PHONY: docker-stop
+docker-stop:
+	@$(COMPOSE_CMD) -f $(COMPOSE_API) -p akatsuki-api stop
+	@$(COMPOSE_CMD) -f $(COMPOSE_CONSUMER) -p akatsuki-consumer stop
