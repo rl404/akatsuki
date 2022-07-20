@@ -218,8 +218,12 @@ func malToRelation(r string) Relation {
 		"alternative_setting": RelationAlternativeSetting,
 		"alternative_version": RelationAlternativeVersion,
 		"side_story":          RelationSideStory,
+		"spin_off":            RelationSpinOff,
+		"adaptation":          RelationAdaptation,
 		"parent_story":        RelationParentStory,
 		"summary":             RelationSummary,
 		"full_story":          RelationFullStory,
+		"character":           RelationCharacter,
+		"other":               RelationOther,
 	}[r]
 }
