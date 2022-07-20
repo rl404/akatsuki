@@ -3,7 +3,7 @@ version: "2.4"
 services:
   akatsuki-consumer:
     container_name: akatsuki-consumer
-    image: akatsuki:latest
+    image: rl404/akatsuki:latest
     command: ./akatsuki consumer
     restart: always
     env_file: ./../.env
