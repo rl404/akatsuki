@@ -27,7 +27,7 @@ func (s *service) consumeParseAnime(ctx context.Context, data []byte) error {
 
 	if !req.Forced {
 		if _, err := s.validateID(ctx, req.ID); err != nil {
-			return errors.Wrap(ctx, err)
+			return nil
 		}
 
 		isOld, _, err := s.anime.IsOld(ctx, req.ID)
