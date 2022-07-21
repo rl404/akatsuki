@@ -303,7 +303,7 @@ github.com/swaggo/files
 # github.com/swaggo/http-swagger v1.3.0
 ## explicit; go 1.17
 github.com/swaggo/http-swagger
-# github.com/swaggo/swag v1.8.1
+# github.com/swaggo/swag v1.8.4
 ## explicit; go 1.18
 github.com/swaggo/swag
 # go.opencensus.io v0.22.4
