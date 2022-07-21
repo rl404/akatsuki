@@ -43,6 +43,7 @@ func (c *Client) GetAnimeByID(ctx context.Context, id int) (*mal.Anime, int, err
 		"statistics",
 		"opening_themes", // undocumented
 		"ending_themes",  // undocumented
+		"num_favorites",  // undocumented
 	})
 	if err != nil {
 		if resp != nil {

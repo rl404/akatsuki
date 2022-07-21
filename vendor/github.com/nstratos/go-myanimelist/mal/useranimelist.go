@@ -78,6 +78,8 @@ type AnimeListStatus struct {
 	NumEpisodesWatched int         `json:"num_episodes_watched"`
 	IsRewatching       bool        `json:"is_rewatching"`
 	UpdatedAt          time.Time   `json:"updated_at"`
+	StartDate          string      `json:"start_date"`
+	FinishDate         string      `json:"finish_date"`
 	Priority           int         `json:"priority"`
 	NumTimesRewatched  int         `json:"num_times_rewatched"`
 	RewatchValue       int         `json:"rewatch_value"`

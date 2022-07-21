@@ -25,18 +25,13 @@ func (api *API) Register(r chi.Router) {
 	r.Route("/", func(r chi.Router) {
 		r.Use(middleware.NewHTTP())
 		r.Use(log.MiddlewareWithLog(utils.GetLogger(0), log.MiddlewareConfig{Error: true}))
-		r.Use(log.MiddlewareWithLog(utils.GetLogger(1), log.MiddlewareConfig{
-			RequestHeader:  true,
-			RequestBody:    true,
-			ResponseHeader: true,
-			ResponseBody:   true,
-			RawPath:        true,
-			Error:          true,
-		}))
 		r.Use(utils.Recoverer)
 
 		r.Get("/anime/{animeID}", api.handleGetAnimeByID)
 
+		r.Get("/user/{username}/anime", api.handleGetUserAnime)
+
 		r.Get("/mal/anime/{animeID}", api.handleGetMalAnimeByID)
+		r.Get("/mal/users/{username}/animelist", api.handleGetMalUserAnime)
 	})
 }

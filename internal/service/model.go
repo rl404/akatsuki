@@ -2,6 +2,13 @@ package service
 
 import "github.com/rl404/akatsuki/internal/domain/anime/entity"
 
+// Pagination is pagination model.
+type Pagination struct {
+	Page  int `json:"page"`
+	Limit int `json:"limit"`
+	Total int `json:"total"`
+}
+
 type alternativeTitles struct {
 	Synonyms []string `json:"synonyms"`
 	English  string   `json:"english"`

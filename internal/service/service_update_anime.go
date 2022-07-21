@@ -11,7 +11,7 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 )
 
-func (s *service) updateData(ctx context.Context, id int64) (int, error) {
+func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 	// Call mal api.
 	anime, code, err := s.mal.GetAnimeByID(ctx, int(id))
 	if err != nil {

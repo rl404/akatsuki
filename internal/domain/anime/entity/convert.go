@@ -2,7 +2,6 @@ package entity
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/nstratos/go-myanimelist/mal"
 	"github.com/rl404/akatsuki/internal/errors"
@@ -22,31 +21,6 @@ func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 	}
 
 	endY, endM, endD, err := utils.SplitDate(anime.EndDate)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
-	}
-
-	watching, err := strconv.Atoi(anime.Statistics.Status.Watching)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
-	}
-
-	completed, err := strconv.Atoi(anime.Statistics.Status.Completed)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
-	}
-
-	onHold, err := strconv.Atoi(anime.Statistics.Status.OnHold)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
-	}
-
-	dropped, err := strconv.Atoi(anime.Statistics.Status.Dropped)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
-	}
-
-	planned, err := strconv.Atoi(anime.Statistics.Status.PlanToWatch)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err)
 	}
@@ -122,11 +96,11 @@ func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 		Voter:      anime.NumScoringUsers,
 		Stats: Stats{
 			Status: StatsStatus{
-				Watching:  watching,
-				Completed: completed,
-				OnHold:    onHold,
-				Dropped:   dropped,
-				Planned:   planned,
+				Watching:  int(anime.Statistics.Status.Watching),
+				Completed: int(anime.Statistics.Status.Completed),
+				OnHold:    int(anime.Statistics.Status.OnHold),
+				Dropped:   int(anime.Statistics.Status.Dropped),
+				Planned:   int(anime.Statistics.Status.PlanToWatch),
 			},
 		},
 		GenreIDs:  genreIDs,

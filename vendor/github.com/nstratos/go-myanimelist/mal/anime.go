@@ -52,6 +52,9 @@ type Anime struct {
 	Recommendations        []RecommendedAnime `json:"recommendations"`
 	Studios                []Studio           `json:"studios"`
 	Statistics             Statistics         `json:"statistics"`
+	NumFavorites           int                `json:"num_favorites"`  // undocumented
+	OpeningThemes          []Theme            `json:"opening_themes"` // undocumented
+	EndingThemes           []Theme            `json:"ending_themes"`  // undocumented
 }
 
 // Picture is a representative picture from the show.
@@ -81,11 +84,26 @@ type Studio struct {
 
 // Status of the user's anime list contained in statistics.
 type Status struct {
-	Watching    string `json:"watching"`
-	Completed   string `json:"completed"`
-	OnHold      string `json:"on_hold"`
-	Dropped     string `json:"dropped"`
-	PlanToWatch string `json:"plan_to_watch"`
+	Watching    statusCount `json:"watching"`
+	Completed   statusCount `json:"completed"`
+	OnHold      statusCount `json:"on_hold"`
+	Dropped     statusCount `json:"dropped"`
+	PlanToWatch statusCount `json:"plan_to_watch"`
+}
+
+type statusCount int
+
+func (s *statusCount) UnmarshalJSON(data []byte) error {
+	str := strings.ReplaceAll(string(data), `"`, "")
+
+	v, err := strconv.Atoi(str)
+	if err != nil {
+		return err
+	}
+
+	*s = statusCount(v)
+
+	return nil
 }
 
 // Statistics about the anime.
@@ -117,6 +135,13 @@ type StartSeason struct {
 type Broadcast struct {
 	DayOfTheWeek string `json:"day_of_the_week"`
 	StartTime    string `json:"start_time"`
+}
+
+// Theme is the opening and ending anime theme.
+type Theme struct {
+	ID      int    `json:"id"`
+	AnimeID int    `json:"anime_id"`
+	Text    string `json:"text"`
 }
 
 // DetailsOption is an option specific for the anime and manga details methods.
