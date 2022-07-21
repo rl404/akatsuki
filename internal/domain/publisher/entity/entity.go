@@ -4,7 +4,8 @@ type messageType string
 
 // Available message type.
 const (
-	TypeParseAnime messageType = "parse-anime"
+	TypeParseAnime     messageType = "parse-anime"
+	TypeParseUserAnime messageType = "parse-user-anime"
 )
 
 // Message is entity for message.
@@ -17,4 +18,10 @@ type Message struct {
 type ParseAnimeRequest struct {
 	ID     int64 `json:"id"`
 	Forced bool  `json:"forced"`
+}
+
+// ParseUserAnimeRequest is parse user anime request model.
+type ParseUserAnimeRequest struct {
+	Username string `json:"username"`
+	Forced   bool   `json:"forced"`
 }

@@ -90,7 +90,7 @@ func cronFill() error {
 	utils.Info("repository publisher initialized")
 
 	// Init service.
-	service := service.New(anime, genre, studio, emptyID, publisher, mal)
+	service := service.New(anime, genre, studio, nil, emptyID, publisher, mal)
 	utils.Info("service initialized")
 
 	// Run cron.

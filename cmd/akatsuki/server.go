@@ -28,6 +28,9 @@ import (
 	studioRepository "github.com/rl404/akatsuki/internal/domain/studio/repository"
 	studioCache "github.com/rl404/akatsuki/internal/domain/studio/repository/cache"
 	studioSQL "github.com/rl404/akatsuki/internal/domain/studio/repository/sql"
+	userAnimeRepository "github.com/rl404/akatsuki/internal/domain/user_anime/repository"
+	userAnimeCache "github.com/rl404/akatsuki/internal/domain/user_anime/repository/cache"
+	userAnimeSQL "github.com/rl404/akatsuki/internal/domain/user_anime/repository/sql"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/akatsuki/pkg/grpc"
@@ -103,6 +106,12 @@ func server() error {
 	studio = studioCache.New(c, studio)
 	utils.Info("repository studio initialized")
 
+	// Init user anime.
+	var userAnime userAnimeRepository.Repository
+	userAnime = userAnimeSQL.New(db, cfg.Cron.UserAnimeAge)
+	userAnime = userAnimeCache.New(c, userAnime)
+	utils.Info("repository user anime initialized")
+
 	// Init empty id.
 	var emptyID emptyIDRepository.Repository
 	emptyID = emptyIDSQL.New(db)
@@ -118,7 +127,7 @@ func server() error {
 	utils.Info("repository publisher initialized")
 
 	// Init service.
-	service := service.New(anime, genre, studio, emptyID, publisher, mal)
+	service := service.New(anime, genre, studio, userAnime, emptyID, publisher, mal)
 	utils.Info("service initialized")
 
 	// Init web server.

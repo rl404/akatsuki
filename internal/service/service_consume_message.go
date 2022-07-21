@@ -15,6 +15,8 @@ func (s *service) ConsumeMessage(ctx context.Context, data entity.Message) error
 	switch data.Type {
 	case entity.TypeParseAnime:
 		return errors.Wrap(ctx, s.consumeParseAnime(ctx, data.Data))
+	case entity.TypeParseUserAnime:
+		return errors.Wrap(ctx, s.consumeParseUserAnime(ctx, data.Data))
 	default:
 		return errors.Wrap(ctx, errors.ErrInvalidMessageType)
 	}
@@ -49,7 +51,30 @@ func (s *service) consumeParseAnime(ctx context.Context, data []byte) error {
 		}
 	}
 
-	if _, err := s.updateData(ctx, req.ID); err != nil {
+	if _, err := s.updateAnime(ctx, req.ID); err != nil {
+		return errors.Wrap(ctx, err)
+	}
+
+	return nil
+}
+
+func (s *service) consumeParseUserAnime(ctx context.Context, data []byte) error {
+	var req entity.ParseUserAnimeRequest
+	if err := json.Unmarshal(data, &req); err != nil {
+		return errors.Wrap(ctx, errors.ErrInvalidRequestFormat)
+	}
+
+	if !req.Forced {
+		isOld, _, err := s.userAnime.IsOld(ctx, req.Username)
+		if err != nil {
+			return errors.Wrap(ctx, err)
+		}
+		if !isOld {
+			return nil
+		}
+	}
+
+	if _, err := s.updateUserAnime(ctx, req.Username); err != nil {
 		return errors.Wrap(ctx, err)
 	}
 

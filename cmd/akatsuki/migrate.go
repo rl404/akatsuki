@@ -5,6 +5,7 @@ import (
 	emptyIDSQL "github.com/rl404/akatsuki/internal/domain/empty_id/repository/sql"
 	genreSQL "github.com/rl404/akatsuki/internal/domain/genre/repository/sql"
 	studioSQL "github.com/rl404/akatsuki/internal/domain/studio/repository/sql"
+	userAnimeSQL "github.com/rl404/akatsuki/internal/domain/user_anime/repository/sql"
 	"github.com/rl404/akatsuki/internal/utils"
 )
 
@@ -36,6 +37,7 @@ func migrate() error {
 		animeSQL.AnimeStatsHistory{},
 		genreSQL.Genre{},
 		studioSQL.Studio{},
+		userAnimeSQL.UserAnime{},
 		emptyIDSQL.EmptyID{},
 	); err != nil {
 		return err

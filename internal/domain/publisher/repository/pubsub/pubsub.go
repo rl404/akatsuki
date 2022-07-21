@@ -39,3 +39,20 @@ func (p *Pubsub) PublishParseAnime(ctx context.Context, data entity.ParseAnimeRe
 
 	return nil
 }
+
+// PublishParseUserAnime to publish parse user anime.
+func (p *Pubsub) PublishParseUserAnime(ctx context.Context, data entity.ParseUserAnimeRequest) error {
+	d, err := json.Marshal(data)
+	if err != nil {
+		return errors.Wrap(ctx, errors.ErrInternalServer, err)
+	}
+
+	if err := p.pubsub.Publish(p.topic, entity.Message{
+		Type: entity.TypeParseUserAnime,
+		Data: d,
+	}); err != nil {
+		return errors.Wrap(ctx, errors.ErrInternalServer, err)
+	}
+
+	return nil
+}
