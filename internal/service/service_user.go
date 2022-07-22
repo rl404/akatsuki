@@ -26,7 +26,7 @@ type UserAnime struct {
 type GetUserAnimeRequest struct {
 	Username string `validate:"required" mod:"trim"`
 	Page     int    `validate:"required,gte=1" mod:"default=1"`
-	Limit    int    `validate:"required,gte=-1"`
+	Limit    int    `validate:"required,gte=-1" mod:"default=20"`
 }
 
 // GetUserAnime to get user anime.
