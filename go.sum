@@ -452,8 +452,8 @@ github.com/prometheus/procfs v0.1.3/go.mod h1:lV6e/gmhEcM9IjHGsFOCxxuZ+z1YqCvr4O
 github.com/prometheus/procfs v0.6.0/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1xBZuNvfVA=
 github.com/prometheus/procfs v0.7.3 h1:4jVXhlkAyzOScmCkXBTOLRLTz8EeU+eyjrwB/EPq0VU=
 github.com/prometheus/procfs v0.7.3/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1xBZuNvfVA=
-github.com/rl404/fairy v0.15.4 h1:EV/PeiX9gThGJOTreNOUR9XnWi69k4joRpSCkuuRGdo=
-github.com/rl404/fairy v0.15.4/go.mod h1:e4NnjqNzLo7aMNrc+xGGXr5NphiWFk1HbegmS81v68c=
+github.com/rl404/fairy v0.15.6 h1:4Uzg6L9RY0GFj2xVrODWhWX5UtVIN8NAjc45G+zahnw=
+github.com/rl404/fairy v0.15.6/go.mod h1:8cY+WLfdZXDGeL1cNiSjcUogtEHrdudXPRBQ3ndIFHg=
 github.com/rl404/go-myanimelist v0.10.0 h1:Rhor996ADDk62pm7q5CCWkrgE51/JfFGlPBwZjJPiqk=
 github.com/rl404/go-myanimelist v0.10.0/go.mod h1:8R947UE3+5W0B3TrUgRIy+h2YVxG/69fLpgq94J91ns=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
@@ -895,8 +895,8 @@ google.golang.org/api v0.75.0/go.mod h1:pU9QmyHLnzlpar1Mjt4IbapUCy8J+6HD6GeELN69
 google.golang.org/api v0.78.0/go.mod h1:1Sg78yoMLOhlQTeF+ARBoytAcH1NNyyl390YMy6rKmw=
 google.golang.org/api v0.80.0/go.mod h1:xY3nI94gbvBrE0J6NHXhxOmW97HG7Khjkku6AFB3Hyg=
 google.golang.org/api v0.84.0/go.mod h1:NTsGnUFJMYROtiquksZHBWtHfeMC7iYthki7Eq3pa8o=
-google.golang.org/api v0.88.0 h1:MPwxQRqpyskYhr2iNyfsQ8R06eeyhe7UEuR30p136ZQ=
-google.golang.org/api v0.88.0/go.mod h1:+Sem1dnrKlrXMR/X0bPnMWyluQe4RsNoYfmNLhOIkzw=
+google.golang.org/api v0.90.0 h1:WMnUWAvihIClUYFNeFA69VTuR3duKS3IalMGDQcLvq8=
+google.golang.org/api v0.90.0/go.mod h1:+Sem1dnrKlrXMR/X0bPnMWyluQe4RsNoYfmNLhOIkzw=
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
 google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
 google.golang.org/appengine v1.5.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
