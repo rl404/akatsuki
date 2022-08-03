@@ -33,5 +33,12 @@ func (c *Cron) Update(limit int) error {
 
 	utils.Info("queued %d old not yet released anime", cnt3)
 
+	cnt4, _, err := c.service.QueueOldUserAnime(ctx, limit)
+	if err != nil {
+		return errors.Wrap(ctx, err)
+	}
+
+	utils.Info("queued %d old username", cnt4)
+
 	return nil
 }

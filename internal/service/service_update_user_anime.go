@@ -11,6 +11,7 @@ import (
 )
 
 func (s *service) updateUserAnime(ctx context.Context, username string) (int, error) {
+	var ids []int64
 	limit, offset := 500, 0
 	for {
 		// Call mal api.
@@ -30,6 +31,8 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 		offset += limit
 
 		for _, a := range anime {
+			ids = append(ids, int64(a.Anime.ID))
+
 			// Update user anime data.
 			animeE, err := userEntity.UserAnimeFromMal(ctx, username, a)
 			if err != nil {
@@ -45,6 +48,11 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 				return http.StatusInternalServerError, errors.Wrap(ctx, err)
 			}
 		}
+	}
+
+	// Delete anime not in list.
+	if code, err := s.userAnime.DeleteNotInList(ctx, username, ids); err != nil {
+		return code, errors.Wrap(ctx, err)
 	}
 
 	return http.StatusOK, nil

@@ -72,3 +72,20 @@ func (sql *SQL) IsOld(ctx context.Context, username string) (bool, int, error) {
 	}
 	return res.RowsAffected == 0, http.StatusOK, nil
 }
+
+// GetOldUsernames to get old usernames.
+func (sql *SQL) GetOldUsernames(ctx context.Context) ([]string, int, error) {
+	var usernames []string
+	if err := sql.db.WithContext(ctx).Model(&UserAnime{}).Where("updated_at <= ?", time.Now().Add(-sql.age)).Pluck("distinct(username)", &usernames).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return usernames, http.StatusOK, nil
+}
+
+// DeleteNotInList to delete anime not in list.
+func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int64) (int, error) {
+	if err := sql.db.WithContext(ctx).Where("username = ? and anime_id not in ?", username, ids).Delete(&UserAnime{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return http.StatusOK, nil
+}

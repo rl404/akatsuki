@@ -107,3 +107,21 @@ func (s *service) QueueMissingAnime(ctx context.Context, limit int) (int, int, e
 
 	return cnt, http.StatusOK, nil
 }
+
+// QueueOldUserAnime to queue old user anime.
+func (s *service) QueueOldUserAnime(ctx context.Context, limit int) (int, int, error) {
+	var cnt int
+
+	usernames, code, err := s.userAnime.GetOldUsernames(ctx)
+	if err != nil {
+		return cnt, code, errors.Wrap(ctx, err)
+	}
+
+	for i := 0; i < len(usernames) && cnt < limit; i, cnt = i+1, cnt+1 {
+		if err := s.publisher.PublishParseUserAnime(ctx, entity.ParseUserAnimeRequest{Username: usernames[i]}); err != nil {
+			return cnt, http.StatusInternalServerError, errors.Wrap(ctx, err)
+		}
+	}
+
+	return cnt, http.StatusOK, nil
+}

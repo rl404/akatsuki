@@ -30,6 +30,7 @@ type Service interface {
 	QueueOldFinishedAnime(ctx context.Context, limit int) (int, int, error)
 	QueueOldNotYetAnime(ctx context.Context, limit int) (int, int, error)
 	QueueMissingAnime(ctx context.Context, limit int) (int, int, error)
+	QueueOldUserAnime(ctx context.Context, limit int) (int, int, error)
 }
 
 type service struct {
