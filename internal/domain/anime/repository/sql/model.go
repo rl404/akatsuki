@@ -265,3 +265,19 @@ func (sql *SQL) animeStatsFromEntity(anime entity.Anime) *AnimeStatsHistory {
 		UserPlanned:   anime.Stats.Status.Planned,
 	}
 }
+
+func (ar *AnimeRelated) toEntity() *entity.AnimeRelated {
+	return &entity.AnimeRelated{
+		AnimeID1: ar.AnimeID1,
+		AnimeID2: ar.AnimeID2,
+		Relation: ar.Relation,
+	}
+}
+
+func (sql *SQL) animeRelatedToEntities(data []AnimeRelated) []*entity.AnimeRelated {
+	ar := make([]*entity.AnimeRelated, len(data))
+	for i, aa := range data {
+		ar[i] = aa.toEntity()
+	}
+	return ar
+}

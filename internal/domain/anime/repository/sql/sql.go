@@ -240,3 +240,12 @@ func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
 	}
 	return ids, http.StatusOK, nil
 }
+
+// GetRelatedByIDs to get related anime by ids.
+func (sql *SQL) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.AnimeRelated, int, error) {
+	var ar []AnimeRelated
+	if err := sql.db.WithContext(ctx).Where("anime_id1 in (?)", ids).Find(&ar).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return sql.animeRelatedToEntities(ar), http.StatusOK, nil
+}

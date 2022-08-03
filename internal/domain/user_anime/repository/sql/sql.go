@@ -28,7 +28,7 @@ func New(db *gorm.DB, age int) *SQL {
 // Get to get user anime.
 func (sql *SQL) Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*entity.UserAnime, int, int, error) {
 	var a []UserAnime
-	query := sql.db.WithContext(ctx)
+	query := sql.db.WithContext(ctx).Model(&UserAnime{})
 
 	if data.Username != "" {
 		query.Where("username = ?", data.Username)
@@ -39,7 +39,7 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*en
 	}
 
 	var cnt int64
-	if err := query.Limit(-1).Model(&UserAnime{}).Count(&cnt).Error; err != nil {
+	if err := query.Limit(-1).Count(&cnt).Error; err != nil {
 		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
