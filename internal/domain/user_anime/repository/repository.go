@@ -11,4 +11,6 @@ type Repository interface {
 	Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*entity.UserAnime, int, int, error)
 	Update(ctx context.Context, data entity.UserAnime) (int, error)
 	IsOld(ctx context.Context, username string) (bool, int, error)
+	GetOldUsernames(ctx context.Context) ([]string, int, error)
+	DeleteNotInList(ctx context.Context, username string, ids []int64) (int, error)
 }

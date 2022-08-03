@@ -13,8 +13,10 @@ Powered by [go-myanimelist](github.com/nstratos/go-myanimelist) library and [MyA
     - Anime relation (with other anime)
     - Anime studios
 - Save anime stats history
+- Save user anime list
+- Get all anime related in user anime list
 - Handle empty anime id
-- Auto update anime data (cron)
+- Auto update anime & user data (cron)
 - Interchangeable database
     - [MySQL](https://www.mysql.com/)
     - [PostgreSQL](https://www.postgresql.org/)
@@ -154,6 +156,7 @@ Env | Default | Description
 `AKATSUKI_CRON_RELEASING_AGE` | `1` | Age of old releasing/airing anime data (in days).
 `AKATSUKI_CRON_FINISHED_AGE` | `30` | Age of old finished anime data (in days).
 `AKATSUKI_CRON_NOT_YET_AGE` | `7` | Age of old not yet released/aired anime (in days).
+`AKATSUKI_CRON_USER_ANIME_AGE` | `7` | Age of old user anime list.
 
 ## Trivia
 

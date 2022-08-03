@@ -92,3 +92,8 @@ func (c *Cache) GetMaxID(ctx context.Context) (int64, int, error) {
 func (c *Cache) GetIDs(ctx context.Context) ([]int64, int, error) {
 	return c.repo.GetIDs(ctx)
 }
+
+// GetRelatedByIDs to get related by ids.
+func (c *Cache) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.AnimeRelated, int, error) {
+	return c.repo.GetRelatedByIDs(ctx, ids)
+}

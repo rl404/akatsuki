@@ -28,7 +28,7 @@ func New(db *gorm.DB, age int) *SQL {
 // Get to get user anime.
 func (sql *SQL) Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*entity.UserAnime, int, int, error) {
 	var a []UserAnime
-	query := sql.db.WithContext(ctx)
+	query := sql.db.WithContext(ctx).Model(&UserAnime{})
 
 	if data.Username != "" {
 		query.Where("username = ?", data.Username)
@@ -39,7 +39,7 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*en
 	}
 
 	var cnt int64
-	if err := query.Limit(-1).Model(&UserAnime{}).Count(&cnt).Error; err != nil {
+	if err := query.Limit(-1).Count(&cnt).Error; err != nil {
 		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
@@ -71,4 +71,21 @@ func (sql *SQL) IsOld(ctx context.Context, username string) (bool, int, error) {
 		return true, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, res.Error)
 	}
 	return res.RowsAffected == 0, http.StatusOK, nil
+}
+
+// GetOldUsernames to get old usernames.
+func (sql *SQL) GetOldUsernames(ctx context.Context) ([]string, int, error) {
+	var usernames []string
+	if err := sql.db.WithContext(ctx).Model(&UserAnime{}).Where("updated_at <= ?", time.Now().Add(-sql.age)).Pluck("distinct(username)", &usernames).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return usernames, http.StatusOK, nil
+}
+
+// DeleteNotInList to delete anime not in list.
+func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int64) (int, error) {
+	if err := sql.db.WithContext(ctx).Where("username = ? and anime_id not in ?", username, ids).Delete(&UserAnime{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return http.StatusOK, nil
 }

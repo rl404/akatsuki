@@ -19,6 +19,7 @@ type Service interface {
 	GetAnimeByID(ctx context.Context, id int64) (*Anime, int, error)
 
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)
+	GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error)
 
 	GetMalAnimeByID(ctx context.Context, id int) (*mal.Anime, int, error)
 	GetMalUserAnime(ctx context.Context, data GetMalUserAnimeRequest) ([]mal.UserAnime, int, error)
@@ -29,6 +30,7 @@ type Service interface {
 	QueueOldFinishedAnime(ctx context.Context, limit int) (int, int, error)
 	QueueOldNotYetAnime(ctx context.Context, limit int) (int, int, error)
 	QueueMissingAnime(ctx context.Context, limit int) (int, int, error)
+	QueueOldUserAnime(ctx context.Context, limit int) (int, int, error)
 }
 
 type service struct {

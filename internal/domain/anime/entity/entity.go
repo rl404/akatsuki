@@ -88,3 +88,10 @@ type Related struct {
 	ID       int64
 	Relation Relation
 }
+
+// AnimeRelated is entity for related anime.
+type AnimeRelated struct {
+	AnimeID1 int64
+	AnimeID2 int64
+	Relation Relation
+}

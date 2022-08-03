@@ -34,3 +34,18 @@ func (api *API) handleGetUserAnime(w http.ResponseWriter, r *http.Request) {
 
 	utils.ResponseWithJSON(w, code, anime, errors.Wrap(r.Context(), err), pagination)
 }
+
+// @summary Get user's anime relations.
+// @tags User
+// @produce json
+// @param username path string true "username"
+// @success 200 {object} utils.Response{data=service.UserAnimeRelation}
+// @failure 400 {object} utils.Response
+// @failure 404 {object} utils.Response
+// @failure 500 {object} utils.Response
+// @router /user/{username}/anime/relations [get]
+func (api *API) handleGetUserAnimeRelations(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+	relations, code, err := api.service.GetUserAnimeRelations(r.Context(), username)
+	utils.ResponseWithJSON(w, code, relations, errors.Wrap(r.Context(), err))
+}
