@@ -9,7 +9,7 @@ import (
 
 // Studio is studio database model.
 type Studio struct {
-	ID        int64
+	ID        int64 `gorm:"primaryKey"`
 	Name      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
