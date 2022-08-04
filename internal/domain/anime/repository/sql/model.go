@@ -10,7 +10,7 @@ import (
 
 // Anime is anime database model.
 type Anime struct {
-	ID              int64
+	ID              int64 `gorm:"primaryKey"`
 	Title           string
 	TitleSynonym    string
 	TitleEnglish    string

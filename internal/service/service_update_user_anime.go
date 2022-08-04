@@ -24,12 +24,6 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 			return code, errors.Wrap(ctx, err)
 		}
 
-		if len(anime) <= limit || len(anime) == 0 {
-			break
-		}
-
-		offset += limit
-
 		for _, a := range anime {
 			ids = append(ids, int64(a.Anime.ID))
 
@@ -48,6 +42,12 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 				return http.StatusInternalServerError, errors.Wrap(ctx, err)
 			}
 		}
+
+		if len(anime) <= limit || len(anime) == 0 {
+			break
+		}
+
+		offset += limit
 	}
 
 	// Delete anime not in list.

@@ -10,7 +10,7 @@ import (
 
 // UserAnime is user_anime database model.
 type UserAnime struct {
-	ID           int64
+	ID           int64  `gorm:"primaryKey"`
 	Username     string `gorm:"index:username_index"`
 	AnimeID      int64  `gorm:"index:anime_id_index"`
 	Status       entity.Status

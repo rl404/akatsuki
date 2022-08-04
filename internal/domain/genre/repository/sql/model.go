@@ -9,7 +9,7 @@ import (
 
 // Genre is genre database model.
 type Genre struct {
-	ID        int64
+	ID        int64 `gorm:"primaryKey"`
 	Name      string
 	CreatedAt time.Time
 	UpdatedAt time.Time

@@ -49,13 +49,14 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*en
 // Update to update user anime.
 func (sql *SQL) Update(ctx context.Context, data entity.UserAnime) (int, error) {
 	var ua UserAnime
-	if err := sql.db.WithContext(ctx).Select("created_at").Where("username = ? and anime_id = ?", data.Username, data.AnimeID).First(&ua).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Select("id, created_at").Where("username = ? and anime_id = ?", data.Username, data.AnimeID).First(&ua).Error; err != nil {
 		if !_errors.Is(err, gorm.ErrRecordNotFound) {
 			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 		}
 	}
 
 	userAnime := sql.userAnimeFromEntity(data)
+	userAnime.ID = ua.ID
 	userAnime.CreatedAt = ua.CreatedAt
 	if err := sql.db.WithContext(ctx).Save(userAnime).Error; err != nil {
 		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
