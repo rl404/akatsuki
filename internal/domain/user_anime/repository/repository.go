@@ -13,4 +13,5 @@ type Repository interface {
 	IsOld(ctx context.Context, username string) (bool, int, error)
 	GetOldUsernames(ctx context.Context) ([]string, int, error)
 	DeleteNotInList(ctx context.Context, username string, ids []int64) (int, error)
+	DeleteByAnimeID(ctx context.Context, animeID int64) (int, error)
 }

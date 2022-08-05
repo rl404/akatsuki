@@ -90,3 +90,11 @@ func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int6
 	}
 	return http.StatusOK, nil
 }
+
+// DeleteByAnimeID to delete by anime id.
+func (sql *SQL) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error) {
+	if err := sql.db.WithContext(ctx).Where("anime_id = ?", animeID).Delete(&UserAnime{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return http.StatusOK, nil
+}
