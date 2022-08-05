@@ -46,3 +46,8 @@ func (c *Cache) GetOldUsernames(ctx context.Context) ([]string, int, error) {
 func (c *Cache) DeleteNotInList(ctx context.Context, username string, ids []int64) (int, error) {
 	return c.repo.DeleteNotInList(ctx, username, ids)
 }
+
+// DeleteByAnimeID to delete by anime id.
+func (c *Cache) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error) {
+	return c.repo.DeleteByAnimeID(ctx, animeID)
+}

@@ -15,9 +15,18 @@ func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 	// Call mal api.
 	anime, code, err := s.mal.GetAnimeByID(ctx, int(id))
 	if err != nil {
-		// If the id is empty.
 		if code == http.StatusNotFound {
+			// Insert empty id.
 			if code, err := s.emptyID.Create(ctx, id); err != nil {
+				return code, errors.Wrap(ctx, err)
+			}
+
+			// Delete existing data.
+			if code, err := s.anime.DeleteByID(ctx, id); err != nil {
+				return code, errors.Wrap(ctx, err)
+			}
+
+			if code, err := s.userAnime.DeleteByAnimeID(ctx, id); err != nil {
 				return code, errors.Wrap(ctx, err)
 			}
 		}

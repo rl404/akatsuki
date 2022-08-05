@@ -249,3 +249,42 @@ func (sql *SQL) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.Ani
 	}
 	return sql.animeRelatedToEntities(ar), http.StatusOK, nil
 }
+
+// DeleteByID to delete by id.
+func (sql *SQL) DeleteByID(ctx context.Context, id int64) (int, error) {
+	tx := sql.db.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, tx.Error)
+	}
+	defer tx.Rollback()
+
+	if err := tx.WithContext(ctx).Where("id = ?", id).Delete(&Anime{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimeGenre{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimePicture{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	if err := tx.WithContext(ctx).Where("anime_id1 = ? or anime_id2 = ?", id, id).Delete(&AnimeRelated{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimeStudio{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimeStatsHistory{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	return http.StatusOK, nil
+}

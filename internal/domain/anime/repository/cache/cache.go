@@ -97,3 +97,8 @@ func (c *Cache) GetIDs(ctx context.Context) ([]int64, int, error) {
 func (c *Cache) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.AnimeRelated, int, error) {
 	return c.repo.GetRelatedByIDs(ctx, ids)
 }
+
+// DeleteByID to delete by id.
+func (c *Cache) DeleteByID(ctx context.Context, id int64) (int, error) {
+	return c.repo.DeleteByID(ctx, id)
+}
