@@ -11,7 +11,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nstratos/go-myanimelist v0.9.4
 	github.com/prometheus/client_golang v1.12.2
-	github.com/rl404/fairy v0.15.6
+	github.com/rl404/fairy v0.15.7
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/http-swagger v1.3.1
 	github.com/swaggo/swag v1.8.4
@@ -103,7 +103,7 @@ require (
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/tools v0.1.11 // indirect
-	google.golang.org/api v0.90.0 // indirect
+	google.golang.org/api v0.91.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220624142145-8cd45d7dbd1f // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
