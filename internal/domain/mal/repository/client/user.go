@@ -20,7 +20,7 @@ func (c *Client) GetUserAnime(ctx context.Context, data entity.GetUserAnimeReque
 		data.Sort,
 		mal.Limit(data.Limit),
 		mal.Offset(data.Offset),
-		mal.Fields{"list_status{num_times_rewatched,priority,rewatch_value,tags,comments}", "nsfw"},
+		mal.Fields{"list_status{num_times_rewatched,priority,rewatch_value,tags,comments}"},
 		mal.NSFW(true),
 	)
 	if err != nil {
