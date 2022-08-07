@@ -53,6 +53,58 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/anime/{animeID}/update": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime"
+                ],
+                "summary": "Update anime by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "anime id",
+                        "name": "animeID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -80,12 +132,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MAL Anime"
+                    "MAL"
                 ],
                 "summary": "Get mal anime by id.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "anime id",
                         "name": "animeID",
                         "in": "path",
@@ -117,14 +169,283 @@ const docTemplate = `{
                             "$ref": "#/definitions/utils.Response"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/mal/users/{username}/animelist": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MAL"
+                ],
+                "summary": "Get mal user anime.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/mal.UserAnime"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}/anime": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user's anime.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.UserAnime"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/service.Pagination"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}/anime/relations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user's anime relations.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.UserAnimeRelation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}/update": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user's anime.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -167,6 +488,13 @@ const docTemplate = `{
                 "end_date": {
                     "type": "string"
                 },
+                "ending_themes": {
+                    "description": "undocumented",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/mal.Theme"
+                    }
+                },
                 "genres": {
                     "type": "array",
                     "items": {
@@ -194,11 +522,22 @@ const docTemplate = `{
                 "num_episodes": {
                     "type": "integer"
                 },
+                "num_favorites": {
+                    "description": "undocumented",
+                    "type": "integer"
+                },
                 "num_list_users": {
                     "type": "integer"
                 },
                 "num_scoring_users": {
                     "type": "integer"
+                },
+                "opening_themes": {
+                    "description": "undocumented",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/mal.Theme"
+                    }
                 },
                 "pictures": {
                     "type": "array",
@@ -271,6 +610,9 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "finish_date": {
+                    "type": "string"
+                },
                 "is_rewatching": {
                     "type": "boolean"
                 },
@@ -288,6 +630,9 @@ const docTemplate = `{
                 },
                 "score": {
                     "type": "integer"
+                },
+                "start_date": {
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -607,19 +952,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "completed": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "dropped": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "on_hold": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "plan_to_watch": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "watching": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -630,6 +975,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "mal.Theme": {
+            "type": "object",
+            "properties": {
+                "anime_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -648,6 +1007,17 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "mal.UserAnime": {
+            "type": "object",
+            "properties": {
+                "list_status": {
+                    "$ref": "#/definitions/mal.AnimeListStatus"
+                },
+                "node": {
+                    "$ref": "#/definitions/mal.Anime"
                 }
             }
         },
@@ -746,6 +1116,66 @@ const docTemplate = `{
                 },
                 "voter": {
                     "type": "integer"
+                }
+            }
+        },
+        "service.Pagination": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.UserAnime": {
+            "type": "object",
+            "properties": {
+                "anime_id": {
+                    "type": "integer"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "episode": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.UserAnimeRelation": {
+            "type": "object",
+            "properties": {
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.userAnimeRelationLink"
+                    }
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.userAnimeRelationNode"
+                    }
                 }
             }
         },
@@ -876,6 +1306,46 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.userAnimeRelationLink": {
+            "type": "object",
+            "properties": {
+                "anime_id1": {
+                    "type": "integer"
+                },
+                "anime_id2": {
+                    "type": "integer"
+                },
+                "relation": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.userAnimeRelationNode": {
+            "type": "object",
+            "properties": {
+                "anime_id": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user_anime_score": {
+                    "type": "integer"
+                },
+                "user_anime_status": {
                     "type": "string"
                 }
             }

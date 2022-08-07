@@ -15,7 +15,7 @@ import (
 // UserAnime is user anime model.
 type UserAnime struct {
 	AnimeID   int64         `json:"anime_id"`
-	Status    entity.Status `json:"status"`
+	Status    entity.Status `json:"status" swaggertype:"string"`
 	Score     int           `json:"score"`
 	Episode   int           `json:"episode"`
 	Tags      []string      `json:"tags"`
@@ -82,17 +82,17 @@ type UserAnimeRelation struct {
 type userAnimeRelationNode struct {
 	AnimeID         int64              `json:"anime_id"`
 	Title           string             `json:"title"`
-	Status          animeEntity.Status `json:"status"`
+	Status          animeEntity.Status `json:"status" swaggertype:"string"`
 	Score           float64            `json:"score"`
-	Type            animeEntity.Type   `json:"type"`
-	UserAnimeStatus entity.Status      `json:"user_anime_status"`
+	Type            animeEntity.Type   `json:"type" swaggertype:"string"`
+	UserAnimeStatus entity.Status      `json:"user_anime_status" swaggertype:"string"`
 	UserAnimeScore  int                `json:"user_anime_score"`
 }
 
 type userAnimeRelationLink struct {
 	AnimeID1 int64                `json:"anime_id1"`
 	AnimeID2 int64                `json:"anime_id2"`
-	Relation animeEntity.Relation `json:"relation"`
+	Relation animeEntity.Relation `json:"relation" swaggertype:"string"`
 }
 
 // GetUserAnimeRelations to get user anime relation.

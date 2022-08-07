@@ -17,6 +17,7 @@ import (
 // @param page query integer false "page" default(1)
 // @param limit query integer false "limit" default(20)
 // @success 200 {object} utils.Response{data=[]service.UserAnime,meta=service.Pagination}
+// @failure 202 {object} utils.Response
 // @failure 400 {object} utils.Response
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response
@@ -40,6 +41,7 @@ func (api *API) handleGetUserAnime(w http.ResponseWriter, r *http.Request) {
 // @produce json
 // @param username path string true "username"
 // @success 200 {object} utils.Response{data=service.UserAnimeRelation}
+// @failure 202 {object} utils.Response
 // @failure 400 {object} utils.Response
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response

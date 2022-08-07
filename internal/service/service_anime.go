@@ -21,13 +21,13 @@ type Anime struct {
 	Synopsis          string            `json:"synopsis"`
 	Background        string            `json:"background"`
 	NSFW              bool              `json:"nsfw"`
-	Type              entity.Type       `json:"type"`
-	Status            entity.Status     `json:"status"`
+	Type              entity.Type       `json:"type" swaggertype:"string"`
+	Status            entity.Status     `json:"status" swaggertype:"string"`
 	Episode           episode           `json:"episode"`
 	Season            *season           `json:"season"`
 	Broadcast         *broadcast        `json:"broadcast"`
-	Source            entity.Source     `json:"source"`
-	Rating            entity.Rating     `json:"rating"`
+	Source            entity.Source     `json:"source" swaggertype:"string"`
+	Rating            entity.Rating     `json:"rating" swaggertype:"string"`
 	Mean              float64           `json:"mean"`
 	Rank              int               `json:"rank"`
 	Popularity        int               `json:"popularity"`
