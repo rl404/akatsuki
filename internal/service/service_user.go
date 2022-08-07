@@ -50,6 +50,7 @@ func (s *service) GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([
 		if err := s.publisher.PublishParseUserAnime(ctx, publisherEntity.ParseUserAnimeRequest{Username: data.Username}); err != nil {
 			return nil, nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalServer, err)
 		}
+		return nil, nil, http.StatusAccepted, nil
 	}
 
 	res := make([]UserAnime, len(userAnime))
@@ -103,6 +104,14 @@ func (s *service) GetUserAnimeRelations(ctx context.Context, username string) (*
 	})
 	if err != nil {
 		return nil, code, errors.Wrap(ctx, err)
+	}
+
+	if len(userAnime) == 0 {
+		// Queue to parse.
+		if err := s.publisher.PublishParseUserAnime(ctx, publisherEntity.ParseUserAnimeRequest{Username: username}); err != nil {
+			return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalServer, err)
+		}
+		return nil, http.StatusAccepted, nil
 	}
 
 	var animeIDs []int64
