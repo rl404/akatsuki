@@ -156,7 +156,7 @@ Env | Default | Description
 `AKATSUKI_CRON_RELEASING_AGE` | `1` | Age of old releasing/airing anime data (in days).
 `AKATSUKI_CRON_FINISHED_AGE` | `30` | Age of old finished anime data (in days).
 `AKATSUKI_CRON_NOT_YET_AGE` | `7` | Age of old not yet released/aired anime (in days).
-`AKATSUKI_CRON_USER_ANIME_AGE` | `7` | Age of old user anime list.
+`AKATSUKI_CRON_USER_ANIME_AGE` | `7` | Age of old user anime list (in days).
 
 ## Trivia
 

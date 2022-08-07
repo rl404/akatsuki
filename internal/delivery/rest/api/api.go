@@ -28,9 +28,11 @@ func (api *API) Register(r chi.Router) {
 		r.Use(utils.Recoverer)
 
 		r.Get("/anime/{animeID}", api.handleGetAnimeByID)
+		r.Post("/anime/{animeID}/update", api.handleUpdateAnimeByID)
 
 		r.Get("/user/{username}/anime", api.handleGetUserAnime)
 		r.Get("/user/{username}/anime/relations", api.handleGetUserAnimeRelations)
+		r.Post("/user/{username}/update", api.handleUpdateUserAnime)
 
 		r.Get("/mal/anime/{animeID}", api.handleGetMalAnimeByID)
 		r.Get("/mal/users/{username}/animelist", api.handleGetMalUserAnime)

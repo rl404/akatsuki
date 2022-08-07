@@ -14,6 +14,11 @@ definitions:
         type: string
       end_date:
         type: string
+      ending_themes:
+        description: undocumented
+        items:
+          $ref: '#/definitions/mal.Theme'
+        type: array
       genres:
         items:
           $ref: '#/definitions/mal.Genre'
@@ -32,10 +37,18 @@ definitions:
         type: string
       num_episodes:
         type: integer
+      num_favorites:
+        description: undocumented
+        type: integer
       num_list_users:
         type: integer
       num_scoring_users:
         type: integer
+      opening_themes:
+        description: undocumented
+        items:
+          $ref: '#/definitions/mal.Theme'
+        type: array
       pictures:
         items:
           $ref: '#/definitions/mal.Picture'
@@ -83,6 +96,8 @@ definitions:
     properties:
       comments:
         type: string
+      finish_date:
+        type: string
       is_rewatching:
         type: boolean
       num_episodes_watched:
@@ -95,6 +110,8 @@ definitions:
         type: integer
       score:
         type: integer
+      start_date:
+        type: string
       status:
         type: string
       tags:
@@ -302,21 +319,30 @@ definitions:
   mal.Status:
     properties:
       completed:
-        type: string
+        type: integer
       dropped:
-        type: string
+        type: integer
       on_hold:
-        type: string
+        type: integer
       plan_to_watch:
-        type: string
+        type: integer
       watching:
-        type: string
+        type: integer
     type: object
   mal.Studio:
     properties:
       id:
         type: integer
       name:
+        type: string
+    type: object
+  mal.Theme:
+    properties:
+      anime_id:
+        type: integer
+      id:
+        type: integer
+      text:
         type: string
     type: object
   mal.Titles:
@@ -329,6 +355,13 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  mal.UserAnime:
+    properties:
+      list_status:
+        $ref: '#/definitions/mal.AnimeListStatus'
+      node:
+        $ref: '#/definitions/mal.Anime'
     type: object
   service.Anime:
     properties:
@@ -394,6 +427,45 @@ definitions:
         type: string
       voter:
         type: integer
+    type: object
+  service.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  service.UserAnime:
+    properties:
+      anime_id:
+        type: integer
+      comment:
+        type: string
+      episode:
+        type: integer
+      score:
+        type: integer
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  service.UserAnimeRelation:
+    properties:
+      links:
+        items:
+          $ref: '#/definitions/service.userAnimeRelationLink'
+        type: array
+      nodes:
+        items:
+          $ref: '#/definitions/service.userAnimeRelationNode'
+        type: array
     type: object
   service.alternativeTitles:
     properties:
@@ -479,6 +551,32 @@ definitions:
       name:
         type: string
     type: object
+  service.userAnimeRelationLink:
+    properties:
+      anime_id1:
+        type: integer
+      anime_id2:
+        type: integer
+      relation:
+        type: string
+    type: object
+  service.userAnimeRelationNode:
+    properties:
+      anime_id:
+        type: integer
+      score:
+        type: number
+      status:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      user_anime_score:
+        type: integer
+      user_anime_status:
+        type: string
+    type: object
   utils.Response:
     properties:
       data:
@@ -515,6 +613,10 @@ paths:
                 data:
                   $ref: '#/definitions/service.Anime'
               type: object
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/utils.Response'
         "400":
           description: Bad Request
           schema:
@@ -530,6 +632,36 @@ paths:
       summary: Get anime by id.
       tags:
       - Anime
+  /anime/{animeID}/update:
+    post:
+      parameters:
+      - description: anime id
+        in: path
+        name: animeID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update anime by id.
+      tags:
+      - Anime
   /mal/anime/{animeID}:
     get:
       parameters:
@@ -537,7 +669,7 @@ paths:
         in: path
         name: animeID
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -554,14 +686,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/utils.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
@@ -572,7 +696,184 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: Get mal anime by id.
       tags:
-      - MAL Anime
+      - MAL
+  /mal/users/{username}/animelist:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: status
+        in: query
+        name: status
+        type: string
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      - default: 100
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/mal.UserAnime'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get mal user anime.
+      tags:
+      - MAL
+  /user/{username}/anime:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      - default: 1
+        description: page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.UserAnime'
+                  type: array
+                meta:
+                  $ref: '#/definitions/service.Pagination'
+              type: object
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get user's anime.
+      tags:
+      - User
+  /user/{username}/anime/relations:
+    get:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.UserAnimeRelation'
+              type: object
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get user's anime relations.
+      tags:
+      - User
+  /user/{username}/update:
+    post:
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update user's anime.
+      tags:
+      - User
 schemes:
 - http
 - https

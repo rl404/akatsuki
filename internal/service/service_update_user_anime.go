@@ -10,6 +10,17 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 )
 
+// UpdateUserAnime to update user anime.
+func (s *service) UpdateUserAnime(ctx context.Context, username string) (int, error) {
+	if err := s.publisher.PublishParseUserAnime(ctx, publisherEntity.ParseUserAnimeRequest{
+		Username: username,
+		Forced:   true,
+	}); err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, err)
+	}
+	return http.StatusAccepted, nil
+}
+
 func (s *service) updateUserAnime(ctx context.Context, username string) (int, error) {
 	var ids []int64
 	limit, offset := 500, 0

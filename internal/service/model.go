@@ -27,12 +27,12 @@ type episode struct {
 }
 
 type season struct {
-	Season entity.Season `json:"season"`
+	Season entity.Season `json:"season" swaggertype:"string"`
 	Year   int           `json:"year"`
 }
 
 type broadcast struct {
-	Day  entity.Day `json:"day"`
+	Day  entity.Day `json:"day" swaggertype:"string"`
 	Time string     `json:"time"`
 }
 
@@ -57,7 +57,7 @@ type related struct {
 	ID       int64           `json:"id"`
 	Title    string          `json:"title"`
 	Picture  string          `json:"picture"`
-	Relation entity.Relation `json:"relation"`
+	Relation entity.Relation `json:"relation" swaggertype:"string"`
 }
 
 type studio struct {

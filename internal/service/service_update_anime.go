@@ -11,6 +11,17 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 )
 
+// UpdateAnimeByID to update anime by id.
+func (s *service) UpdateAnimeByID(ctx context.Context, id int64) (int, error) {
+	if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{
+		ID:     id,
+		Forced: true,
+	}); err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, err)
+	}
+	return http.StatusAccepted, nil
+}
+
 func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 	// Call mal api.
 	anime, code, err := s.mal.GetAnimeByID(ctx, int(id))

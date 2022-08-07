@@ -17,6 +17,7 @@ import (
 // @param page query integer false "page" default(1)
 // @param limit query integer false "limit" default(20)
 // @success 200 {object} utils.Response{data=[]service.UserAnime,meta=service.Pagination}
+// @failure 202 {object} utils.Response
 // @failure 400 {object} utils.Response
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response
@@ -40,6 +41,7 @@ func (api *API) handleGetUserAnime(w http.ResponseWriter, r *http.Request) {
 // @produce json
 // @param username path string true "username"
 // @success 200 {object} utils.Response{data=service.UserAnimeRelation}
+// @failure 202 {object} utils.Response
 // @failure 400 {object} utils.Response
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response
@@ -48,4 +50,19 @@ func (api *API) handleGetUserAnimeRelations(w http.ResponseWriter, r *http.Reque
 	username := chi.URLParam(r, "username")
 	relations, code, err := api.service.GetUserAnimeRelations(r.Context(), username)
 	utils.ResponseWithJSON(w, code, relations, errors.Wrap(r.Context(), err))
+}
+
+// @summary Update user's anime.
+// @tags User
+// @produce json
+// @param username path string true "username"
+// @success 202 {object} utils.Response
+// @failure 400 {object} utils.Response
+// @failure 404 {object} utils.Response
+// @failure 500 {object} utils.Response
+// @router /user/{username}/update [post]
+func (api *API) handleUpdateUserAnime(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+	code, err := api.service.UpdateUserAnime(r.Context(), username)
+	utils.ResponseWithJSON(w, code, nil, errors.Wrap(r.Context(), err))
 }
