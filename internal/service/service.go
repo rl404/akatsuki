@@ -20,6 +20,7 @@ type Service interface {
 
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)
 	GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error)
+	UpdateUserAnime(ctx context.Context, username string) (int, error)
 
 	GetMalAnimeByID(ctx context.Context, id int) (*mal.Anime, int, error)
 	GetMalUserAnime(ctx context.Context, data GetMalUserAnimeRequest) ([]mal.UserAnime, int, error)

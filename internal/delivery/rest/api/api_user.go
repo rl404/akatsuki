@@ -49,3 +49,18 @@ func (api *API) handleGetUserAnimeRelations(w http.ResponseWriter, r *http.Reque
 	relations, code, err := api.service.GetUserAnimeRelations(r.Context(), username)
 	utils.ResponseWithJSON(w, code, relations, errors.Wrap(r.Context(), err))
 }
+
+// @summary Update user's anime.
+// @tags User
+// @produce json
+// @param username path string true "username"
+// @success 202 {object} utils.Response
+// @failure 400 {object} utils.Response
+// @failure 404 {object} utils.Response
+// @failure 500 {object} utils.Response
+// @router /user/{username}/update [post]
+func (api *API) handleUpdateUserAnime(w http.ResponseWriter, r *http.Request) {
+	username := chi.URLParam(r, "username")
+	code, err := api.service.UpdateUserAnime(r.Context(), username)
+	utils.ResponseWithJSON(w, code, nil, errors.Wrap(r.Context(), err))
+}
