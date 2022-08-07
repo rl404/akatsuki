@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/rl404/akatsuki/internal/domain/mal/entity"
 	publisherEntity "github.com/rl404/akatsuki/internal/domain/publisher/entity"
@@ -13,7 +14,7 @@ import (
 // UpdateUserAnime to update user anime.
 func (s *service) UpdateUserAnime(ctx context.Context, username string) (int, error) {
 	if err := s.publisher.PublishParseUserAnime(ctx, publisherEntity.ParseUserAnimeRequest{
-		Username: username,
+		Username: strings.ToLower(username),
 		Forced:   true,
 	}); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(ctx, err)
@@ -22,6 +23,8 @@ func (s *service) UpdateUserAnime(ctx context.Context, username string) (int, er
 }
 
 func (s *service) updateUserAnime(ctx context.Context, username string) (int, error) {
+	username = strings.ToLower(username)
+
 	var ids []int64
 	limit, offset := 500, 0
 	for {
