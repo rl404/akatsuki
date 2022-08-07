@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	animeEntity "github.com/rl404/akatsuki/internal/domain/anime/entity"
@@ -25,7 +26,7 @@ type UserAnime struct {
 
 // GetUserAnimeRequest is get user anime request model.
 type GetUserAnimeRequest struct {
-	Username string `validate:"required" mod:"trim"`
+	Username string `validate:"required" mod:"trim,lcase"`
 	Page     int    `validate:"required,gte=1" mod:"default=1"`
 	Limit    int    `validate:"required,gte=-1" mod:"default=20"`
 }
@@ -97,6 +98,8 @@ type userAnimeRelationLink struct {
 
 // GetUserAnimeRelations to get user anime relation.
 func (s *service) GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error) {
+	username = strings.ToLower(username)
+
 	userAnime, _, code, err := s.userAnime.Get(ctx, entity.GetUserAnimeRequest{
 		Username: username,
 		Page:     1,
