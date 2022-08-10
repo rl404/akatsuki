@@ -457,8 +457,8 @@ github.com/prometheus/procfs v0.6.0/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1
 github.com/prometheus/procfs v0.7.3/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1xBZuNvfVA=
 github.com/prometheus/procfs v0.8.0 h1:ODq8ZFEaYeCaZOJlZZdJA2AbQR98dSHSM1KW/You5mo=
 github.com/prometheus/procfs v0.8.0/go.mod h1:z7EfXMXOkbkqb9IINtpCn86r/to3BnA0uaxHdg830/4=
-github.com/rl404/fairy v0.15.7 h1:S15JaLn6HacFQmDPerU60m4dGqWDoZ3DtUHhjZGiBHU=
-github.com/rl404/fairy v0.15.7/go.mod h1:wxMOZO/+eAL7pDYiHmsUOujatO1tglvLxZpKCJYNd04=
+github.com/rl404/fairy v0.15.8 h1:KZPm9UGxJoBIQKFlzLrEVDoLmIxZNKEWXdiDivAronQ=
+github.com/rl404/fairy v0.15.8/go.mod h1:MoM6B0An6qHFh6cLXzn1F4Y80rKNK5hPl6JMeB6c1pg=
 github.com/rl404/go-myanimelist v0.10.0 h1:Rhor996ADDk62pm7q5CCWkrgE51/JfFGlPBwZjJPiqk=
 github.com/rl404/go-myanimelist v0.10.0/go.mod h1:8R947UE3+5W0B3TrUgRIy+h2YVxG/69fLpgq94J91ns=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
