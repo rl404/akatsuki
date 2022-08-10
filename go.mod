@@ -11,7 +11,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nstratos/go-myanimelist v0.9.4
 	github.com/prometheus/client_golang v1.13.0
-	github.com/rl404/fairy v0.15.7
+	github.com/rl404/fairy v0.15.9
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/http-swagger v1.3.1
 	github.com/swaggo/swag v1.8.4
@@ -96,7 +96,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.21.0 // indirect
+	go.uber.org/zap v1.22.0 // indirect
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
