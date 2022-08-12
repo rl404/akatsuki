@@ -43,7 +43,7 @@ const (
 	DayMonday    Day = "MONDAY"
 	DayTuesday   Day = "TUESDAY"
 	DayWednesday Day = "WEDNESDAY"
-	DayThurday   Day = "THURDAY"
+	DayThursday  Day = "THURSDAY"
 	DayFriday    Day = "FRIDAY"
 	DaySaturday  Day = "SATURDAY"
 	DaySunday    Day = "SUNDAY"
