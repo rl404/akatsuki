@@ -144,7 +144,7 @@ func malToDay(d string) Day {
 		"monday":    DayMonday,
 		"tuesday":   DayTuesday,
 		"wednesday": DayWednesday,
-		"thurday":   DayThurday,
+		"thursday":  DayThursday,
 		"friday":    DayFriday,
 		"saturday":  DaySaturday,
 		"sunday":    DaySunday,
