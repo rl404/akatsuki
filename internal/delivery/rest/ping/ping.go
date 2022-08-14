@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rl404/akatsuki/internal/utils"
 )
 
@@ -24,7 +23,6 @@ func (p Ping) Register(r chi.Router) {
 	r.Get("/rl404", p.handlerl404)
 	r.NotFound(http.HandlerFunc(p.handleNotFound))
 	r.MethodNotAllowed(http.HandlerFunc(p.handleMethodNotAllowed))
-	r.Handle("/metrics", promhttp.Handler())
 }
 
 func (p Ping) handleRoot(w http.ResponseWriter, _ *http.Request) {

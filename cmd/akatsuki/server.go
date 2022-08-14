@@ -37,9 +37,6 @@ import (
 	"github.com/rl404/akatsuki/pkg/http"
 	"github.com/rl404/fairy/cache"
 	"github.com/rl404/fairy/log"
-	promCache "github.com/rl404/fairy/monitoring/prometheus/cache"
-	promDB "github.com/rl404/fairy/monitoring/prometheus/database"
-	promMW "github.com/rl404/fairy/monitoring/prometheus/middleware"
 	"github.com/rl404/fairy/pubsub"
 	_grpc "google.golang.org/grpc"
 )
@@ -57,7 +54,6 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	c = promCache.New(cfg.Cache.Dialect, c)
 	utils.Info("cache initialized")
 	defer c.Close()
 
@@ -66,7 +62,6 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	im = promCache.New("inmemory", im)
 	utils.Info("in-memory initialized")
 	defer im.Close()
 
@@ -75,7 +70,6 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	promDB.RegisterGORM(cfg.DB.Name, db)
 	utils.Info("database initialized")
 	tmp, _ := db.DB()
 	defer tmp.Close()
@@ -168,7 +162,6 @@ func server() error {
 		UnaryInterceptors: []_grpc.UnaryServerInterceptor{
 			utils.RecovererGRPC,
 			log.UnaryMiddlewareWithLog(utils.GetLogger()),
-			promMW.NewUnaryGRPC,
 		},
 	})
 	utils.Info("grpc server initialized")

@@ -5,7 +5,6 @@ import (
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/log"
-	"github.com/rl404/fairy/monitoring/prometheus/middleware"
 )
 
 // API contains all functions for api endpoints.
@@ -23,7 +22,6 @@ func New(service service.Service) *API {
 // Register to register api routes.
 func (api *API) Register(r chi.Router) {
 	r.Route("/", func(r chi.Router) {
-		r.Use(middleware.NewHTTP())
 		r.Use(log.MiddlewareWithLog(utils.GetLogger(0), log.MiddlewareConfig{Error: true}))
 		r.Use(utils.Recoverer)
 
