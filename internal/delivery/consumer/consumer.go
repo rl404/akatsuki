@@ -24,7 +24,7 @@ type Consumer struct {
 
 // New to create new consumer.
 func New(service service.Service, ps pubsub.PubSub, topic string) (*Consumer, error) {
-	s, err := ps.Subscribe(topic)
+	s, err := ps.Subscribe(context.Background(), topic)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func New(service service.Service, ps pubsub.PubSub, topic string) (*Consumer, er
 // Subscribe to start subscribing to topic.
 func (c *Consumer) Subscribe(nrApp *newrelic.Application) error {
 	var msg entity.Message
-	msgs, errChan := c.channel.Read(&msg)
+	msgs, errChan := c.channel.Read(context.Background(), &msg)
 
 	go func() {
 		for {

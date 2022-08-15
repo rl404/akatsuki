@@ -32,6 +32,7 @@ import (
 	"github.com/rl404/fairy/cache"
 	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
 	nrDB "github.com/rl404/fairy/monitoring/newrelic/database"
+	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
 	"github.com/rl404/fairy/pubsub"
 )
 
@@ -80,6 +81,7 @@ func consumer() error {
 	if err != nil {
 		return err
 	}
+	ps = nrPS.New(cfg.PubSub.Dialect, ps)
 	utils.Info("pubsub initialized")
 	defer ps.Close()
 

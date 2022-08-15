@@ -11,7 +11,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/newrelic/go-agent/v3 v3.18.0
 	github.com/nstratos/go-myanimelist v0.9.4
-	github.com/rl404/fairy v0.17.1
+	github.com/rl404/fairy v0.18.0
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.4

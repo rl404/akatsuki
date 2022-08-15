@@ -41,6 +41,7 @@ import (
 	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
 	nrDB "github.com/rl404/fairy/monitoring/newrelic/database"
 	nrMW "github.com/rl404/fairy/monitoring/newrelic/middleware"
+	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
 	"github.com/rl404/fairy/pubsub"
 	_grpc "google.golang.org/grpc"
 )
@@ -99,6 +100,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
+	ps = nrPS.New(cfg.PubSub.Dialect, ps)
 	utils.Info("pubsub initialized")
 	defer ps.Close()
 

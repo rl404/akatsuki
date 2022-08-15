@@ -13,7 +13,7 @@ func (c *Cron) Fill(nrApp *newrelic.Application, limit int) error {
 	ctx := errors.Init(context.Background())
 	defer c.log(ctx)
 
-	tx := nrApp.StartTransaction("Cron update")
+	tx := nrApp.StartTransaction("Cron fill")
 	defer tx.End()
 
 	ctx = newrelic.NewContext(ctx, tx)

@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"context"
 	"errors"
 
 	"github.com/rl404/fairy/pubsub/google"
@@ -18,9 +19,9 @@ import (
 type PubSub interface {
 	// Publish message to specific topic/channel.
 	// Data will be encoded first before publishing.
-	Publish(topic string, data interface{}) error
+	Publish(ctx context.Context, topic string, data interface{}) error
 	// Subscribe to specific topic/channel.
-	Subscribe(topic string) (interface{}, error)
+	Subscribe(ctx context.Context, topic string) (interface{}, error)
 	// Close pubsub client connection.
 	Close() error
 }
@@ -31,7 +32,7 @@ type PubSub interface {
 type Channel interface {
 	// Read and process incoming message. Param `data` should
 	// be a pointer just like when using json.Unmarshal.
-	Read(data interface{}) (<-chan interface{}, <-chan error)
+	Read(ctx context.Context, data interface{}) (<-chan interface{}, <-chan error)
 	// Close subscription.
 	Close() error
 }

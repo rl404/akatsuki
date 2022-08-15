@@ -238,7 +238,7 @@ github.com/pierrec/lz4/v4/internal/lz4block
 github.com/pierrec/lz4/v4/internal/lz4errors
 github.com/pierrec/lz4/v4/internal/lz4stream
 github.com/pierrec/lz4/v4/internal/xxh32
-# github.com/rl404/fairy v0.17.1
+# github.com/rl404/fairy v0.18.0
 ## explicit; go 1.17
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/bigcache
@@ -261,6 +261,7 @@ github.com/rl404/fairy/log/zerolog
 github.com/rl404/fairy/monitoring/newrelic/cache
 github.com/rl404/fairy/monitoring/newrelic/database
 github.com/rl404/fairy/monitoring/newrelic/middleware
+github.com/rl404/fairy/monitoring/newrelic/pubsub
 github.com/rl404/fairy/pubsub
 github.com/rl404/fairy/pubsub/google
 github.com/rl404/fairy/pubsub/nsq
