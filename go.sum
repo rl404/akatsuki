@@ -417,8 +417,6 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
-github.com/rl404/fairy v0.17.1 h1:BZNO1utLkcV//glRTbhaDwMyyP8x+02l/Tyn4Pontgk=
-github.com/rl404/fairy v0.17.1/go.mod h1:gyD5K8nMrdc3H+1WqQzrP2DLu2+O1ydtaM8jkQDQ3dc=
 github.com/rl404/fairy v0.18.0 h1:dvAXn24ET6UJQv4IYSly+LbIYBpE9nfXq7aL3+rlxaQ=
 github.com/rl404/fairy v0.18.0/go.mod h1:gyD5K8nMrdc3H+1WqQzrP2DLu2+O1ydtaM8jkQDQ3dc=
 github.com/rl404/go-myanimelist v0.10.0 h1:Rhor996ADDk62pm7q5CCWkrgE51/JfFGlPBwZjJPiqk=
