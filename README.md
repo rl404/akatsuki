@@ -35,6 +35,13 @@ Powered by [go-myanimelist](github.com/nstratos/go-myanimelist) library and [MyA
     - [Google PubSub](https://cloud.google.com/pubsub)
 - [Swagger](https://github.com/swaggo/swag)
 - [Docker](https://www.docker.com/)
+- [Newrelic](https://newrelic.com/) monitoring
+    - HTTP
+    - Cron
+    - Database
+    - Cache
+    - Pubsub
+    - External API
 
 *More will be coming soon...*
 
@@ -45,6 +52,7 @@ Powered by [go-myanimelist](github.com/nstratos/go-myanimelist) library and [MyA
 - PubSub ([NSQ](https://nsq.io/)/[RabbitMQ](https://www.rabbitmq.com/)/[Redis](https://redis.io/)/[Google PubSub](https://cloud.google.com/pubsub))
 - (optional) Cache ([Redis](https://redis.io/)/[Memcache](https://memcached.org/))
 - (optional) [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
+- (optional) [Newrelic](https://newrelic.com/) license key
 
 ## Installation
 
@@ -157,6 +165,8 @@ Env | Default | Description
 `AKATSUKI_CRON_FINISHED_AGE` | `30` | Age of old finished anime data (in days).
 `AKATSUKI_CRON_NOT_YET_AGE` | `7` | Age of old not yet released/aired anime (in days).
 `AKATSUKI_CRON_USER_ANIME_AGE` | `7` | Age of old user anime list (in days).
+`AKATSUKI_NEWRELIC_NAME` | `akatsuki` | Newrelic application name.
+`AKATSUKI_NEWRELIC_LICENSE_KEY` | | Newrelic license key.
 
 ## Trivia
 
