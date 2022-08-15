@@ -2,9 +2,11 @@ package api
 
 import (
 	"github.com/go-chi/chi"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/log"
+	"github.com/rl404/fairy/monitoring/newrelic/middleware"
 )
 
 // API contains all functions for api endpoints.
@@ -20,8 +22,9 @@ func New(service service.Service) *API {
 }
 
 // Register to register api routes.
-func (api *API) Register(r chi.Router) {
+func (api *API) Register(r chi.Router, nrApp *newrelic.Application) {
 	r.Route("/", func(r chi.Router) {
+		r.Use(middleware.NewHTTP(nrApp))
 		r.Use(log.MiddlewareWithLog(utils.GetLogger(0), log.MiddlewareConfig{Error: true}))
 		r.Use(utils.Recoverer)
 

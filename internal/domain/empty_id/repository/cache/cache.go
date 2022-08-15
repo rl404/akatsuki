@@ -28,7 +28,7 @@ func New(cacher cache.Cacher, repo repository.Repository) *Cache {
 func (c *Cache) Get(ctx context.Context, id int64) (int64, int, error) {
 	key := utils.GetKey("empty-id", id)
 	var data int64
-	if c.cacher.Get(key, &data) == nil {
+	if c.cacher.Get(ctx, key, &data) == nil {
 		return data, http.StatusOK, nil
 	}
 
@@ -37,7 +37,7 @@ func (c *Cache) Get(ctx context.Context, id int64) (int64, int, error) {
 		return 0, code, errors.Wrap(ctx, err)
 	}
 
-	if err := c.cacher.Set(key, emptyID); err != nil {
+	if err := c.cacher.Set(ctx, key, emptyID); err != nil {
 		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
 	}
 
@@ -51,7 +51,7 @@ func (c *Cache) Create(ctx context.Context, id int64) (int, error) {
 		return code, errors.Wrap(ctx, err)
 	}
 
-	if err := c.cacher.Set(key, true); err != nil {
+	if err := c.cacher.Set(ctx, key, true); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
 	}
 
@@ -65,7 +65,7 @@ func (c *Cache) Delete(ctx context.Context, id int64) (int, error) {
 		return code, errors.Wrap(ctx, err)
 	}
 
-	if err := c.cacher.Delete(key); err != nil {
+	if err := c.cacher.Delete(ctx, key); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
 	}
 

@@ -51,7 +51,7 @@ func NewFromGoRedis(client *redis.Client, expiredTime time.Duration) *Client {
 }
 
 // Set to save data to cache,
-func (c *Client) Set(key string, data interface{}, ttl ...time.Duration) error {
+func (c *Client) Set(ctx context.Context, key string, data interface{}, ttl ...time.Duration) error {
 	d, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -63,12 +63,12 @@ func (c *Client) Set(key string, data interface{}, ttl ...time.Duration) error {
 		expiredTime = ttl[0]
 	}
 
-	return c.client.Set(context.Background(), key, d, expiredTime).Err()
+	return c.client.Set(ctx, key, d, expiredTime).Err()
 }
 
 // Get to get data from cache.
-func (c *Client) Get(key string, data interface{}) error {
-	d, err := c.client.Get(context.Background(), key).Result()
+func (c *Client) Get(ctx context.Context, key string, data interface{}) error {
+	d, err := c.client.Get(ctx, key).Result()
 	if err != nil {
 		return err
 	}
@@ -76,8 +76,8 @@ func (c *Client) Get(key string, data interface{}) error {
 }
 
 // Delete to delete data from cache.
-func (c *Client) Delete(key string) error {
-	return c.client.Del(context.Background(), key).Err()
+func (c *Client) Delete(ctx context.Context, key string) error {
+	return c.client.Del(ctx, key).Err()
 }
 
 // Close to close cache connection.

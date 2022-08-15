@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -17,13 +18,13 @@ type Cacher interface {
 	// Get data from cache. The returned value will be
 	// assigned to param `data`. Param `data` should
 	// be a pointer just like when using json.Unmarshal.
-	Get(key string, data interface{}) error
+	Get(ctx context.Context, key string, data interface{}) error
 	// Save data to cache. Set and Get should be using
 	// the same encoding method. For example, json.Marshal
 	// for Set and json.Unmarshal for Get.
-	Set(key string, data interface{}, ttl ...time.Duration) error
+	Set(ctx context.Context, key string, data interface{}, ttl ...time.Duration) error
 	// Delete data from cache.
-	Delete(key string) error
+	Delete(ctx context.Context, key string) error
 	// Close cache connection.
 	Close() error
 }
