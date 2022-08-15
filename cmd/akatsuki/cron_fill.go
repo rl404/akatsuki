@@ -1,6 +1,9 @@
 package main
 
 import (
+	"time"
+
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/akatsuki/internal/delivery/cron"
 	animeRepository "github.com/rl404/akatsuki/internal/domain/anime/repository"
 	animeCache "github.com/rl404/akatsuki/internal/domain/anime/repository/cache"
@@ -21,6 +24,9 @@ import (
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/cache"
+	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
+	nrDB "github.com/rl404/fairy/monitoring/newrelic/database"
+	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
 	"github.com/rl404/fairy/pubsub"
 )
 
@@ -32,11 +38,26 @@ func cronFill() error {
 	}
 	utils.Info("config initialized")
 
+	// Init newrelic.
+	nrApp, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(cfg.Newrelic.Name),
+		newrelic.ConfigLicense(cfg.Newrelic.LicenseKey),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+	if err != nil {
+		utils.Error(err.Error())
+	} else {
+		nrApp.WaitForConnection(10 * time.Second)
+		defer nrApp.Shutdown(10 * time.Second)
+		utils.Info("newrelic initialized")
+	}
+
 	// Init cache.
 	c, err := cache.New(cacheType[cfg.Cache.Dialect], cfg.Cache.Address, cfg.Cache.Password, cfg.Cache.Time)
 	if err != nil {
 		return err
 	}
+	c = nrCache.New(cfg.Cache.Dialect, c)
 	utils.Info("cache initialized")
 	defer c.Close()
 
@@ -45,6 +66,7 @@ func cronFill() error {
 	if err != nil {
 		return err
 	}
+	nrDB.RegisterGORM(cfg.DB.Dialect, cfg.DB.Name, db)
 	utils.Info("database initialized")
 	tmp, _ := db.DB()
 	defer tmp.Close()
@@ -54,6 +76,7 @@ func cronFill() error {
 	if err != nil {
 		return err
 	}
+	ps = nrPS.New(cfg.PubSub.Dialect, ps)
 	utils.Info("pubsub initialized")
 	defer ps.Close()
 
@@ -95,7 +118,7 @@ func cronFill() error {
 
 	// Run cron.
 	utils.Info("filling missing data...")
-	if err := cron.New(service).Fill(cfg.Cron.FillLimit); err != nil {
+	if err := cron.New(service).Fill(nrApp, cfg.Cron.FillLimit); err != nil {
 		return err
 	}
 

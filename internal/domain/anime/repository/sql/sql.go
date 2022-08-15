@@ -94,7 +94,7 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 // GetByIDs to get anime by ids.
 func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int, error) {
 	var a []Anime
-	if err := sql.db.WithContext(ctx).Where("id in (?)", ids).Find(&a).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Where("id in ?", ids).Find(&a).Error; err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 	return sql.animeToEntities(a), http.StatusOK, nil
@@ -244,7 +244,7 @@ func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
 // GetRelatedByIDs to get related anime by ids.
 func (sql *SQL) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.AnimeRelated, int, error) {
 	var ar []AnimeRelated
-	if err := sql.db.WithContext(ctx).Where("anime_id1 in (?)", ids).Find(&ar).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Where("anime_id1 in ?", ids).Find(&ar).Error; err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 	return sql.animeRelatedToEntities(ar), http.StatusOK, nil

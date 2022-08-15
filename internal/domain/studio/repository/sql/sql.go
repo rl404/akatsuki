@@ -32,7 +32,7 @@ func (sql *SQL) BatchUpdate(ctx context.Context, data []entity.Studio) (int, err
 // GetByIDs to get studio by ids.
 func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Studio, int, error) {
 	var s []Studio
-	if err := sql.db.WithContext(ctx).Where("id in (?)", ids).Find(&s).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Where("id in ?", ids).Find(&s).Error; err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 	return sql.toEntities(s), http.StatusOK, nil

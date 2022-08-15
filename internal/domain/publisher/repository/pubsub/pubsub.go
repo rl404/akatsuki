@@ -30,7 +30,7 @@ func (p *Pubsub) PublishParseAnime(ctx context.Context, data entity.ParseAnimeRe
 		return errors.Wrap(ctx, errors.ErrInternalServer, err)
 	}
 
-	if err := p.pubsub.Publish(p.topic, entity.Message{
+	if err := p.pubsub.Publish(ctx, p.topic, entity.Message{
 		Type: entity.TypeParseAnime,
 		Data: d,
 	}); err != nil {
@@ -47,7 +47,7 @@ func (p *Pubsub) PublishParseUserAnime(ctx context.Context, data entity.ParseUse
 		return errors.Wrap(ctx, errors.ErrInternalServer, err)
 	}
 
-	if err := p.pubsub.Publish(p.topic, entity.Message{
+	if err := p.pubsub.Publish(ctx, p.topic, entity.Message{
 		Type: entity.TypeParseUserAnime,
 		Data: d,
 	}); err != nil {

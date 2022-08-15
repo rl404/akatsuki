@@ -1,4 +1,21 @@
-// Code generated from specification version 7.3.0: DO NOT EDIT
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+// Code generated from specification version 7.17.1: DO NOT EDIT
 
 package esapi
 
@@ -24,7 +41,7 @@ func newCatShardsFunc(t Transport) CatShards {
 
 // CatShards provides a detailed view of shard allocation on nodes.
 //
-// See full documentation at http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-shards.html.
+// See full documentation at https://www.elastic.co/guide/en/elasticsearch/reference/master/cat-shards.html.
 //
 type CatShards func(o ...func(*CatShardsRequest)) (*Response, error)
 
@@ -40,6 +57,7 @@ type CatShardsRequest struct {
 	Local         *bool
 	MasterTimeout time.Duration
 	S             []string
+	Time          string
 	V             *bool
 
 	Pretty     bool
@@ -103,6 +121,10 @@ func (r CatShardsRequest) Do(ctx context.Context, transport Transport) (*Respons
 		params["s"] = strings.Join(r.S, ",")
 	}
 
+	if r.Time != "" {
+		params["time"] = r.Time
+	}
+
 	if r.V != nil {
 		params["v"] = strconv.FormatBool(*r.V)
 	}
@@ -123,7 +145,10 @@ func (r CatShardsRequest) Do(ctx context.Context, transport Transport) (*Respons
 		params["filter_path"] = strings.Join(r.FilterPath, ",")
 	}
 
-	req, _ := newRequest(method, path.String(), nil)
+	req, err := newRequest(method, path.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(params) > 0 {
 		q := req.URL.Query()
@@ -235,6 +260,14 @@ func (f CatShards) WithS(v ...string) func(*CatShardsRequest) {
 	}
 }
 
+// WithTime - the unit in which to display time values.
+//
+func (f CatShards) WithTime(v string) func(*CatShardsRequest) {
+	return func(r *CatShardsRequest) {
+		r.Time = v
+	}
+}
+
 // WithV - verbose mode. display column headers.
 //
 func (f CatShards) WithV(v bool) func(*CatShardsRequest) {
@@ -285,5 +318,16 @@ func (f CatShards) WithHeader(h map[string]string) func(*CatShardsRequest) {
 		for k, v := range h {
 			r.Header.Add(k, v)
 		}
+	}
+}
+
+// WithOpaqueID adds the X-Opaque-Id header to the HTTP request.
+//
+func (f CatShards) WithOpaqueID(s string) func(*CatShardsRequest) {
+	return func(r *CatShardsRequest) {
+		if r.Header == nil {
+			r.Header = make(http.Header)
+		}
+		r.Header.Set("X-Opaque-Id", s)
 	}
 }

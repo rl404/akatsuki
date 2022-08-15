@@ -1,4 +1,21 @@
-// Code generated from specification version 7.3.0: DO NOT EDIT
+// Licensed to Elasticsearch B.V. under one or more contributor
+// license agreements. See the NOTICE file distributed with
+// this work for additional information regarding copyright
+// ownership. Elasticsearch B.V. licenses this file to you under
+// the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+// Code generated from specification version 7.17.1: DO NOT EDIT
 
 package esapi
 
@@ -24,7 +41,7 @@ func newNodesStatsFunc(t Transport) NodesStats {
 
 // NodesStats returns statistical information about nodes in the cluster.
 //
-// See full documentation at http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html.
+// See full documentation at https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html.
 //
 type NodesStats func(o ...func(*NodesStatsRequest)) (*Response, error)
 
@@ -40,6 +57,7 @@ type NodesStatsRequest struct {
 	Fields                  []string
 	Groups                  *bool
 	IncludeSegmentFileSizes *bool
+	IncludeUnloadedSegments *bool
 	Level                   string
 	Timeout                 time.Duration
 	Types                   []string
@@ -105,6 +123,10 @@ func (r NodesStatsRequest) Do(ctx context.Context, transport Transport) (*Respon
 		params["include_segment_file_sizes"] = strconv.FormatBool(*r.IncludeSegmentFileSizes)
 	}
 
+	if r.IncludeUnloadedSegments != nil {
+		params["include_unloaded_segments"] = strconv.FormatBool(*r.IncludeUnloadedSegments)
+	}
+
 	if r.Level != "" {
 		params["level"] = r.Level
 	}
@@ -133,7 +155,10 @@ func (r NodesStatsRequest) Do(ctx context.Context, transport Transport) (*Respon
 		params["filter_path"] = strings.Join(r.FilterPath, ",")
 	}
 
-	req, _ := newRequest(method, path.String(), nil)
+	req, err := newRequest(method, path.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(params) > 0 {
 		q := req.URL.Query()
@@ -245,6 +270,14 @@ func (f NodesStats) WithIncludeSegmentFileSizes(v bool) func(*NodesStatsRequest)
 	}
 }
 
+// WithIncludeUnloadedSegments - if set to true segment stats will include stats for segments that are not currently loaded into memory.
+//
+func (f NodesStats) WithIncludeUnloadedSegments(v bool) func(*NodesStatsRequest) {
+	return func(r *NodesStatsRequest) {
+		r.IncludeUnloadedSegments = &v
+	}
+}
+
 // WithLevel - return indices stats aggregated at index, node or shard level.
 //
 func (f NodesStats) WithLevel(v string) func(*NodesStatsRequest) {
@@ -311,5 +344,16 @@ func (f NodesStats) WithHeader(h map[string]string) func(*NodesStatsRequest) {
 		for k, v := range h {
 			r.Header.Add(k, v)
 		}
+	}
+}
+
+// WithOpaqueID adds the X-Opaque-Id header to the HTTP request.
+//
+func (f NodesStats) WithOpaqueID(s string) func(*NodesStatsRequest) {
+	return func(r *NodesStatsRequest) {
+		if r.Header == nil {
+			r.Header = make(http.Header)
+		}
+		r.Header.Set("X-Opaque-Id", s)
 	}
 }

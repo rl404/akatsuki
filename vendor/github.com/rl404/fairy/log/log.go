@@ -6,6 +6,7 @@ import (
 	"github.com/rl404/fairy/log/builtin"
 	"github.com/rl404/fairy/log/elasticsearch"
 	"github.com/rl404/fairy/log/logrus"
+	"github.com/rl404/fairy/log/newrelic"
 	"github.com/rl404/fairy/log/nolog"
 	"github.com/rl404/fairy/log/zap"
 	"github.com/rl404/fairy/log/zerolog"
@@ -55,6 +56,7 @@ const (
 	Logrus
 	Zap
 	Elasticsearch
+	Newrelic
 )
 
 // ErrInvalidLogType is error for invalid log type.
@@ -73,6 +75,10 @@ type Config struct {
 	ElasticsearchPassword  string
 	ElasticsearchIndex     string
 	ElasticsearchIsSync    bool
+
+	// For newrelic.
+	NewrelicName    string
+	NewrelicLicense string
 }
 
 // New to create new log client depends on the type.
@@ -97,6 +103,12 @@ func New(cfg Config) (Logger, error) {
 			Index:     cfg.ElasticsearchIndex,
 			Level:     elasticsearch.LogLevel(cfg.Level),
 			IsSync:    cfg.ElasticsearchIsSync,
+		})
+	case Newrelic:
+		return newrelic.New(newrelic.Config{
+			Name:       cfg.NewrelicName,
+			LicenseKey: cfg.NewrelicLicense,
+			Level:      newrelic.LogLevel(cfg.Level),
 		})
 	default:
 		return nil, ErrInvalidLogType

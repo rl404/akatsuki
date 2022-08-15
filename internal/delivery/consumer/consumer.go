@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
@@ -23,7 +24,7 @@ type Consumer struct {
 
 // New to create new consumer.
 func New(service service.Service, ps pubsub.PubSub, topic string) (*Consumer, error) {
-	s, err := ps.Subscribe(topic)
+	s, err := ps.Subscribe(context.Background(), topic)
 	if err != nil {
 		return nil, err
 	}
@@ -35,9 +36,9 @@ func New(service service.Service, ps pubsub.PubSub, topic string) (*Consumer, er
 }
 
 // Subscribe to start subscribing to topic.
-func (c *Consumer) Subscribe() error {
+func (c *Consumer) Subscribe(nrApp *newrelic.Application) error {
 	var msg entity.Message
-	msgs, errChan := c.channel.Read(&msg)
+	msgs, errChan := c.channel.Read(context.Background(), &msg)
 
 	go func() {
 		for {
@@ -54,6 +55,11 @@ func (c *Consumer) Subscribe() error {
 
 						c.log(ctx, msg, start, err)
 					}()
+
+					tx := nrApp.StartTransaction("Consumer " + string(msg.Type))
+					defer tx.End()
+
+					ctx = newrelic.NewContext(ctx, tx)
 
 					err = errors.Wrap(ctx, c.service.ConsumeMessage(ctx, msg))
 				case err := <-errChan:

@@ -5,6 +5,7 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/json"
 	"sync/atomic"
 	"time"
@@ -56,7 +57,7 @@ func New(url string) (*Client, error) {
 }
 
 // Publish to publish message.
-func (c *Client) Publish(queue string, data interface{}) error {
+func (c *Client) Publish(ctx context.Context, queue string, data interface{}) error {
 	j, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -90,7 +91,7 @@ func (c *Client) Publish(queue string, data interface{}) error {
 // Subscribe to subscribe queue.
 //
 // Need to convert the return type to pubsub.Channel.
-func (c *Client) Subscribe(queue string) (interface{}, error) {
+func (c *Client) Subscribe(ctx context.Context, queue string) (interface{}, error) {
 	ch, err := c.subscribe(queue)
 	if err != nil {
 		return nil, err
@@ -150,7 +151,7 @@ func (c *Client) Close() error {
 }
 
 // Read to read incoming message.
-func (c *Channel) Read(model interface{}) (<-chan interface{}, <-chan error) {
+func (c *Channel) Read(ctx context.Context, model interface{}) (<-chan interface{}, <-chan error) {
 	msgChan, errChan := make(chan interface{}), make(chan error)
 	go func() {
 		for {

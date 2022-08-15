@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/middleware"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	grpcAPI "github.com/rl404/akatsuki/internal/delivery/grpc/api"
 	"github.com/rl404/akatsuki/internal/delivery/grpc/schema"
 	httpAPI "github.com/rl404/akatsuki/internal/delivery/rest/api"
@@ -37,9 +38,10 @@ import (
 	"github.com/rl404/akatsuki/pkg/http"
 	"github.com/rl404/fairy/cache"
 	"github.com/rl404/fairy/log"
-	promCache "github.com/rl404/fairy/monitoring/prometheus/cache"
-	promDB "github.com/rl404/fairy/monitoring/prometheus/database"
-	promMW "github.com/rl404/fairy/monitoring/prometheus/middleware"
+	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
+	nrDB "github.com/rl404/fairy/monitoring/newrelic/database"
+	nrMW "github.com/rl404/fairy/monitoring/newrelic/middleware"
+	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
 	"github.com/rl404/fairy/pubsub"
 	_grpc "google.golang.org/grpc"
 )
@@ -52,12 +54,25 @@ func server() error {
 	}
 	utils.Info("config initialized")
 
+	// Init newrelic.
+	nrApp, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(cfg.Newrelic.Name),
+		newrelic.ConfigLicense(cfg.Newrelic.LicenseKey),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+	if err != nil {
+		utils.Error(err.Error())
+	} else {
+		defer nrApp.Shutdown(10 * time.Second)
+		utils.Info("newrelic initialized")
+	}
+
 	// Init cache.
 	c, err := cache.New(cacheType[cfg.Cache.Dialect], cfg.Cache.Address, cfg.Cache.Password, cfg.Cache.Time)
 	if err != nil {
 		return err
 	}
-	c = promCache.New(cfg.Cache.Dialect, c)
+	c = nrCache.New(cfg.Cache.Dialect, c)
 	utils.Info("cache initialized")
 	defer c.Close()
 
@@ -66,7 +81,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	im = promCache.New("inmemory", im)
+	im = nrCache.New("inmemory", im)
 	utils.Info("in-memory initialized")
 	defer im.Close()
 
@@ -75,7 +90,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	promDB.RegisterGORM(cfg.DB.Name, db)
+	nrDB.RegisterGORM(cfg.DB.Dialect, cfg.DB.Name, db)
 	utils.Info("database initialized")
 	tmp, _ := db.DB()
 	defer tmp.Close()
@@ -85,6 +100,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
+	ps = nrPS.New(cfg.PubSub.Dialect, ps)
 	utils.Info("pubsub initialized")
 	defer ps.Close()
 
@@ -153,7 +169,7 @@ func server() error {
 	utils.Info("http route swagger initialized")
 
 	// Register api route.
-	httpAPI.New(service).Register(r)
+	httpAPI.New(service).Register(r, nrApp)
 	utils.Info("http route api initialized")
 
 	// Run web server.
@@ -167,8 +183,8 @@ func server() error {
 		Timeout: cfg.GRPC.Timeout,
 		UnaryInterceptors: []_grpc.UnaryServerInterceptor{
 			utils.RecovererGRPC,
+			nrMW.NewUnaryGRPC(nrApp),
 			log.UnaryMiddlewareWithLog(utils.GetLogger()),
-			promMW.NewUnaryGRPC,
 		},
 	})
 	utils.Info("grpc server initialized")

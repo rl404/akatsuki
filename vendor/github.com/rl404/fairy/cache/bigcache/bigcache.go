@@ -5,6 +5,7 @@
 package bigcache
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"time"
@@ -39,7 +40,7 @@ func NewFromBigCache(bc *bigcache.BigCache) *Client {
 }
 
 // Get to get data from cache.
-func (c *Client) Get(key string, data interface{}) error {
+func (c *Client) Get(ctx context.Context, key string, data interface{}) error {
 	d, err := c.bc.Get(key)
 	if err != nil {
 		return err
@@ -49,7 +50,7 @@ func (c *Client) Get(key string, data interface{}) error {
 
 // Set to save data to cache.
 // Custom ttl not supported.
-func (c *Client) Set(key string, data interface{}, _ ...time.Duration) error {
+func (c *Client) Set(ctx context.Context, key string, data interface{}, _ ...time.Duration) error {
 	d, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -58,7 +59,7 @@ func (c *Client) Set(key string, data interface{}, _ ...time.Duration) error {
 }
 
 // Delete to delete data from cache.
-func (c *Client) Delete(key string) error {
+func (c *Client) Delete(ctx context.Context, key string) error {
 	err := c.bc.Delete(key)
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
 		return nil

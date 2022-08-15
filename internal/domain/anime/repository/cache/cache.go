@@ -28,7 +28,7 @@ func New(cacher cache.Cacher, repo repository.Repository) *Cache {
 // GetByID to get anime by id.
 func (c *Cache) GetByID(ctx context.Context, id int64) (data *entity.Anime, code int, err error) {
 	key := utils.GetKey("anime", id)
-	if c.cacher.Get(key, &data) == nil {
+	if c.cacher.Get(ctx, key, &data) == nil {
 		return data, http.StatusOK, nil
 	}
 
@@ -37,7 +37,7 @@ func (c *Cache) GetByID(ctx context.Context, id int64) (data *entity.Anime, code
 		return nil, code, errors.Wrap(ctx, err)
 	}
 
-	if err := c.cacher.Set(key, data); err != nil {
+	if err := c.cacher.Set(ctx, key, data); err != nil {
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
 	}
 
@@ -56,7 +56,7 @@ func (c *Cache) Update(ctx context.Context, data entity.Anime) (int, error) {
 	}
 
 	key := utils.GetKey("anime", data.ID)
-	if err := c.cacher.Delete(key); err != nil {
+	if err := c.cacher.Delete(ctx, key); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
 	}
 

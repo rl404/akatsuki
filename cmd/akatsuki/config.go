@@ -25,15 +25,16 @@ import (
 )
 
 type config struct {
-	App    appConfig    `envconfig:"APP"`
-	HTTP   httpConfig   `envconfig:"HTTP"`
-	GRPC   grpcConfig   `envconfig:"GRPC"`
-	Cache  cacheConfig  `envconfig:"CACHE"`
-	DB     dbConfig     `envconfig:"DB"`
-	PubSub pubsubConfig `envconfig:"PUBSUB"`
-	Mal    malConfig    `envconfig:"MAL"`
-	Cron   cronConfig   `envconfig:"CRON"`
-	Log    logConfig    `envconfig:"LOG"`
+	App      appConfig      `envconfig:"APP"`
+	HTTP     httpConfig     `envconfig:"HTTP"`
+	GRPC     grpcConfig     `envconfig:"GRPC"`
+	Cache    cacheConfig    `envconfig:"CACHE"`
+	DB       dbConfig       `envconfig:"DB"`
+	PubSub   pubsubConfig   `envconfig:"PUBSUB"`
+	Mal      malConfig      `envconfig:"MAL"`
+	Cron     cronConfig     `envconfig:"CRON"`
+	Log      logConfig      `envconfig:"LOG"`
+	Newrelic newrelicConfig `envconfig:"NEWRELIC"`
 }
 
 type appConfig struct {
@@ -94,6 +95,11 @@ type logConfig struct {
 	Level log.LogLevel `envconfig:"LEVEL" default:"-1"`
 	JSON  bool         `envconfig:"JSON" default:"false"`
 	Color bool         `envconfig:"COLOR" default:"true"`
+}
+
+type newrelicConfig struct {
+	Name       string `envconfig:"NAME" default:"akatsuki"`
+	LicenseKey string `envconfig:"LICENSE_KEY"`
 }
 
 const envPath = "../../.env"

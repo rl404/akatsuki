@@ -5,6 +5,7 @@
 package memcache
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"time"
@@ -30,7 +31,7 @@ func NewFromGoMemCache(client *memcache.Client, expiredTime time.Duration) *Clie
 }
 
 // Set to save data to cache.
-func (c *Client) Set(key string, data interface{}, ttl ...time.Duration) error {
+func (c *Client) Set(ctx context.Context, key string, data interface{}, ttl ...time.Duration) error {
 	d, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -50,7 +51,7 @@ func (c *Client) Set(key string, data interface{}, ttl ...time.Duration) error {
 }
 
 // Get to get data from cache.
-func (c *Client) Get(key string, data interface{}) error {
+func (c *Client) Get(ctx context.Context, key string, data interface{}) error {
 	d, err := c.client.Get(key)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func (c *Client) Get(key string, data interface{}) error {
 }
 
 // Delete to delete data from cache.
-func (c *Client) Delete(key string) error {
+func (c *Client) Delete(ctx context.Context, key string) error {
 	err := c.client.Delete(key)
 	if errors.Is(err, memcache.ErrCacheMiss) {
 		return nil
