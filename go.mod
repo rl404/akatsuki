@@ -9,9 +9,9 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/joho/godotenv v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/newrelic/go-agent/v3 v3.18.0
+	github.com/newrelic/go-agent/v3 v3.18.1
 	github.com/nstratos/go-myanimelist v0.9.4
-	github.com/rl404/fairy v0.18.0
+	github.com/rl404/fairy v0.20.0
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.4
@@ -99,7 +99,7 @@ require (
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/tools v0.1.12 // indirect
-	google.golang.org/api v0.92.0 // indirect
+	google.golang.org/api v0.93.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220812140447-cec7f5303424 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

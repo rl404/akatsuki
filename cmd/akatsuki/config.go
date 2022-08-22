@@ -13,6 +13,7 @@ import (
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/cache"
 	"github.com/rl404/fairy/log"
+	"github.com/rl404/fairy/monitoring/newrelic/database"
 	"github.com/rl404/fairy/pubsub"
 	"gorm.io/driver/clickhouse"
 	"gorm.io/driver/mysql"
@@ -200,6 +201,8 @@ func newDB(cfg dbConfig) (*gorm.DB, error) {
 	tmp.SetMaxIdleConns(cfg.MaxConnIdle)
 	tmp.SetMaxOpenConns(cfg.MaxConnOpen)
 	tmp.SetConnMaxLifetime(time.Duration(cfg.MaxConnLifetime) * time.Second)
+
+	db.Use(database.NewGORM(cfg.Address, cfg.Name))
 
 	return db, nil
 }

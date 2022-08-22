@@ -208,7 +208,7 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v1.14.14
 ## explicit; go 1.12
 github.com/mattn/go-sqlite3
-# github.com/newrelic/go-agent/v3 v3.18.0
+# github.com/newrelic/go-agent/v3 v3.18.1
 ## explicit; go 1.7
 github.com/newrelic/go-agent/v3/internal
 github.com/newrelic/go-agent/v3/internal/cat
@@ -238,7 +238,7 @@ github.com/pierrec/lz4/v4/internal/lz4block
 github.com/pierrec/lz4/v4/internal/lz4errors
 github.com/pierrec/lz4/v4/internal/lz4stream
 github.com/pierrec/lz4/v4/internal/xxh32
-# github.com/rl404/fairy v0.18.0
+# github.com/rl404/fairy v0.20.0
 ## explicit; go 1.17
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/bigcache
@@ -402,7 +402,7 @@ golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
 golang.org/x/tools/internal/typeparams
-# google.golang.org/api v0.92.0
+# google.golang.org/api v0.93.0
 ## explicit; go 1.15
 google.golang.org/api/googleapi
 google.golang.org/api/internal
