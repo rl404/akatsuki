@@ -62,6 +62,7 @@ func (c *Consumer) Subscribe(nrApp *newrelic.Application) error {
 					ctx = newrelic.NewContext(ctx, tx)
 
 					err = errors.Wrap(ctx, c.service.ConsumeMessage(ctx, msg))
+					tx.NoticeError(err)
 				case err := <-errChan:
 					utils.Error(err.Error())
 				}
