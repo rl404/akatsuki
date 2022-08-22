@@ -38,8 +38,8 @@ import (
 	"github.com/rl404/akatsuki/pkg/http"
 	"github.com/rl404/fairy/cache"
 	"github.com/rl404/fairy/log"
+	_nr "github.com/rl404/fairy/log/newrelic"
 	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
-	nrDB "github.com/rl404/fairy/monitoring/newrelic/database"
 	nrMW "github.com/rl404/fairy/monitoring/newrelic/middleware"
 	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
 	"github.com/rl404/fairy/pubsub"
@@ -59,11 +59,13 @@ func server() error {
 		newrelic.ConfigAppName(cfg.Newrelic.Name),
 		newrelic.ConfigLicense(cfg.Newrelic.LicenseKey),
 		newrelic.ConfigDistributedTracerEnabled(true),
+		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
 	if err != nil {
 		utils.Error(err.Error())
 	} else {
 		defer nrApp.Shutdown(10 * time.Second)
+		utils.AddLog(_nr.NewFromNewrelicApp(nrApp, _nr.ErrorLevel))
 		utils.Info("newrelic initialized")
 	}
 
@@ -72,7 +74,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	c = nrCache.New(cfg.Cache.Dialect, c)
+	c = nrCache.New(cfg.Cache.Dialect, cfg.Cache.Address, c)
 	utils.Info("cache initialized")
 	defer c.Close()
 
@@ -81,7 +83,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	im = nrCache.New("inmemory", im)
+	im = nrCache.New("inmemory", "inmemory", im)
 	utils.Info("in-memory initialized")
 	defer im.Close()
 
@@ -90,7 +92,6 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	nrDB.RegisterGORM(cfg.DB.Dialect, cfg.DB.Name, db)
 	utils.Info("database initialized")
 	tmp, _ := db.DB()
 	defer tmp.Close()

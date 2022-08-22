@@ -26,6 +26,14 @@ func (api *API) Register(r chi.Router, nrApp *newrelic.Application) {
 	r.Route("/", func(r chi.Router) {
 		r.Use(middleware.NewHTTP(nrApp))
 		r.Use(log.MiddlewareWithLog(utils.GetLogger(0), log.MiddlewareConfig{Error: true}))
+		r.Use(log.MiddlewareWithLog(utils.GetLogger(1), log.MiddlewareConfig{
+			RequestHeader:  true,
+			RequestBody:    true,
+			ResponseHeader: true,
+			ResponseBody:   true,
+			RawPath:        true,
+			Error:          true,
+		}))
 		r.Use(utils.Recoverer)
 
 		r.Get("/anime/{animeID}", api.handleGetAnimeByID)

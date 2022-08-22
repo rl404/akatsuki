@@ -19,18 +19,22 @@ func (c *Cron) Update(nrApp *newrelic.Application, limit int) error {
 	ctx = newrelic.NewContext(ctx, tx)
 
 	if err := c.queueOldReleasingAnime(ctx, nrApp, limit); err != nil {
+		tx.NoticeError(err)
 		return errors.Wrap(ctx, err)
 	}
 
 	if err := c.queueOldFinishedAnime(ctx, nrApp, limit); err != nil {
+		tx.NoticeError(err)
 		return errors.Wrap(ctx, err)
 	}
 
 	if err := c.queueOldNotYetAnime(ctx, nrApp, limit); err != nil {
+		tx.NoticeError(err)
 		return errors.Wrap(ctx, err)
 	}
 
 	if err := c.queueOldUsername(ctx, nrApp, limit); err != nil {
+		tx.NoticeError(err)
 		return errors.Wrap(ctx, err)
 	}
 

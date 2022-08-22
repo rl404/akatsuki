@@ -27,8 +27,8 @@ import (
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/cache"
+	_nr "github.com/rl404/fairy/log/newrelic"
 	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
-	nrDB "github.com/rl404/fairy/monitoring/newrelic/database"
 	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
 	"github.com/rl404/fairy/pubsub"
 )
@@ -46,12 +46,14 @@ func cronUpdate() error {
 		newrelic.ConfigAppName(cfg.Newrelic.Name),
 		newrelic.ConfigLicense(cfg.Newrelic.LicenseKey),
 		newrelic.ConfigDistributedTracerEnabled(true),
+		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
 	if err != nil {
 		utils.Error(err.Error())
 	} else {
 		nrApp.WaitForConnection(10 * time.Second)
 		defer nrApp.Shutdown(10 * time.Second)
+		utils.AddLog(_nr.NewFromNewrelicApp(nrApp, _nr.ErrorLevel))
 		utils.Info("newrelic initialized")
 	}
 
@@ -60,7 +62,7 @@ func cronUpdate() error {
 	if err != nil {
 		return err
 	}
-	c = nrCache.New(cfg.Cache.Dialect, c)
+	c = nrCache.New(cfg.Cache.Dialect, cfg.Cache.Address, c)
 	utils.Info("cache initialized")
 	defer c.Close()
 
@@ -69,7 +71,6 @@ func cronUpdate() error {
 	if err != nil {
 		return err
 	}
-	nrDB.RegisterGORM(cfg.DB.Dialect, cfg.DB.Name, db)
 	utils.Info("database initialized")
 	tmp, _ := db.DB()
 	defer tmp.Close()
