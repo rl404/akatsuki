@@ -14,7 +14,7 @@ require (
 	github.com/rl404/fairy v0.20.0
 	github.com/spf13/cobra v1.5.0
 	github.com/swaggo/http-swagger v1.3.3
-	github.com/swaggo/swag v1.8.4
+	github.com/swaggo/swag v1.8.5
 	golang.org/x/text v0.3.7
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
