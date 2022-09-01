@@ -67,7 +67,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v0
         with:
           cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-          project_id: ${{ secrets.GKE_PROJECT_ID }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
           location: ${{ secrets.GKE_LOCATION }}
       - name: Setup docker
         run: |
