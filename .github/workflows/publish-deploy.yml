@@ -1,0 +1,87 @@
+name: publish & deploy
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish_image:
+    name: Build and push akatsuki image
+    runs-on: ubuntu-latest
+    outputs:
+      img_tag: ${{ steps.tag.outputs.img_tag }}
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+      - name: Remove 'v' from tag
+        id: tag
+        env:
+          github_ref: ${{ github.ref }}
+        run: |
+          github_ref=${github_ref##*/}
+          github_ref=${github_ref/v/}
+          echo "IMG_TAG=${github_ref}" >> $GITHUB_ENV
+          echo "::set-output name=img_tag::${github_ref}"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Build and push image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./build/package/Dockerfile
+          push: true
+          tags: |
+            rl404/akatsuki:latest
+            rl404/akatsuki:${{ env.IMG_TAG }}
+            ghcr.io/rl404/akatsuki:latest
+            ghcr.io/rl404/akatsuki:${{ env.IMG_TAG }}
+  deploy:
+    name: Deploy
+    needs: publish_image
+    runs-on: ubuntu-latest
+    env:
+      gcr_image_name: ${{ secrets.GCR_HOSTNAME }}/${{ secrets.GCP_PROJECT_ID }}/akatsuki/akatsuki:${{ needs.publish_image.outputs.img_tag }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Auth gcloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v0
+      - name: Setup GKE
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          location: ${{ secrets.GKE_LOCATION }}
+      - name: Setup docker
+        run: |
+          gcloud --quiet auth configure-docker
+      - name: Copy image to registry
+        run: |
+          docker pull rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
+          docker tag rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }} $gcr_image_name
+          docker push $gcr_image_name
+      - name: Deploy
+        run: |
+          gcloud run services update ${{ secrets.RUN_SERVICE_NAME }} --platform=managed --region=${{ secrets.RUN_REGION }} --quiet --image=$gcr_image_name
+          kubectl set image deployment ${{ secrets.GKE_CONSUMER_DEPLOYMENT_NAME }} ${{ secrets.GKE_CONSUMER_CONTAINER_NAME }}=rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
+          kubectl set image cronjob ${{ secrets.GKE_CRON_FILL_DEPLOYMENT_NAME }} ${{ secrets.GKE_CRON_FILL_CONTAINER_NAME }}=rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
+          kubectl set image cronjob ${{ secrets.GKE_CRON_UPDATE_DEPLOYMENT_NAME }} ${{ secrets.GKE_CRON_UPDATE_CONTAINER_NAME }}=rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
+
+
