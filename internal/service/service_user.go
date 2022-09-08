@@ -81,13 +81,20 @@ type UserAnimeRelation struct {
 }
 
 type userAnimeRelationNode struct {
-	AnimeID         int64              `json:"anime_id"`
-	Title           string             `json:"title"`
-	Status          animeEntity.Status `json:"status" swaggertype:"string"`
-	Score           float64            `json:"score"`
-	Type            animeEntity.Type   `json:"type" swaggertype:"string"`
-	UserAnimeStatus entity.Status      `json:"user_anime_status" swaggertype:"string"`
-	UserAnimeScore  int                `json:"user_anime_score"`
+	AnimeID          int64              `json:"anime_id"`
+	Title            string             `json:"title"`
+	Status           animeEntity.Status `json:"status" swaggertype:"string"`
+	Score            float64            `json:"score"`
+	Type             animeEntity.Type   `json:"type" swaggertype:"string"`
+	Source           animeEntity.Source `json:"source" swaggertype:"string"`
+	EpisodeCount     int                `json:"episode_count"`
+	EpisodeDuration  int                `json:"episode_duration"`
+	StartYear        int                `json:"start_year"`
+	Season           animeEntity.Season `json:"season" swaggertype:"string"`
+	SeasonYear       int                `json:"season_year"`
+	UserAnimeStatus  entity.Status      `json:"user_anime_status" swaggertype:"string"`
+	UserAnimeScore   int                `json:"user_anime_score"`
+	UserEpisodeCount int                `json:"user_episode_count"`
 }
 
 type userAnimeRelationLink struct {
@@ -140,18 +147,27 @@ func (s *service) GetUserAnimeRelations(ctx context.Context, username string) (*
 	for _, a := range anime {
 		var status entity.Status
 		var score int
+		var userEpisode int
 		if userAnimeMap[a.ID] != nil {
 			status = userAnimeMap[a.ID].Status
 			score = userAnimeMap[a.ID].Score
+			userEpisode = userAnimeMap[a.ID].Episode
 		}
 		nodes = append(nodes, userAnimeRelationNode{
-			AnimeID:         a.ID,
-			Title:           a.Title,
-			Status:          a.Status,
-			Score:           a.Mean,
-			Type:            a.Type,
-			UserAnimeStatus: status,
-			UserAnimeScore:  score,
+			AnimeID:          a.ID,
+			Title:            a.Title,
+			Status:           a.Status,
+			Score:            a.Mean,
+			Type:             a.Type,
+			Source:           a.Source,
+			StartYear:        a.StartDate.Year,
+			EpisodeCount:     a.Episode.Count,
+			EpisodeDuration:  a.Episode.Duration,
+			Season:           a.Season.Season,
+			SeasonYear:       a.Season.Year,
+			UserAnimeStatus:  status,
+			UserAnimeScore:   score,
+			UserEpisodeCount: userEpisode,
 		})
 	}
 
