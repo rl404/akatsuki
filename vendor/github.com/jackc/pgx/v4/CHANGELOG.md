@@ -1,3 +1,12 @@
+# 4.17.2 (September 3, 2022)
+
+* Fix panic when logging batch error (Tom Möller)
+
+# 4.17.1 (August 27, 2022)
+
+* Upgrade puddle to v1.3.0 - fixes context failing to cancel Acquire when acquire is creating resource which was introduced in v4.17.0 (James Hartig)
+* Fix atomic alignment on 32-bit platforms
+
 # 4.17.0 (August 6, 2022)
 
 * Upgrade pgconn to v1.13.0
