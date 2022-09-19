@@ -393,8 +393,8 @@ github.com/mattn/go-sqlite3 v1.14.14/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4
 github.com/mkevac/debugcharts v0.0.0-20191222103121-ae1c48aa8615/go.mod h1:Ad7oeElCZqA1Ufj0U9/liOF4BtVepxRcTvr2ey7zTvM=
 github.com/modocache/gover v0.0.0-20171022184752-b58185e213c5/go.mod h1:caMODM3PzxT8aQXRPkAt8xlV/e7d7w8GM5g0fa5F0D8=
 github.com/newrelic/go-agent/v3 v3.12.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
-github.com/newrelic/go-agent/v3 v3.19.0 h1:nz1fmqZxbjlVcSJO8gKEPw/CG1JLLEHI4TbSBT98x68=
-github.com/newrelic/go-agent/v3 v3.19.0/go.mod h1:BFJOlbZWRlPTXKYIC1TTTtQKTnYntEJaU0VU507hDc0=
+github.com/newrelic/go-agent/v3 v3.19.1 h1:C/ltQvzPwpkUNPvUpgTT8cDht+kzfSm3UTWxViBQvAU=
+github.com/newrelic/go-agent/v3 v3.19.1/go.mod h1:BFJOlbZWRlPTXKYIC1TTTtQKTnYntEJaU0VU507hDc0=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1 h1:/ar1Omo9luapTJYWXt86oQGBpWwpWF92x+UuYU9v/7o=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1/go.mod h1:2q0u6qkNJ4ClDt920A4r+NpcO370lFze1NF4OPJjAks=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
