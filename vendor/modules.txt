@@ -208,8 +208,8 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v1.14.14
 ## explicit; go 1.12
 github.com/mattn/go-sqlite3
-# github.com/newrelic/go-agent/v3 v3.19.1
-## explicit; go 1.7
+# github.com/newrelic/go-agent/v3 v3.19.2
+## explicit; go 1.17
 github.com/newrelic/go-agent/v3/internal
 github.com/newrelic/go-agent/v3/internal/cat
 github.com/newrelic/go-agent/v3/internal/com_newrelic_trace_v1
