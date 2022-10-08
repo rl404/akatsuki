@@ -21,7 +21,7 @@ require (
 	gorm.io/driver/clickhouse v0.4.2
 	gorm.io/driver/mysql v1.4.0
 	gorm.io/driver/postgres v1.4.1
-	gorm.io/driver/sqlite v1.3.6
+	gorm.io/driver/sqlite v1.4.1
 	gorm.io/driver/sqlserver v1.4.0
 	gorm.io/gorm v1.24.0
 )
@@ -74,7 +74,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
-	github.com/mattn/go-sqlite3 v1.14.14 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1 // indirect
 	github.com/nsqio/go-nsq v1.1.0 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
