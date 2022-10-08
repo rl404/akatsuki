@@ -20,7 +20,7 @@ require (
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/clickhouse v0.4.2
 	gorm.io/driver/mysql v1.4.0
-	gorm.io/driver/postgres v1.3.10
+	gorm.io/driver/postgres v1.4.1
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/driver/sqlserver v1.4.0
 	gorm.io/gorm v1.24.0
