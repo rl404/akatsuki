@@ -22,7 +22,7 @@ require (
 	gorm.io/driver/mysql v1.4.0
 	gorm.io/driver/postgres v1.4.1
 	gorm.io/driver/sqlite v1.4.1
-	gorm.io/driver/sqlserver v1.4.0
+	gorm.io/driver/sqlserver v1.4.1
 	gorm.io/gorm v1.24.0
 )
 
@@ -36,7 +36,6 @@ require (
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20220106215444-fb4bf637b56d // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/denisenkom/go-mssqldb v0.12.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.17.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -75,6 +74,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
+	github.com/microsoft/go-mssqldb v0.17.0 // indirect
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1 // indirect
 	github.com/nsqio/go-nsq v1.1.0 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
@@ -93,7 +93,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.22.0 // indirect
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
 	golang.org/x/oauth2 v0.0.0-20220808172628-8227340efae7 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect

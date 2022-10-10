@@ -75,17 +75,19 @@ type Config struct {
 	PacketSize  uint16
 }
 
-func SetupTLS(certificate string, insecureSkipVerify bool, hostInCertificate string) (*tls.Config, error) {
+func SetupTLS(certificate string, insecureSkipVerify bool, hostInCertificate string, minTLSVersion string) (*tls.Config, error) {
 	config := tls.Config{
 		ServerName:         hostInCertificate,
 		InsecureSkipVerify: insecureSkipVerify,
 
-		// fix for https://github.com/denisenkom/go-mssqldb/issues/166
+		// fix for https://github.com/microsoft/go-mssqldb/issues/166
 		// Go implementation of TLS payload size heuristic algorithm splits single TDS package to multiple TCP segments,
 		// while SQL Server seems to expect one TCP segment per encrypted TDS package.
 		// Setting DynamicRecordSizingDisabled to true disables that algorithm and uses 16384 bytes per TLS package
 		DynamicRecordSizingDisabled: true,
+		MinVersion:                  TLSVersionFromString(minTLSVersion),
 	}
+
 	if len(certificate) == 0 {
 		return &config, nil
 	}
@@ -256,8 +258,9 @@ func Parse(dsn string) (Config, map[string]string, error) {
 	}
 
 	if p.Encryption != EncryptionDisabled {
+		tlsMin := params["tlsmin"]
 		var err error
-		p.TLSConfig, err = SetupTLS(certificate, trustServerCert, hostInCertificate)
+		p.TLSConfig, err = SetupTLS(certificate, trustServerCert, hostInCertificate, tlsMin)
 		if err != nil {
 			return p, params, fmt.Errorf("failed to setup TLS: %w", err)
 		}
