@@ -19,11 +19,18 @@ package column
 
 import (
 	"fmt"
+	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
+	"regexp"
 	"strings"
-
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
 )
+
+// column names which match this must be escaped - see https://clickhouse.com/docs/en/sql-reference/syntax/#identifiers
+var escapeColRegex, _ = regexp.Compile("^[a-zA-Z_][0-9a-zA-Z_]*$")
+
+// to escape and unescape special chars
+var colEscape = strings.NewReplacer("`", "\\`", "\\", "\\\\")
+var colUnEscape = strings.NewReplacer("\\`", "`", "\\\\", "\\")
 
 type Type string
 
@@ -75,12 +82,13 @@ type Interface interface {
 	ScanRow(dest interface{}, row int) error
 	Append(v interface{}) (nulls []uint8, err error)
 	AppendRow(v interface{}) error
-	Decode(decoder *binary.Decoder, rows int) error
-	Encode(*binary.Encoder) error
+	Decode(reader *proto.Reader, rows int) error
+	Encode(buffer *proto.Buffer)
 	ScanType() reflect.Type
+	Reset()
 }
 
 type CustomSerialization interface {
-	ReadStatePrefix(*binary.Decoder) error
-	WriteStatePrefix(*binary.Encoder) error
+	ReadStatePrefix(*proto.Reader) error
+	WriteStatePrefix(*proto.Buffer) error
 }

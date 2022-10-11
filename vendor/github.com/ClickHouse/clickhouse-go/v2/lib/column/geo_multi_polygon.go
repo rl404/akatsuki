@@ -19,15 +19,19 @@ package column
 
 import (
 	"fmt"
+	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
 	"github.com/paulmach/orb"
 )
 
 type MultiPolygon struct {
 	set  *Array
 	name string
+}
+
+func (col *MultiPolygon) Reset() {
+	col.set.Reset()
 }
 
 func (col *MultiPolygon) Name() string {
@@ -103,12 +107,12 @@ func (col *MultiPolygon) AppendRow(v interface{}) error {
 	}
 }
 
-func (col *MultiPolygon) Decode(decoder *binary.Decoder, rows int) error {
-	return col.set.Decode(decoder, rows)
+func (col *MultiPolygon) Decode(reader *proto.Reader, rows int) error {
+	return col.set.Decode(reader, rows)
 }
 
-func (col *MultiPolygon) Encode(encoder *binary.Encoder) error {
-	return col.set.Encode(encoder)
+func (col *MultiPolygon) Encode(buffer *proto.Buffer) {
+	col.set.Encode(buffer)
 }
 
 func (col *MultiPolygon) row(i int) orb.MultiPolygon {

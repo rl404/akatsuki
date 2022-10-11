@@ -19,7 +19,7 @@ package column
 
 import (
 	"fmt"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
+	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
 	"strings"
 )
@@ -185,27 +185,43 @@ func convertSlice(values interface{}) (interface{}, error) {
 func (jCol *JSONList) createNewOffsets(num int) {
 	for i := 0; i < num; i++ {
 		//single depth so can take 1st
-		if len(jCol.offsets[0].values.data) == 0 {
+		if jCol.offsets[0].values.col.Rows() == 0 {
 			// first entry in the column
-			jCol.offsets[0].values.data = []uint64{0}
+			jCol.offsets[0].values.col.Append(0)
 		} else {
 			// entry for this object to see offset from last - offsets are cumulative
-			jCol.offsets[0].values.data = append(jCol.offsets[0].values.data, jCol.offsets[0].values.data[len(jCol.offsets[0].values.data)-1])
+			jCol.offsets[0].values.col.Append(jCol.offsets[0].values.col.Row(jCol.offsets[0].values.col.Rows() - 1))
 		}
 	}
 }
 
-func getFieldName(field reflect.StructField) (string, bool) {
+func getStructFieldName(field reflect.StructField) (string, bool) {
 	name := field.Name
-	jsonTag := field.Tag.Get("json")
-	if jsonTag == "" {
-		return name, false
-	}
+	tag := field.Tag.Get("json")
 	// not a standard but we allow - to omit fields
-	if jsonTag == "-" {
+	if tag == "-" {
 		return name, true
 	}
-	return jsonTag, false
+	if tag != "" {
+		return tag, false
+	}
+	// support ch tag as well as this is used elsewhere
+	tag = field.Tag.Get("ch")
+	if tag == "-" {
+		return name, true
+	}
+	if tag != "" {
+		return tag, false
+	}
+	return name, false
+}
+
+// ensures numeric keys and ` are escaped properly
+func getMapFieldName(name string) string {
+	if !escapeColRegex.MatchString(name) {
+		return fmt.Sprintf("`%s`", colEscape.Replace(name))
+	}
+	return colEscape.Replace(name)
 }
 
 func parseSlice(name string, values interface{}, jCol JSONParent, preFill int) error {
@@ -245,7 +261,7 @@ func parseSlice(name string, values interface{}, jCol JSONParent, preFill int) e
 		col.createNewOffsets(preFill + 1)
 		for i := 0; i < rValues.Len(); i++ {
 			// increment offset
-			col.offsets[0].values.data[len(col.offsets[0].values.data)-1] += 1
+			col.offsets[0].values.col[col.offsets[0].values.col.Rows()-1] += 1
 			value := rValues.Index(i)
 			sKind = value.Kind()
 			if sKind == reflect.Interface {
@@ -305,7 +321,7 @@ func iterateStruct(structVal reflect.Value, col JSONParent, preFill int) error {
 	newColumn := false
 
 	for i := 0; i < structVal.NumField(); i++ {
-		fName, omit := getFieldName(structVal.Type().Field(i))
+		fName, omit := getStructFieldName(structVal.Type().Field(i))
 		if omit {
 			continue
 		}
@@ -410,7 +426,7 @@ func iterateMap(mapVal reflect.Value, col JSONParent, preFill int) error {
 	addedColumns := make([]string, len(mapVal.MapKeys()), len(mapVal.MapKeys()))
 	newColumn := false
 	for i, key := range mapVal.MapKeys() {
-		name := key.Interface().(string)
+		name := getMapFieldName(key.Interface().(string))
 		if _, ok := columnLookup[name]; !ok && len(currentColumns) > 0 {
 			// new column - need to handle
 			preFill = numRows
@@ -494,6 +510,10 @@ type JSONValue struct {
 	Interface
 	// represents the type e.g. uuid - these may have been mapped to a Column type support by JSON e.g. String
 	origType reflect.Type
+}
+
+func (jCol *JSONValue) Reset() {
+	jCol.Interface.Reset()
 }
 
 func (jCol *JSONValue) appendEmptyValue() error {
@@ -667,6 +687,12 @@ type JSONObject struct {
 	encoding uint8
 }
 
+func (jCol *JSONObject) Reset() {
+	for i := range jCol.columns {
+		jCol.columns[i].Reset()
+	}
+}
+
 func (jCol *JSONObject) Name() string {
 	return jCol.name
 }
@@ -812,6 +838,8 @@ func (jCol *JSONObject) Rows() int {
 	return 0
 }
 
+// ClickHouse returns JSON as a tuple i.e. these will never be invoked
+
 func (jCol *JSONObject) Row(i int, ptr bool) interface{} {
 	panic("Not implemented")
 }
@@ -871,31 +899,27 @@ func (jCol *JSONObject) AppendRow(v interface{}) error {
 	return nil
 }
 
-func (jCol *JSONObject) Decode(decoder *binary.Decoder, rows int) error {
+func (jCol *JSONObject) Decode(reader *proto.Reader, rows int) error {
 	panic("Not implemented")
 }
 
-func (jCol *JSONObject) Encode(encoder *binary.Encoder) error {
+func (jCol *JSONObject) Encode(buffer *proto.Buffer) {
 	if jCol.root && jCol.encoding == 0 {
-		if err := encoder.String(string(jCol.FullType())); err != nil {
-			return err
-		}
+		buffer.PutString(string(jCol.FullType()))
 	}
 	for _, c := range jCol.columns {
-		if err := c.Encode(encoder); err != nil {
-			return err
-		}
+		c.Encode(buffer)
 	}
-	return nil
 }
 
-func (jCol *JSONObject) ReadStatePrefix(decoder *binary.Decoder) error {
-	_, err := decoder.UInt8()
+func (jCol *JSONObject) ReadStatePrefix(reader *proto.Reader) error {
+	_, err := reader.UInt8()
 	return err
 }
 
-func (jCol *JSONObject) WriteStatePrefix(encoder *binary.Encoder) error {
-	return encoder.UInt8(jCol.encoding)
+func (jCol *JSONObject) WriteStatePrefix(buffer *proto.Buffer) error {
+	buffer.PutUInt8(jCol.encoding)
+	return nil
 }
 
 var (

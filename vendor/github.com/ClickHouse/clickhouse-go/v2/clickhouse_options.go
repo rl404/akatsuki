@@ -21,16 +21,52 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/ClickHouse/ch-go/compress"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/ClickHouse/clickhouse-go/v2/lib/compress"
 )
 
-var CompressionLZ4 compress.Method = compress.LZ4
+type CompressionMethod byte
+
+func (c CompressionMethod) String() string {
+	switch c {
+	case CompressionNone:
+		return "none"
+	case CompressionZSTD:
+		return "zstd"
+	case CompressionLZ4:
+		return "lz4"
+	case CompressionGZIP:
+		return "gzip"
+	case CompressionDeflate:
+		return "deflate"
+	case CompressionBrotli:
+		return "br"
+	default:
+		return ""
+	}
+}
+
+const (
+	CompressionNone    = CompressionMethod(compress.None)
+	CompressionLZ4     = CompressionMethod(compress.LZ4)
+	CompressionZSTD    = CompressionMethod(compress.ZSTD)
+	CompressionGZIP    = CompressionMethod(0x95)
+	CompressionDeflate = CompressionMethod(0x96)
+	CompressionBrotli  = CompressionMethod(0x97)
+)
+
+var compressionMap = map[string]CompressionMethod{
+	"none":    CompressionNone,
+	"zstd":    CompressionZSTD,
+	"lz4":     CompressionLZ4,
+	"gzip":    CompressionGZIP,
+	"deflate": CompressionDeflate,
+	"br":      CompressionBrotli,
+}
 
 type Auth struct { // has_control_character
 	Database string
@@ -39,7 +75,9 @@ type Auth struct { // has_control_character
 }
 
 type Compression struct {
-	Method compress.Method
+	Method CompressionMethod
+	// this only applies to zlib and brotli compression algorithms
+	Level int
 }
 
 type ConnOpenStrategy uint8
@@ -49,12 +87,23 @@ const (
 	ConnOpenRoundRobin
 )
 
-type InterfaceType int
+type Protocol int
 
 const (
-	NativeInterface InterfaceType = iota
-	HttpInterface
+	Native Protocol = iota
+	HTTP
 )
+
+func (p Protocol) String() string {
+	switch p {
+	case Native:
+		return "native"
+	case HTTP:
+		return "http"
+	default:
+		return ""
+	}
+}
 
 func ParseDSN(dsn string) (*Options, error) {
 	opt := &Options{}
@@ -65,7 +114,7 @@ func ParseDSN(dsn string) (*Options, error) {
 }
 
 type Options struct {
-	Interface InterfaceType
+	Protocol Protocol
 
 	TLS              *tls.Config
 	Addr             []string
@@ -81,6 +130,7 @@ type Options struct {
 	ConnMaxLifetime  time.Duration // default 1 hour
 	ConnOpenStrategy ConnOpenStrategy
 
+	scheme      string
 	ReadTimeout time.Duration
 }
 
@@ -113,6 +163,29 @@ func (o *Options) fromDSN(in string) error {
 					Method: CompressionLZ4,
 				}
 			}
+			if compressMethod, ok := compressionMap[params.Get(v)]; ok {
+				if o.Compression == nil {
+					o.Compression = &Compression{
+						Method: compressMethod,
+						// default for now same as Clickhouse - https://clickhouse.com/docs/en/operations/settings/settings#settings-http_zlib_compression_level
+						Level: 3,
+					}
+				} else {
+					o.Compression.Method = compressMethod
+				}
+			}
+		case "compress_level":
+			if level, err := strconv.ParseInt(params.Get(v), 10, 8); err == nil {
+				if o.Compression == nil {
+					o.Compression = &Compression{
+						// a level alone doesn't enable compression
+						Method: CompressionNone,
+						Level:  int(level),
+					}
+				} else {
+					o.Compression.Level = int(level)
+				}
+			}
 		case "dial_timeout":
 			duration, err := time.ParseDuration(params.Get(v))
 			if err != nil {
@@ -122,7 +195,7 @@ func (o *Options) fromDSN(in string) error {
 		case "read_timeout":
 			duration, err := time.ParseDuration(params.Get(v))
 			if err != nil {
-				return fmt.Errorf("clickhouse [dsn parse]: http timeout: %s", err)
+				return fmt.Errorf("clickhouse [dsn parse]:read timeout: %s", err)
 			}
 			o.ReadTimeout = duration
 		case "secure":
@@ -136,6 +209,10 @@ func (o *Options) fromDSN(in string) error {
 			case "round_robin":
 				o.ConnOpenStrategy = ConnOpenRoundRobin
 			}
+		case "username":
+			o.Auth.Username = params.Get(v)
+		case "password":
+			o.Auth.Password = params.Get(v)
 
 		default:
 			switch p := strings.ToLower(params.Get(v)); p {
@@ -146,6 +223,8 @@ func (o *Options) fromDSN(in string) error {
 			default:
 				if n, err := strconv.Atoi(p); err == nil {
 					o.Settings[v] = n
+				} else {
+					o.Settings[v] = p
 				}
 			}
 		}
@@ -155,24 +234,26 @@ func (o *Options) fromDSN(in string) error {
 			InsecureSkipVerify: skipVerify,
 		}
 	}
+	o.scheme = dsn.Scheme
 	switch dsn.Scheme {
 	case "http":
 		if secure {
-			o.TLS = nil
+			return fmt.Errorf("clickhouse [dsn parse]: http with TLS specify")
 		}
-		o.Interface = HttpInterface
+		o.Protocol = HTTP
 	case "https":
 		if !secure {
-			return fmt.Errorf("clickhouse [dsn parse]: https without TLS specify")
+			return fmt.Errorf("clickhouse [dsn parse]: https without TLS")
 		}
-		o.Interface = HttpInterface
+		o.Protocol = HTTP
 	default:
-		o.Interface = NativeInterface
+		o.Protocol = Native
 	}
 	return nil
 }
 
-func (o *Options) setDefaults() {
+// receive copy of Options so we don't modify original - so its reusable
+func (o Options) setDefaults() *Options {
 	if len(o.Auth.Database) == 0 {
 		o.Auth.Database = "default"
 	}
@@ -181,6 +262,9 @@ func (o *Options) setDefaults() {
 	}
 	if o.DialTimeout == 0 {
 		o.DialTimeout = time.Second
+	}
+	if o.ReadTimeout == 0 {
+		o.ReadTimeout = time.Second * time.Duration(300)
 	}
 	if o.MaxIdleConns <= 0 {
 		o.MaxIdleConns = 5
@@ -191,4 +275,13 @@ func (o *Options) setDefaults() {
 	if o.ConnMaxLifetime == 0 {
 		o.ConnMaxLifetime = time.Hour
 	}
+	if o.Addr == nil || len(o.Addr) == 0 {
+		switch o.Protocol {
+		case Native:
+			o.Addr = []string{"localhost:9000"}
+		case HTTP:
+			o.Addr = []string{"localhost:8123"}
+		}
+	}
+	return &o
 }

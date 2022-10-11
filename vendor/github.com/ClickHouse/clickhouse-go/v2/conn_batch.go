@@ -32,7 +32,7 @@ import (
 
 var splitInsertRe = regexp.MustCompile(`(?i)\sVALUES\s*\(`)
 
-func (c *connect) prepareBatch(ctx context.Context, query string, release func(*connect, error)) (*batch, error) {
+func (c *connect) prepareBatch(ctx context.Context, query string, release func(*connect, error)) (driver.Batch, error) {
 	query = splitInsertRe.Split(query, -1)[0]
 	if !strings.HasSuffix(strings.TrimSpace(strings.ToUpper(query)), "VALUES") {
 		query += " VALUES"
@@ -105,6 +105,10 @@ func (b *batch) AppendStruct(v interface{}) error {
 	return b.Append(values...)
 }
 
+func (b *batch) IsSent() bool {
+	return b.sent
+}
+
 func (b *batch) Column(idx int) driver.BatchColumn {
 	if len(b.block.Columns) <= idx {
 		b.release(nil)
@@ -144,24 +148,37 @@ func (b *batch) Send() (err error) {
 	if err = b.conn.sendData(&proto.Block{}, ""); err != nil {
 		return err
 	}
-	if err = b.conn.encoder.Flush(); err != nil {
-		return err
-	}
 	if err = b.conn.process(b.ctx, b.onProcess); err != nil {
 		return err
 	}
 	return nil
 }
 
+func (b *batch) Flush() error {
+	if b.sent {
+		return ErrBatchAlreadySent
+	}
+	if b.err != nil {
+		return b.err
+	}
+	if b.block.Rows() != 0 {
+		if err := b.conn.sendData(b.block, ""); err != nil {
+			return err
+		}
+	}
+	b.block.Reset()
+	return nil
+}
+
 type batchColumn struct {
 	err     error
-	batch   *batch
+	batch   driver.Batch
 	column  column.Interface
 	release func(error)
 }
 
 func (b *batchColumn) Append(v interface{}) (err error) {
-	if b.batch.sent {
+	if b.batch.IsSent() {
 		return ErrBatchAlreadySent
 	}
 	if b.err != nil {
