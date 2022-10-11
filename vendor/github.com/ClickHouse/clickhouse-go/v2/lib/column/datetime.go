@@ -18,12 +18,13 @@
 package column
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
 	"strings"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/timezone"
 )
 
@@ -32,11 +33,18 @@ var (
 	maxDateTime, _ = time.Parse("2006-01-02 15:04:05", "2105-12-31 23:59:59")
 )
 
+const (
+	defaultDateTimeFormat = "2006-01-02 15:04:05"
+)
+
 type DateTime struct {
-	chType   Type
-	values   UInt32
-	timezone *time.Location
-	name     string
+	chType Type
+	name   string
+	col    proto.ColDateTime
+}
+
+func (col *DateTime) Reset() {
+	col.col.Reset()
 }
 
 func (col *DateTime) Name() string {
@@ -48,9 +56,11 @@ func (col *DateTime) parse(t Type) (_ *DateTime, err error) {
 		return col, nil
 	}
 	var name = strings.TrimSuffix(strings.TrimPrefix(string(t), "DateTime('"), "')")
-	if col.timezone, err = timezone.Load(name); err != nil {
+	timezone, err := timezone.Load(name)
+	if err != nil {
 		return nil, err
 	}
+	col.col.Location = timezone
 	return col, nil
 }
 
@@ -63,7 +73,7 @@ func (col *DateTime) ScanType() reflect.Type {
 }
 
 func (col *DateTime) Rows() int {
-	return len(col.values.data)
+	return col.col.Rows()
 }
 
 func (col *DateTime) Row(i int, ptr bool) interface{} {
@@ -81,6 +91,8 @@ func (col *DateTime) ScanRow(dest interface{}, row int) error {
 	case **time.Time:
 		*d = new(time.Time)
 		**d = col.row(row)
+	case *sql.NullTime:
+		d.Scan(col.row(row))
 	default:
 		return &ColumnConverterError{
 			Op:   "ScanRow",
@@ -94,25 +106,63 @@ func (col *DateTime) ScanRow(dest interface{}, row int) error {
 func (col *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 	switch v := v.(type) {
 	case []time.Time:
-		in := make([]uint32, 0, len(v))
-		for _, t := range v {
-			if err := dateOverflow(minDateTime, maxDateTime, t, "2006-01-02 15:04:05"); err != nil {
+		nulls = make([]uint8, len(v))
+		for i := range v {
+			if err := dateOverflow(minDateTime, maxDateTime, v[i], defaultDateTimeFormat); err != nil {
 				return nil, err
 			}
-			in = append(in, uint32(t.Unix()))
+			col.col.Append(v[i])
 		}
-		col.values.data, nulls = append(col.values.data, in...), make([]uint8, len(v))
+
 	case []*time.Time:
 		nulls = make([]uint8, len(v))
-		for i, v := range v {
+		for i := range v {
 			switch {
-			case v != nil:
-				if err := dateOverflow(minDateTime, maxDateTime, *v, "2006-01-02 15:04:05"); err != nil {
+			case v[i] != nil:
+				if err := dateOverflow(minDateTime, maxDateTime, *v[i], defaultDateTimeFormat); err != nil {
 					return nil, err
 				}
-				col.values.data = append(col.values.data, uint32(v.Unix()))
+				col.col.Append(*v[i])
 			default:
-				col.values.data, nulls[i] = append(col.values.data, 0), 1
+				nulls[i] = 1
+				col.col.Append(time.Time{})
+			}
+		}
+	case []sql.NullTime:
+		nulls = make([]uint8, len(v))
+		for i := range v {
+			col.AppendRow(v[i])
+		}
+	case []*sql.NullTime:
+		nulls = make([]uint8, len(v))
+		for i := range v {
+			if v[i] == nil {
+				nulls[i] = 1
+			}
+			col.AppendRow(v[i])
+		}
+	case []string:
+		nulls = make([]uint8, len(v))
+		for i := range v {
+			value, err := col.parseDateTime(v[i])
+			if err != nil {
+				return nil, err
+			}
+			col.col.Append(value)
+		}
+	case []*string:
+		nulls = make([]uint8, len(v))
+		for i := range v {
+			switch {
+			case v[i] == nil || *v[i] == "":
+				nulls[i] = 1
+				col.col.Append(time.Time{})
+			default:
+				value, err := col.parseDateTime(*v[i])
+				if err != nil {
+					return nil, err
+				}
+				col.col.Append(value)
 			}
 		}
 	default:
@@ -126,46 +176,88 @@ func (col *DateTime) Append(v interface{}) (nulls []uint8, err error) {
 }
 
 func (col *DateTime) AppendRow(v interface{}) error {
-	var datetime uint32
 	switch v := v.(type) {
 	case time.Time:
-		if err := dateOverflow(minDateTime, maxDateTime, v, "2006-01-02 15:04:05"); err != nil {
+		if err := dateOverflow(minDateTime, maxDateTime, v, defaultDateTimeFormat); err != nil {
 			return err
 		}
-		datetime = uint32(v.Unix())
+		col.col.Append(v)
 	case *time.Time:
-		if v != nil {
-			if err := dateOverflow(minDateTime, maxDateTime, *v, "2006-01-02 15:04:05"); err != nil {
+		switch {
+		case v != nil:
+			if err := dateOverflow(minDateTime, maxDateTime, *v, defaultDateTimeFormat); err != nil {
 				return err
 			}
-			datetime = uint32(v.Unix())
+			col.col.Append(*v)
+		default:
+			col.col.Append(time.Time{})
+		}
+	case sql.NullTime:
+		switch v.Valid {
+		case true:
+			col.col.Append(v.Time)
+		default:
+			col.col.Append(time.Time{})
+		}
+	case *sql.NullTime:
+		switch v.Valid {
+		case true:
+			col.col.Append(v.Time)
+		default:
+			col.col.Append(time.Time{})
 		}
 	case nil:
+		col.col.Append(time.Time{})
+	case string:
+		dateTime, err := col.parseDateTime(v)
+		if err != nil {
+			return err
+		}
+		col.col.Append(dateTime)
+	case *string:
+		if v == nil || *v == "" {
+			col.col.Append(time.Time{})
+		} else {
+			dateTime, err := col.parseDateTime(*v)
+			if err != nil {
+				return err
+			}
+			col.col.Append(dateTime)
+		}
 	default:
+		s, ok := v.(fmt.Stringer)
+		if ok {
+			return col.AppendRow(s.String())
+		}
 		return &ColumnConverterError{
 			Op:   "AppendRow",
 			To:   "DateTime",
 			From: fmt.Sprintf("%T", v),
 		}
 	}
-	col.values.data = append(col.values.data, datetime)
 	return nil
 }
 
-func (col *DateTime) Decode(decoder *binary.Decoder, rows int) error {
-	return col.values.Decode(decoder, rows)
+func (col *DateTime) Decode(reader *proto.Reader, rows int) error {
+	return col.col.DecodeColumn(reader, rows)
 }
 
-func (col *DateTime) Encode(encoder *binary.Encoder) error {
-	return col.values.Encode(encoder)
+func (col *DateTime) Encode(buffer *proto.Buffer) {
+	col.col.EncodeColumn(buffer)
 }
 
 func (col *DateTime) row(i int) time.Time {
-	v := time.Unix(int64(col.values.data[i]), 0)
-	if col.timezone != nil {
-		v = v.In(col.timezone)
-	}
+	v := col.col.Row(i)
 	return v
+}
+
+func (col *DateTime) parseDateTime(str string) (datetime time.Time, err error) {
+	defer func() {
+		if err == nil {
+			err = dateOverflow(minDateTime, maxDateTime, datetime, defaultDateFormat)
+		}
+	}()
+	return time.Parse(defaultDateTimeFormat, str)
 }
 
 var _ Interface = (*DateTime)(nil)

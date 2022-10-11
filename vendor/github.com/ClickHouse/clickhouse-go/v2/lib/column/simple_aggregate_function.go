@@ -18,16 +18,19 @@
 package column
 
 import (
+	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
 	"strings"
-
-	"github.com/ClickHouse/clickhouse-go/v2/lib/binary"
 )
 
 type SimpleAggregateFunction struct {
 	base   Interface
 	chType Type
 	name   string
+}
+
+func (col *SimpleAggregateFunction) Reset() {
+	col.base.Reset()
 }
 
 func (col *SimpleAggregateFunction) Name() string {
@@ -66,11 +69,11 @@ func (col *SimpleAggregateFunction) Append(v interface{}) ([]uint8, error) {
 func (col *SimpleAggregateFunction) AppendRow(v interface{}) error {
 	return col.base.AppendRow(v)
 }
-func (col *SimpleAggregateFunction) Decode(decoder *binary.Decoder, rows int) error {
-	return col.base.Decode(decoder, rows)
+func (col *SimpleAggregateFunction) Decode(reader *proto.Reader, rows int) error {
+	return col.base.Decode(reader, rows)
 }
-func (col *SimpleAggregateFunction) Encode(encoder *binary.Encoder) error {
-	return col.base.Encode(encoder)
+func (col *SimpleAggregateFunction) Encode(buffer *proto.Buffer) {
+	col.base.Encode(buffer)
 }
 
 var _ Interface = (*SimpleAggregateFunction)(nil)
