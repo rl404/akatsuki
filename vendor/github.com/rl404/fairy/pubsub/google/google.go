@@ -87,6 +87,7 @@ func (c *Client) Subscribe(ctx context.Context, topic string) (interface{}, erro
 	// Limit to 1 so you can have multiple consumer
 	// for the same topic.
 	subscription.ReceiveSettings.NumGoroutines = 1
+	subscription.ReceiveSettings.MaxOutstandingMessages = 1
 
 	return &Channel{
 		subscription: subscription,
