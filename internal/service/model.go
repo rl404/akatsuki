@@ -9,7 +9,7 @@ type Pagination struct {
 	Total int `json:"total"`
 }
 
-type alternativeTitles struct {
+type alternativeTitle struct {
 	Synonyms []string `json:"synonyms"`
 	English  string   `json:"english"`
 	Japanese string   `json:"japanese"`
@@ -69,7 +69,7 @@ func (s *service) animeFromEntity(animeDB *entity.Anime) Anime {
 	var anime Anime
 	anime.ID = animeDB.ID
 	anime.Title = animeDB.Title
-	anime.AlternativeTitles = alternativeTitles{
+	anime.AlternativeTitles = alternativeTitle{
 		Synonyms: animeDB.AlternativeTitle.Synonyms,
 		English:  animeDB.AlternativeTitle.English,
 		Japanese: animeDB.AlternativeTitle.Japanese,

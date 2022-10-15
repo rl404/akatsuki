@@ -277,7 +277,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "User Anime"
                 ],
                 "summary": "Get user's anime.",
                 "parameters": [
@@ -361,7 +361,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "User Anime"
                 ],
                 "summary": "Get user's anime relations.",
                 "parameters": [
@@ -425,7 +425,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "User Anime"
                 ],
                 "summary": "Update user's anime.",
                 "parameters": [
@@ -1025,7 +1025,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "alternative_titles": {
-                    "$ref": "#/definitions/service.alternativeTitles"
+                    "$ref": "#/definitions/service.alternativeTitle"
                 },
                 "background": {
                     "type": "string"
@@ -1179,7 +1179,7 @@ const docTemplate = `{
                 }
             }
         },
-        "service.alternativeTitles": {
+        "service.alternativeTitle": {
             "type": "object",
             "properties": {
                 "english": {
@@ -1330,8 +1330,26 @@ const docTemplate = `{
                 "anime_id": {
                     "type": "integer"
                 },
+                "episode_count": {
+                    "type": "integer"
+                },
+                "episode_duration": {
+                    "type": "integer"
+                },
                 "score": {
                     "type": "number"
+                },
+                "season": {
+                    "type": "string"
+                },
+                "season_year": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "start_year": {
+                    "type": "integer"
                 },
                 "status": {
                     "type": "string"
@@ -1347,6 +1365,9 @@ const docTemplate = `{
                 },
                 "user_anime_status": {
                     "type": "string"
+                },
+                "user_episode_count": {
+                    "type": "integer"
                 }
             }
         },
