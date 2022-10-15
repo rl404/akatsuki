@@ -1,5 +1,5 @@
-# cloud.google.com/go v0.103.0
-## explicit; go 1.15
+# cloud.google.com/go v0.104.0
+## explicit; go 1.17
 cloud.google.com/go
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/pubsub
@@ -9,7 +9,7 @@ cloud.google.com/go/compute/metadata
 # cloud.google.com/go/iam v0.3.0
 ## explicit; go 1.15
 cloud.google.com/go/iam
-# cloud.google.com/go/pubsub v1.24.0
+# cloud.google.com/go/pubsub v1.25.1
 ## explicit; go 1.17
 cloud.google.com/go/pubsub
 cloud.google.com/go/pubsub/apiv1
@@ -89,7 +89,7 @@ github.com/go-playground/mold/v4/modifiers
 # github.com/go-playground/universal-translator v0.18.0
 ## explicit; go 1.13
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.11.0
+# github.com/go-playground/validator/v10 v10.11.1
 ## explicit; go 1.13
 github.com/go-playground/validator/v10
 # github.com/go-redis/redis/v8 v8.11.5
@@ -238,8 +238,8 @@ github.com/newrelic/go-agent/v3/internal/logger
 github.com/newrelic/go-agent/v3/internal/sysinfo
 github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
-# github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1
-## explicit; go 1.11
+# github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.2
+## explicit; go 1.17
 github.com/newrelic/go-agent/v3/integrations/nrgrpc
 # github.com/nsqio/go-nsq v1.1.0
 ## explicit; go 1.11
@@ -260,7 +260,7 @@ github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/rl404/fairy v0.20.0
+# github.com/rl404/fairy v0.20.1
 ## explicit; go 1.17
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/bigcache
@@ -291,7 +291,7 @@ github.com/rl404/fairy/pubsub/rabbitmq
 github.com/rl404/fairy/pubsub/redis
 github.com/rl404/fairy/validation
 github.com/rl404/fairy/validation/playground
-# github.com/rs/zerolog v1.27.0
+# github.com/rs/zerolog v1.28.0
 ## explicit; go 1.15
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
@@ -379,7 +379,7 @@ go.uber.org/zap/zapcore
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.0.0-20220812174116-3211cb980234
+# golang.org/x/net v0.0.0-20220909164309-bea034e7d591
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -391,7 +391,7 @@ golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
 golang.org/x/net/webdav
 golang.org/x/net/webdav/internal/xml
-# golang.org/x/oauth2 v0.0.0-20220808172628-8227340efae7
+# golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/authhandler
@@ -433,7 +433,7 @@ golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
 golang.org/x/tools/internal/typeparams
-# google.golang.org/api v0.93.0
+# google.golang.org/api v0.98.0
 ## explicit; go 1.15
 google.golang.org/api/googleapi
 google.golang.org/api/internal
@@ -460,7 +460,7 @@ google.golang.org/appengine/internal/socket
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20220812140447-cec7f5303424
+# google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/iam/v1
