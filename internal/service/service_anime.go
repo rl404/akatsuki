@@ -12,33 +12,33 @@ import (
 
 // Anime is anime model.
 type Anime struct {
-	ID                int64             `json:"id"`
-	Title             string            `json:"title"`
-	AlternativeTitles alternativeTitles `json:"alternative_titles"`
-	Picture           string            `json:"picture"`
-	StartDate         date              `json:"start_date"`
-	EndDate           date              `json:"end_date"`
-	Synopsis          string            `json:"synopsis"`
-	Background        string            `json:"background"`
-	NSFW              bool              `json:"nsfw"`
-	Type              entity.Type       `json:"type" swaggertype:"string"`
-	Status            entity.Status     `json:"status" swaggertype:"string"`
-	Episode           episode           `json:"episode"`
-	Season            *season           `json:"season"`
-	Broadcast         *broadcast        `json:"broadcast"`
-	Source            entity.Source     `json:"source" swaggertype:"string"`
-	Rating            entity.Rating     `json:"rating" swaggertype:"string"`
-	Mean              float64           `json:"mean"`
-	Rank              int               `json:"rank"`
-	Popularity        int               `json:"popularity"`
-	Member            int               `json:"member"`
-	Voter             int               `json:"voter"`
-	Stats             stats             `json:"stats"`
-	Genres            []genre           `json:"genres"`
-	Pictures          []string          `json:"pictures"`
-	Related           []related         `json:"related"`
-	Studios           []studio          `json:"studio"`
-	UpdatedAt         time.Time         `json:"updated_at"`
+	ID                int64            `json:"id"`
+	Title             string           `json:"title"`
+	AlternativeTitles alternativeTitle `json:"alternative_titles"`
+	Picture           string           `json:"picture"`
+	StartDate         date             `json:"start_date"`
+	EndDate           date             `json:"end_date"`
+	Synopsis          string           `json:"synopsis"`
+	Background        string           `json:"background"`
+	NSFW              bool             `json:"nsfw"`
+	Type              entity.Type      `json:"type" swaggertype:"string"`
+	Status            entity.Status    `json:"status" swaggertype:"string"`
+	Episode           episode          `json:"episode"`
+	Season            *season          `json:"season"`
+	Broadcast         *broadcast       `json:"broadcast"`
+	Source            entity.Source    `json:"source" swaggertype:"string"`
+	Rating            entity.Rating    `json:"rating" swaggertype:"string"`
+	Mean              float64          `json:"mean"`
+	Rank              int              `json:"rank"`
+	Popularity        int              `json:"popularity"`
+	Member            int              `json:"member"`
+	Voter             int              `json:"voter"`
+	Stats             stats            `json:"stats"`
+	Genres            []genre          `json:"genres"`
+	Pictures          []string         `json:"pictures"`
+	Related           []related        `json:"related"`
+	Studios           []studio         `json:"studio"`
+	UpdatedAt         time.Time        `json:"updated_at"`
 }
 
 // GetAnimeByID to get anime by id.
@@ -87,13 +87,13 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 			relatedMap[r.ID] = r.Relation
 		}
 
-		relateds, code, err := s.anime.GetByIDs(ctx, relatedIDs)
+		relates, code, err := s.anime.GetByIDs(ctx, relatedIDs)
 		if err != nil {
 			return nil, code, errors.Wrap(ctx, err)
 		}
 
-		anime.Related = make([]related, len(relateds))
-		for i, r := range relateds {
+		anime.Related = make([]related, len(relates))
+		for i, r := range relates {
 			anime.Related[i] = related{
 				ID:       r.ID,
 				Title:    r.Title,

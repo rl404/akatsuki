@@ -6,7 +6,7 @@ import (
 	"github.com/rl404/akatsuki/internal/domain/user_anime/entity"
 )
 
-// Repository contains functions for user domain.
+// Repository contains functions for user_anime domain.
 type Repository interface {
 	Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*entity.UserAnime, int, int, error)
 	Update(ctx context.Context, data entity.UserAnime) (int, error)

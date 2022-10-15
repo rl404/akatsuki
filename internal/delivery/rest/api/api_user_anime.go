@@ -11,7 +11,7 @@ import (
 )
 
 // @summary Get user's anime.
-// @tags User
+// @tags User Anime
 // @produce json
 // @param username path string true "username"
 // @param page query integer false "page" default(1)
@@ -37,7 +37,7 @@ func (api *API) handleGetUserAnime(w http.ResponseWriter, r *http.Request) {
 }
 
 // @summary Get user's anime relations.
-// @tags User
+// @tags User Anime
 // @produce json
 // @param username path string true "username"
 // @success 200 {object} utils.Response{data=service.UserAnimeRelation}
@@ -53,7 +53,7 @@ func (api *API) handleGetUserAnimeRelations(w http.ResponseWriter, r *http.Reque
 }
 
 // @summary Update user's anime.
-// @tags User
+// @tags User Anime
 // @produce json
 // @param username path string true "username"
 // @success 202 {object} utils.Response

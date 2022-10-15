@@ -366,7 +366,7 @@ definitions:
   service.Anime:
     properties:
       alternative_titles:
-        $ref: '#/definitions/service.alternativeTitles'
+        $ref: '#/definitions/service.alternativeTitle'
       background:
         type: string
       broadcast:
@@ -467,7 +467,7 @@ definitions:
           $ref: '#/definitions/service.userAnimeRelationNode'
         type: array
     type: object
-  service.alternativeTitles:
+  service.alternativeTitle:
     properties:
       english:
         type: string
@@ -564,8 +564,20 @@ definitions:
     properties:
       anime_id:
         type: integer
+      episode_count:
+        type: integer
+      episode_duration:
+        type: integer
       score:
         type: number
+      season:
+        type: string
+      season_year:
+        type: integer
+      source:
+        type: string
+      start_year:
+        type: integer
       status:
         type: string
       title:
@@ -576,6 +588,8 @@ definitions:
         type: integer
       user_anime_status:
         type: string
+      user_episode_count:
+        type: integer
     type: object
   utils.Response:
     properties:
@@ -804,7 +818,7 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: Get user's anime.
       tags:
-      - User
+      - User Anime
   /user/{username}/anime/relations:
     get:
       parameters:
@@ -843,7 +857,7 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: Get user's anime relations.
       tags:
-      - User
+      - User Anime
   /user/{username}/update:
     post:
       parameters:
@@ -873,7 +887,7 @@ paths:
             $ref: '#/definitions/utils.Response'
       summary: Update user's anime.
       tags:
-      - User
+      - User Anime
 schemes:
 - http
 - https
