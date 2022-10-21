@@ -1,4 +1,4 @@
-# Akatsuki 
+# Akatsuki
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/rl404/akatsuki)](https://goreportcard.com/report/github.com/rl404/akatsuki)
 ![License: MIT](https://img.shields.io/github/license/rl404/akatsuki)
@@ -8,7 +8,7 @@
 
 Akatsuki is [MyAnimeList](https://myanimelist.net/) anime database dump and REST API.
 
-Powered by [go-myanimelist](github.com/nstratos/go-myanimelist) library and [MyAnimeList API](https://myanimelist.net/apiconfig/references/api/v2) as reference.
+Powered by my [nagato](https://github.com/rl404/nagato) library and [MyAnimeList API](https://myanimelist.net/apiconfig/references/api/v2) as reference.
 
 ## Features
 
