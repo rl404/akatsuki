@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"github.com/nstratos/go-myanimelist/mal"
 	animeRepository "github.com/rl404/akatsuki/internal/domain/anime/repository"
 	emptyIDRepository "github.com/rl404/akatsuki/internal/domain/empty_id/repository"
 	genreRepository "github.com/rl404/akatsuki/internal/domain/genre/repository"
@@ -22,9 +21,6 @@ type Service interface {
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)
 	GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error)
 	UpdateUserAnime(ctx context.Context, username string) (int, error)
-
-	GetMalAnimeByID(ctx context.Context, id int) (*mal.Anime, int, error)
-	GetMalUserAnime(ctx context.Context, data GetMalUserAnimeRequest) ([]mal.UserAnime, int, error)
 
 	ConsumeMessage(ctx context.Context, msg entity.Message) error
 

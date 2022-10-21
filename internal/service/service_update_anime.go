@@ -75,18 +75,13 @@ func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 	}
 
 	// Update anime data.
-	animeE, err := animeEntity.AnimeFromMal(ctx, anime)
-	if err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, err)
-	}
-
-	if code, err := s.anime.Update(ctx, *animeE); err != nil {
+	if code, err := s.anime.Update(ctx, animeEntity.AnimeFromMal(ctx, anime)); err != nil {
 		return code, errors.Wrap(ctx, err)
 	}
 
 	// Queue related anime.
 	for _, r := range anime.RelatedAnime {
-		if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{ID: int64(r.Node.ID)}); err != nil {
+		if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{ID: int64(r.Anime.ID)}); err != nil {
 			return http.StatusInternalServerError, errors.Wrap(ctx, err)
 		}
 	}

@@ -2,27 +2,16 @@ package entity
 
 import (
 	"context"
+	"time"
 
-	"github.com/nstratos/go-myanimelist/mal"
-	"github.com/rl404/akatsuki/internal/errors"
-	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/nagato"
 )
 
 // AnimeFromMal to convert mal to anime.
-func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
+func AnimeFromMal(ctx context.Context, anime *nagato.Anime) Anime {
 	picture := anime.MainPicture.Large
 	if picture == "" {
 		picture = anime.MainPicture.Medium
-	}
-
-	startY, startM, startD, err := utils.SplitDate(anime.StartDate)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
-	}
-
-	endY, endM, endD, err := utils.SplitDate(anime.EndDate)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err)
 	}
 
 	genreIDs := make([]int64, len(anime.Genres))
@@ -41,7 +30,7 @@ func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 	related := make([]Related, len(anime.RelatedAnime))
 	for i, r := range anime.RelatedAnime {
 		related[i] = Related{
-			ID:       int64(r.Node.ID),
+			ID:       int64(r.Anime.ID),
 			Relation: malToRelation(r.RelationType),
 		}
 	}
@@ -51,24 +40,24 @@ func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 		studioIDs[i] = int64(s.ID)
 	}
 
-	return &Anime{
+	return Anime{
 		ID:    int64(anime.ID),
 		Title: anime.Title,
 		AlternativeTitle: AlternativeTitle{
 			Synonyms: anime.AlternativeTitles.Synonyms,
-			English:  anime.AlternativeTitles.En,
-			Japanese: anime.AlternativeTitles.Ja,
+			English:  anime.AlternativeTitles.English,
+			Japanese: anime.AlternativeTitles.Japanese,
 		},
 		Picture: picture,
 		StartDate: Date{
-			Day:   startD,
-			Month: startM,
-			Year:  startY,
+			Day:   anime.StartDate.Day,
+			Month: anime.StartDate.Month,
+			Year:  anime.StartDate.Year,
 		},
 		EndDate: Date{
-			Day:   endD,
-			Month: endM,
-			Year:  endY,
+			Day:   anime.EndDate.Day,
+			Month: anime.EndDate.Month,
+			Year:  anime.EndDate.Year,
 		},
 		Synopsis: anime.Synopsis,
 		NSFW:     anime.NSFW != "white",
@@ -76,7 +65,7 @@ func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 		Status:   malToStatus(anime.Status),
 		Episode: Episode{
 			Count:    anime.NumEpisodes,
-			Duration: anime.AverageEpisodeDuration,
+			Duration: int(anime.AverageEpisodeDuration / time.Second),
 		},
 		Season: SeasonYear{
 			Season: malToSeason(anime.StartSeason.Season),
@@ -107,97 +96,96 @@ func AnimeFromMal(ctx context.Context, anime *mal.Anime) (*Anime, error) {
 		Pictures:  pictures,
 		Related:   related,
 		StudioIDs: studioIDs,
-	}, nil
+	}
 }
 
-func malToType(t string) Type {
-	return map[string]Type{
-		"":        TypeUnknown,
-		"tv":      TypeTV,
-		"ova":     TypeOVA,
-		"ona":     TypeONA,
-		"movie":   TypeMovie,
-		"special": TypeSpecial,
-		"music":   TypeMusic,
+func malToType(t nagato.MediaType) Type {
+	return map[nagato.MediaType]Type{
+		"":                  TypeUnknown,
+		nagato.MediaTV:      TypeTV,
+		nagato.MediaOVA:     TypeOVA,
+		nagato.MediaMovie:   TypeONA,
+		nagato.MediaSpecial: TypeMovie,
+		nagato.MediaONA:     TypeSpecial,
+		nagato.MediaMusic:   TypeMusic,
 	}[t]
 }
 
-func malToStatus(s string) Status {
-	return map[string]Status{
-		"finished_airing":  StatusFinished,
-		"currently_airing": StatusReleasing,
-		"not_yet_aired":    StatusNotYet,
+func malToStatus(s nagato.StatusType) Status {
+	return map[nagato.StatusType]Status{
+		nagato.StatusFinishedAiring:  StatusFinished,
+		nagato.StatusCurrentlyAiring: StatusReleasing,
+		nagato.StatusNotYetAired:     StatusNotYet,
 	}[s]
 }
 
-func malToSeason(s string) Season {
-	return map[string]Season{
-		"winter": SeasonWinter,
-		"spring": SeasonSpring,
-		"summer": SeasonSummer,
-		"fall":   SeasonFall,
+func malToSeason(s nagato.SeasonType) Season {
+	return map[nagato.SeasonType]Season{
+		nagato.SeasonWinter: SeasonWinter,
+		nagato.SeasonSpring: SeasonSpring,
+		nagato.SeasonSummer: SeasonSummer,
+		nagato.SeasonFall:   SeasonFall,
 	}[s]
 }
 
-func malToDay(d string) Day {
-	return map[string]Day{
-		"monday":    DayMonday,
-		"tuesday":   DayTuesday,
-		"wednesday": DayWednesday,
-		"thursday":  DayThursday,
-		"friday":    DayFriday,
-		"saturday":  DaySaturday,
-		"sunday":    DaySunday,
-		"other":     DayOther,
+func malToDay(d nagato.DayType) Day {
+	return map[nagato.DayType]Day{
+		nagato.DayMonday:    DayMonday,
+		nagato.DayTuesday:   DayTuesday,
+		nagato.DayWednesday: DayWednesday,
+		nagato.DayThursday:  DayThursday,
+		nagato.DayFriday:    DayFriday,
+		nagato.DaySaturday:  DaySaturday,
+		nagato.DaySunday:    DaySunday,
+		nagato.DayOther:     DayOther,
 	}[d]
 }
 
-func malToSource(s string) Source {
-	return map[string]Source{
-		"original":      SourceOriginal,
-		"manga":         SourceManga,
-		"4_koma_manga":  Source4Koma,
-		"web_manga":     SourceWebManga,
-		"digital_manga": SourceDigitalManga,
-		"novel":         SourceNovel,
-		"light_novel":   SourceLightNovel,
-		"visual_novel":  SourceVisualNovel,
-		"game":          SourceGame,
-		"card_game":     SourceCardGame,
-		"book":          SourceBook,
-		"picture_book":  SourcePictureBook,
-		"radio":         SourceRadio,
-		"music":         SourceMusic,
-		"other":         SourceOther,
-		"web_novel":     SourceWebNovel,
-		"mixed_media":   SourceMixedMedia,
+func malToSource(s nagato.SourceType) Source {
+	return map[nagato.SourceType]Source{
+		nagato.SourceOriginal:     SourceOriginal,
+		nagato.SourceManga:        SourceManga,
+		nagato.Source4KomaManga:   Source4Koma,
+		nagato.SourceWebManga:     SourceWebManga,
+		nagato.SourceDigitalManga: SourceDigitalManga,
+		nagato.SourceNovel:        SourceNovel,
+		nagato.SourceLightNovel:   SourceLightNovel,
+		nagato.SourceVisualNovel:  SourceVisualNovel,
+		nagato.SourceGame:         SourceGame,
+		nagato.SourceCardGame:     SourceCardGame,
+		nagato.SourceBook:         SourceBook,
+		nagato.SourcePictureBook:  SourcePictureBook,
+		nagato.SourceRadio:        SourceRadio,
+		nagato.SourceMusic:        SourceMusic,
+		nagato.SourceWebNovel:     SourceWebNovel,
+		nagato.SourceMixedMedia:   SourceMixedMedia,
+		nagato.SourceOther:        SourceOther,
 	}[s]
 }
 
-func malToRating(r string) Rating {
-	return map[string]Rating{
-		"g":     RatingG,
-		"pg":    RatingPG,
-		"pg_13": RatingPG13,
-		"r":     RatingR,
-		"r+":    RatingRPlus,
-		"rx":    RatingRX,
+func malToRating(r nagato.RatingType) Rating {
+	return map[nagato.RatingType]Rating{
+		nagato.RatingG:     RatingG,
+		nagato.RatingPG:    RatingPG,
+		nagato.RatingPG13:  RatingPG13,
+		nagato.RatingR:     RatingR,
+		nagato.RatingRPlus: RatingRPlus,
+		nagato.RatingRX:    RatingRX,
 	}[r]
 }
 
-func malToRelation(r string) Relation {
-	return map[string]Relation{
-		"sequel":              RelationSequel,
-		"prequel":             RelationPrequel,
-		"alternative_setting": RelationAlternativeSetting,
-		"alternative_version": RelationAlternativeVersion,
-		"side_story":          RelationSideStory,
-		"spin_off":            RelationSpinOff,
-		"adaptation":          RelationAdaptation,
-		"parent_story":        RelationParentStory,
-		"summary":             RelationSummary,
-		"full_story":          RelationFullStory,
-		"character":           RelationCharacter,
-		"other":               RelationOther,
+func malToRelation(r nagato.RelationType) Relation {
+	return map[nagato.RelationType]Relation{
+		nagato.RelationSequel:             RelationSequel,
+		nagato.RelationPrequel:            RelationPrequel,
+		nagato.RelationAlternativeSetting: RelationAlternativeSetting,
+		nagato.RelationAlternativeVersion: RelationAlternativeVersion,
+		nagato.RelationSideStory:          RelationSideStory,
+		nagato.RelationParentStory:        RelationParentStory,
+		nagato.RelationSummary:            RelationSummary,
+		nagato.RelationFullStory:          RelationFullStory,
+		nagato.RelationSpinOff:            RelationSpinOff,
+		nagato.RelationOther:              RelationOther,
+		nagato.RelationCharacter:          RelationCharacter,
 	}[r]
 }

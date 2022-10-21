@@ -5,26 +5,27 @@ import (
 	"time"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/nstratos/go-myanimelist/mal"
-	"github.com/rl404/fairy/limit"
+	"github.com/rl404/fairy/limit/atomic"
+	"github.com/rl404/nagato"
 )
 
 // Client is client for mal.
 type Client struct {
-	client  *mal.Client
-	limiter limit.Limiter
+	client *nagato.Client
 }
 
 // New to create new mal client.
 func New(clientID string) *Client {
-	limiter, _ := limit.New(limit.Atomic, 1, time.Second)
+	c := nagato.New(clientID)
+	c.SetLimiter(atomic.New(1, time.Second))
+	c.SetHttpClient(&http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &clientIDTransport{
+			clientID: clientID,
+		},
+	})
 	return &Client{
-		client: mal.NewClient(&http.Client{
-			Transport: &clientIDTransport{
-				clientID: clientID,
-			},
-		}),
-		limiter: limiter,
+		client: c,
 	}
 }
 

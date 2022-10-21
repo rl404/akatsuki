@@ -44,7 +44,7 @@ clean:
 # Generate swagger docs.
 .PHONY: swagger
 swagger:
-	@$(SWAG_GEN) --parseVendor -g cmd/akatsuki/main.go -o ./docs
+	@$(SWAG_GEN) -g cmd/akatsuki/main.go -o ./docs
 
 # Generate grpc proto buff.
 .PHONY: grpc
