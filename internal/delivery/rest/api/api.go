@@ -42,8 +42,5 @@ func (api *API) Register(r chi.Router, nrApp *newrelic.Application) {
 		r.Get("/user/{username}/anime", api.handleGetUserAnime)
 		r.Get("/user/{username}/anime/relations", api.handleGetUserAnimeRelations)
 		r.Post("/user/{username}/update", api.handleUpdateUserAnime)
-
-		r.Get("/mal/anime/{animeID}", api.handleGetMalAnimeByID)
-		r.Get("/mal/users/{username}/animelist", api.handleGetMalUserAnime)
 	})
 }

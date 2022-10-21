@@ -42,12 +42,7 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 			ids = append(ids, int64(a.Anime.ID))
 
 			// Update user anime data.
-			animeE, err := userEntity.UserAnimeFromMal(ctx, username, a)
-			if err != nil {
-				return http.StatusInternalServerError, errors.Wrap(ctx, err)
-			}
-
-			if code, err := s.userAnime.Update(ctx, *animeE); err != nil {
+			if code, err := s.userAnime.Update(ctx, userEntity.UserAnimeFromMal(ctx, username, a)); err != nil {
 				return code, errors.Wrap(ctx, err)
 			}
 
