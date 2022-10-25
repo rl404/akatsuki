@@ -4,6 +4,10 @@ type idParam struct {
 	ID int `validate:"gt=0"`
 }
 
+type usernameParam struct {
+	Username string `validate:"required" mod:"trim,default=@me"`
+}
+
 // GetAnimeListParam is get anime list param model.
 type GetAnimeListParam struct {
 	Query  string `validate:"required,gte=3,lte=64" mod:"trim"`
@@ -71,4 +75,56 @@ type GetUserMangaListParam struct {
 	Sort     UserMangaSortType   `validate:"oneof=list_score list_updated_at manga_title manga_start_date manga_id" mod:"trim,default=manga_title"`
 	Limit    int                 `validate:"gt=0,lte=1000" mod:"default=100"`
 	Offset   int                 `validate:"gte=0"`
+}
+
+// UpdateMyAnimeListStatusParam is update my anime list status param.
+type UpdateMyAnimeListStatusParam struct {
+	ID             int                 `validate:"required,gt=0"`
+	Status         UserAnimeStatusType `validate:"oneof='' watching completed on_hold dropped plan_to_watch" mod:"trim,default=plan_to_watch"`
+	IsRewatching   bool                ``
+	Score          int                 `validate:"gte=0,lte=10"`
+	Episode        int                 `validate:"gte=0"`
+	Priority       PriorityType        `validate:"gte=0,lte=2"`
+	RewatchedTimes int                 `validate:"gte=0"`
+	RewatchValue   RewatchValueType    `validate:"gte=0,lte=5"`
+	Tags           []string            ``
+	Comment        string              `mod:"trim"`
+	StartDate      Date                ``
+	FinishDate     Date                ``
+}
+
+// UpdateMyMangaListStatusParam is update my manga list status param.
+type UpdateMyMangaListStatusParam struct {
+	ID          int                 `validate:"required,gt=0"`
+	Status      UserMangaStatusType `validate:"oneof='' reading completed on_hold dropped plan_to_read" mod:"trim,default=plan_to_read"`
+	IsRereading bool                ``
+	Score       int                 `validate:"gte=0,lte=10"`
+	Volume      int                 `validate:"gte=0"`
+	Chapter     int                 `validate:"gte=0"`
+	Priority    PriorityType        `validate:"gte=0,lte=2"`
+	RereadTimes int                 `validate:"gte=0"`
+	RereadValue RereadValueType     `validate:"gte=0,lte=5"`
+	Tags        []string            ``
+	Comment     string              `mod:"trim"`
+	StartDate   Date                ``
+	FinishDate  Date                ``
+}
+
+// GetForumTopicsParam is get forum topics param.
+type GetForumTopicsParam struct {
+	BoardID       int                `validate:"gte=0"`
+	SubboardID    int                `validate:"gte=0"`
+	Query         string             `mod:"trim"`
+	TopicUsername string             `mod:"trim"`
+	Username      string             `mod:"trim"`
+	Sort          ForumTopicSortType `validate:"oneof=recent" mod:"trim,default=recent"`
+	Limit         int                `validate:"gt=0,lte=100" mod:"default=100"`
+	Offset        int                `validate:"gte=0"`
+}
+
+// GetForumTopicDetailsParam is get forum topic details param.
+type GetForumTopicDetailsParam struct {
+	ID     int `validate:"gt=0"`
+	Limit  int `validate:"gt=0,lte=100" mod:"default=100"`
+	Offset int `validate:"gte=0"`
 }

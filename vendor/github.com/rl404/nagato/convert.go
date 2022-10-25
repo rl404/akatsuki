@@ -23,6 +23,14 @@ func (c *Client) mangaFieldsToStrs(fields ...MangaField) []string {
 	return strs
 }
 
+func (c *Client) userFieldsToStrs(fields ...UserField) []string {
+	strs := make([]string, len(fields))
+	for i, f := range fields {
+		strs[i] = string(f)
+	}
+	return strs
+}
+
 func (c *Client) animeToAnime(anime *mal.Anime) *Anime {
 	if anime == nil {
 		return nil
@@ -541,6 +549,23 @@ func (c *Client) mangaRankingPagingToMangaList(manga *mal.MangaRankingPaging) []
 	return res
 }
 
+func (c *Client) listStatusToUserAnimeListStatus(a mal.MyAnimeListStatus) *UserAnimeListStatus {
+	return &UserAnimeListStatus{
+		Status:             c.listStatusToUserAnimeStatus(a.Status),
+		Score:              a.Score,
+		NumEpisodesWatched: a.NumEpisodesWatched,
+		IsRewatching:       a.IsRewatching,
+		StartDate:          c.dateToDate(a.StartDate),
+		FinishDate:         c.dateToDate(a.FinishDate),
+		Priority:           c.priorityToPriority(a.Priority),
+		NumTimesRewatched:  a.NumTimesRewatched,
+		RewatchValue:       c.rewatchToRewatch(a.RewatchValue),
+		Tags:               a.Tags,
+		Comments:           a.Comments,
+		UpdatedAt:          a.UpdatedAt,
+	}
+}
+
 func (c *Client) userAnimePagingToUserAnimeList(anime *mal.UserAnimePaging) []UserAnime {
 	if anime == nil {
 		return nil
@@ -549,25 +574,30 @@ func (c *Client) userAnimePagingToUserAnimeList(anime *mal.UserAnimePaging) []Us
 	res := make([]UserAnime, len(anime.Data))
 	for i, a := range anime.Data {
 		res[i] = UserAnime{
-			Anime: *c.animeToAnime(&a.Node),
-			Status: UserAnimeListStatus{
-				Status:             c.listStatusToUserAnimeStatus(a.ListStatus.Status),
-				Score:              a.ListStatus.Score,
-				NumEpisodesWatched: a.ListStatus.NumEpisodesWatched,
-				IsRewatching:       a.ListStatus.IsRewatching,
-				StartDate:          c.dateToDate(a.ListStatus.StartDate),
-				FinishDate:         c.dateToDate(a.ListStatus.FinishDate),
-				Priority:           c.priorityToPriority(a.ListStatus.Priority),
-				NumTimesRewatched:  a.ListStatus.NumTimesRewatched,
-				RewatchValue:       c.rewatchToRewatch(a.ListStatus.RewatchValue),
-				Tags:               a.ListStatus.Tags,
-				Comments:           a.ListStatus.Comments,
-				UpdatedAt:          a.ListStatus.UpdatedAt,
-			},
+			Anime:  *c.animeToAnime(&a.Node),
+			Status: *c.listStatusToUserAnimeListStatus(a.ListStatus),
 		}
 	}
 
 	return res
+}
+
+func (c *Client) listStatusToUserMangaListStatus(m mal.MyMangaListStatus) *UserMangaListStatus {
+	return &UserMangaListStatus{
+		Status:          c.listStatusToUserMangaStatus(m.Status),
+		Score:           m.Score,
+		NumVolumesRead:  m.NumVolumesRead,
+		NumChaptersRead: m.NumChaptersRead,
+		IsRereading:     m.IsRereading,
+		StartDate:       c.dateToDate(m.StartDate),
+		FinishDate:      c.dateToDate(m.FinishDate),
+		Priority:        c.priorityToPriority(m.Priority),
+		NumTimesReread:  m.NumTimesReread,
+		RereadValue:     c.rereadToReread(m.RereadValue),
+		Tags:            m.Tags,
+		Comments:        m.Comments,
+		UpdatedAt:       m.UpdatedAt,
+	}
 }
 
 func (c *Client) userMangaPagingToUserMangaList(manga *mal.UserMangaPaging) []UserManga {
@@ -578,24 +608,133 @@ func (c *Client) userMangaPagingToUserMangaList(manga *mal.UserMangaPaging) []Us
 	res := make([]UserManga, len(manga.Data))
 	for i, m := range manga.Data {
 		res[i] = UserManga{
-			Manga: *c.mangaToManga(&m.Node),
-			Status: UserMangaListStatus{
-				Status:          c.listStatusToUserMangaStatus(m.ListStatus.Status),
-				Score:           m.ListStatus.Score,
-				NumVolumesRead:  m.ListStatus.NumVolumesRead,
-				NumChaptersRead: m.ListStatus.NumChaptersRead,
-				IsRereading:     m.ListStatus.IsRereading,
-				StartDate:       c.dateToDate(m.ListStatus.StartDate),
-				FinishDate:      c.dateToDate(m.ListStatus.FinishDate),
-				Priority:        c.priorityToPriority(m.ListStatus.Priority),
-				NumTimesReread:  m.ListStatus.NumTimesReread,
-				RereadValue:     c.rereadToReread(m.ListStatus.RereadValue),
-				Tags:            m.ListStatus.Tags,
-				Comments:        m.ListStatus.Comments,
-				UpdatedAt:       m.ListStatus.UpdatedAt,
-			},
+			Manga:  *c.mangaToManga(&m.Node),
+			Status: *c.listStatusToUserMangaListStatus(m.ListStatus),
 		}
 	}
 
+	return res
+}
+
+func (c *Client) userToUser(user *mal.User) *User {
+	return &User{
+		ID:       user.ID,
+		Name:     user.Name,
+		Picture:  user.Picture,
+		Gender:   user.Gender,
+		Birthday: user.Birthday,
+		Location: user.Location,
+		JoinedAt: user.JoinedAt,
+		AnimeStatistics: UserAnimeStatistic{
+			WatchingCount:    user.AnimeStatistics.NumItemsWatching,
+			CompletedCount:   user.AnimeStatistics.NumItemsCompleted,
+			OnHoldCount:      user.AnimeStatistics.NumItemsOnHold,
+			DroppedCount:     user.AnimeStatistics.NumItemsDropped,
+			PlanToWatchCount: user.AnimeStatistics.NumItemsPlanToWatch,
+			TotalCount:       user.AnimeStatistics.NumItems,
+			WatchedDays:      user.AnimeStatistics.NumdaysWatched,
+			WatchingDays:     user.AnimeStatistics.NumdaysWatching,
+			CompletedDays:    user.AnimeStatistics.NumdaysCompleted,
+			OnHoldDays:       user.AnimeStatistics.NumdaysOnHold,
+			DroppedDays:      user.AnimeStatistics.NumdaysDropped,
+			TotalDays:        user.AnimeStatistics.NumDays,
+			Episode:          user.AnimeStatistics.NumEpisodes,
+			RewatchedTimes:   user.AnimeStatistics.NumTimesRewatched,
+			MeanScore:        user.AnimeStatistics.MeanScore,
+		},
+		TimeZone:    user.TimeZone,
+		IsSupporter: user.IsSupporter,
+	}
+}
+
+func (c *Client) forumCategoriesToForumCategories(data []mal.ForumBoardCategory) []ForumBoardCategory {
+	res := make([]ForumBoardCategory, len(data))
+	for i, cc := range data {
+		res[i] = ForumBoardCategory{
+			Title:  cc.Title,
+			Boards: c.forumBoardsToForumBoards(cc.Boards),
+		}
+	}
+	return res
+}
+
+func (c *Client) forumBoardsToForumBoards(data []mal.ForumBoard) []ForumBoard {
+	res := make([]ForumBoard, len(data))
+	for i, d := range data {
+		res[i] = ForumBoard{
+			ID:          d.ID,
+			Title:       d.Title,
+			Description: d.Description,
+			Subboards:   c.forumSubboardsToForumSubboards(d.Subboards),
+		}
+	}
+	return res
+}
+
+func (c *Client) forumSubboardsToForumSubboards(data []mal.ForumSubboard) []ForumSubboard {
+	res := make([]ForumSubboard, len(data))
+	for i, d := range data {
+		res[i] = ForumSubboard{
+			ID:    d.ID,
+			Title: d.Title,
+		}
+	}
+	return res
+}
+
+func (c *Client) forumTopicsToForumTopic(data []mal.ForumTopic) []ForumTopic {
+	res := make([]ForumTopic, len(data))
+	for i, d := range data {
+		res[i] = ForumTopic{
+			ID:                d.ID,
+			Title:             d.Title,
+			CreatedAt:         d.CreatedAt,
+			CreatedBy:         d.CreatedBy.Name,
+			PostCount:         d.NumberOfPosts,
+			LastPostCreatedAt: d.LastPostCreatedAt,
+			LastPostCreatedBy: d.LastPostCreatedBy.Name,
+			IsLocked:          d.IsLocked,
+		}
+	}
+	return res
+}
+
+func (c *Client) forumTopicDetailsToForumTopicDetails(d mal.ForumTopicData) *ForumTopicDetail {
+	return &ForumTopicDetail{
+		Title: d.Title,
+		Posts: c.forumPostsToForumPosts(d.Posts),
+		Poll: ForumPoll{
+			ID:       d.Poll.ID,
+			Question: d.Poll.Question,
+			IsClosed: d.Poll.Closed,
+			Options:  c.forumPollOptionsToForumPollOptions(d.Poll.Options),
+		},
+	}
+}
+
+func (c *Client) forumPostsToForumPosts(data []mal.ForumPost) []ForumPost {
+	res := make([]ForumPost, len(data))
+	for i, d := range data {
+		res[i] = ForumPost{
+			ID:        d.ID,
+			Number:    d.Number,
+			CreatedAt: d.CreatedAt,
+			CreatedBy: d.CreatedBy.Name,
+			Body:      d.Body,
+			Signature: d.Signature,
+		}
+	}
+	return res
+}
+
+func (c *Client) forumPollOptionsToForumPollOptions(data []mal.ForumPollOption) []ForumPollOption {
+	res := make([]ForumPollOption, len(data))
+	for i, d := range data {
+		res[i] = ForumPollOption{
+			ID:    d.ID,
+			Text:  d.Text,
+			Votes: d.Votes,
+		}
+	}
 	return res
 }

@@ -1,8 +1,10 @@
 package nagato
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (c *Client) dateToDate(date string) Date {
@@ -27,6 +29,47 @@ func (c *Client) dateToDate(date string) Date {
 	}
 
 	return d
+}
+
+func (c *Client) dateToStr(date Date) string {
+	var d []string
+	if date.Year > 0 {
+		d = append(d, fmt.Sprintf("%d", date.Year))
+	}
+
+	if date.Month > 0 {
+		d = append(d, fmt.Sprintf("%02d", date.Month))
+	}
+
+	if date.Day > 0 {
+		d = append(d, fmt.Sprintf("%02d", date.Day))
+	}
+
+	return strings.Join(d, "-")
+}
+
+func (c *Client) validateDate(date Date) error {
+	if date.Day > 0 {
+		if date.Month == 0 || date.Year == 0 {
+			return ErrInvalidDate
+		}
+
+		d := fmt.Sprintf("%02d-%02d-%04d", date.Day, date.Month, date.Year)
+		if _, err := time.Parse("02-01-2006", d); err != nil {
+			return ErrInvalidDate
+		}
+
+		return nil
+	}
+
+	if date.Month > 0 {
+		if date.Year == 0 {
+			return ErrInvalidDate
+		}
+		return nil
+	}
+
+	return nil
 }
 
 func (c *Client) initValidator() {
@@ -59,4 +102,11 @@ func (c *Client) valErrLTE(f string, param ...string) error {
 
 func (c *Client) valErrOneOf(f string, param ...string) error {
 	return c.errOneOfField(f, param[0])
+}
+
+func (p *GetForumTopicsParam) validate() error {
+	if p.BoardID == 0 && p.SubboardID == 0 && p.Query == "" {
+		return ErrForumTopicMissingQuery
+	}
+	return nil
 }
