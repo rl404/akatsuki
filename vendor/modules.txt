@@ -1,16 +1,15 @@
 # cloud.google.com/go v0.104.0
 ## explicit; go 1.17
-cloud.google.com/go
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/pubsub
 # cloud.google.com/go/compute v1.10.0
 ## explicit; go 1.17
 cloud.google.com/go/compute/metadata
-# cloud.google.com/go/iam v0.3.0
-## explicit; go 1.15
-cloud.google.com/go/iam
-# cloud.google.com/go/pubsub v1.25.1
+# cloud.google.com/go/iam v0.5.0
 ## explicit; go 1.17
+cloud.google.com/go/iam
+# cloud.google.com/go/pubsub v1.26.0
+## explicit; go 1.19
 cloud.google.com/go/pubsub
 cloud.google.com/go/pubsub/apiv1
 cloud.google.com/go/pubsub/internal
@@ -257,7 +256,7 @@ github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/rl404/fairy v0.20.2
+# github.com/rl404/fairy v0.21.0
 ## explicit; go 1.17
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/bigcache

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 
+	"github.com/mattn/go-colorable"
 	"github.com/rs/zerolog"
 )
 
@@ -42,13 +44,17 @@ func New(level LogLevel, jsonFmt, color bool) *Log {
 		Level(zerolog.Level(level))
 
 	if !jsonFmt {
-		l = l.Output(zerolog.ConsoleWriter{
+		cw := zerolog.ConsoleWriter{
 			Out:     os.Stderr,
 			NoColor: !color,
 			FormatTimestamp: func(i interface{}) string {
 				return colorize(i, 90, !color)
 			},
-		})
+		}
+		if runtime.GOOS == "windows" {
+			cw.Out = colorable.NewColorableStderr()
+		}
+		l = l.Output(cw)
 	}
 
 	return &Log{
