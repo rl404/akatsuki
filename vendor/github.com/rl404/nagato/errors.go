@@ -1,8 +1,15 @@
 package nagato
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+)
+
+// List of errors.
+var (
+	ErrInvalidDate            = errors.New("invalid date")
+	ErrForumTopicMissingQuery = errors.New("at least one of BoardID, SubboardID, or Query is required")
 )
 
 func (c *Client) errRequiredField(str string) error {

@@ -223,3 +223,15 @@ func MangaFieldUserStatus(fields ...UserMangaField) MangaField {
 	}
 	return MangaField("list_status" + nested)
 }
+
+// UserField is user fields.
+type UserField string
+
+// Available user fields.
+//
+// id, name, picture, gender, birthday, location, joined_at
+// is_supporter are returned by default.
+const (
+	UserFieldTimeZone        UserField = "time_zone"
+	UserFieldAnimeStatistics UserField = "anime_statistics"
+)

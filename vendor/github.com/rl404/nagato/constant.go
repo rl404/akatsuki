@@ -251,3 +251,11 @@ const (
 	UserMangaSortStartDate UserMangaSortType = "manga_start_date"
 	UserMangaSortID        UserMangaSortType = "manga_id" // Not working.
 )
+
+// ForumTopicSortType is forum topic sort types.
+type ForumTopicSortType string
+
+// Available forum topic sort types.
+const (
+	ForumTopicSortRecent ForumTopicSortType = "recent"
+)

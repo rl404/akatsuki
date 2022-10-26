@@ -286,7 +286,7 @@ github.com/rl404/fairy/pubsub/rabbitmq
 github.com/rl404/fairy/pubsub/redis
 github.com/rl404/fairy/validation
 github.com/rl404/fairy/validation/playground
-# github.com/rl404/nagato v0.2.1
+# github.com/rl404/nagato v0.3.0
 ## explicit; go 1.18
 github.com/rl404/nagato
 github.com/rl404/nagato/internal/limiter

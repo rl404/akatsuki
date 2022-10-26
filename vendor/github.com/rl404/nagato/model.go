@@ -87,9 +87,9 @@ type AlternativeTitles struct {
 
 // Date is date model.
 type Date struct {
-	Year  int
-	Month int
-	Day   int
+	Year  int `validate:"gte=0"`
+	Month int `validate:"gte=0,lte=12"`
+	Day   int `validate:"gte=0,lte=31"`
 }
 
 // Genre is genre model.
@@ -241,4 +241,101 @@ type UserAnime struct {
 type UserManga struct {
 	Manga  Manga
 	Status UserMangaListStatus
+}
+
+// User is user model.
+type User struct {
+	ID              int
+	Name            string
+	Picture         string
+	Gender          string
+	Birthday        string
+	Location        string
+	JoinedAt        time.Time
+	AnimeStatistics UserAnimeStatistic
+	TimeZone        string
+	IsSupporter     bool
+}
+
+// UserAnimeStatistic is user anime statistic.
+type UserAnimeStatistic struct {
+	WatchingCount    int
+	CompletedCount   int
+	OnHoldCount      int
+	DroppedCount     int
+	PlanToWatchCount int
+	TotalCount       int
+	WatchedDays      float64
+	WatchingDays     float64
+	CompletedDays    float64
+	OnHoldDays       float64
+	DroppedDays      float64
+	TotalDays        float64
+	Episode          int
+	RewatchedTimes   int
+	MeanScore        float64
+}
+
+// ForumBoardCategory is forum board category model.
+type ForumBoardCategory struct {
+	Title  string
+	Boards []ForumBoard
+}
+
+// ForumBoard is forum board model.
+type ForumBoard struct {
+	ID          int
+	Title       string
+	Description string
+	Subboards   []ForumSubboard
+}
+
+// ForumSubboard is forum subboard model.
+type ForumSubboard struct {
+	ID    int
+	Title string
+}
+
+// ForumTopic is forum topic model.
+type ForumTopic struct {
+	ID                int
+	Title             string
+	CreatedAt         time.Time
+	CreatedBy         string
+	PostCount         int
+	LastPostCreatedAt time.Time
+	LastPostCreatedBy string
+	IsLocked          bool
+}
+
+// ForumTopicDetail is forum topic detail model.
+type ForumTopicDetail struct {
+	Title string
+	Posts []ForumPost
+	Poll  ForumPoll
+}
+
+// ForumPost is forum post model.
+type ForumPost struct {
+	ID        int
+	Number    int
+	CreatedAt time.Time
+	CreatedBy string
+	Body      string
+	Signature string
+}
+
+// ForumPoll is forum poll model.
+type ForumPoll struct {
+	ID       int
+	Question string
+	IsClosed bool
+	Options  []ForumPollOption
+}
+
+// ForumPollOption is forum poll option.
+type ForumPollOption struct {
+	ID    int
+	Text  string
+	Votes int
 }

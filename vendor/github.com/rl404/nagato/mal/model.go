@@ -493,7 +493,7 @@ type ForumPostCreatedBy struct {
 type ForumPoll struct {
 	ID       int               `json:"id"`
 	Question string            `json:"question"`
-	Close    bool              `json:"close"`
+	Closed   bool              `json:"closed"` // Typo from API.
 	Options  []ForumPollOption `json:"options"`
 }
 
