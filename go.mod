@@ -12,7 +12,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.19.2
 	github.com/rl404/fairy v0.20.2
 	github.com/rl404/nagato v0.3.0
-	github.com/spf13/cobra v1.6.0
+	github.com/spf13/cobra v1.6.1
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.7
 	golang.org/x/text v0.4.0
