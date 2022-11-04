@@ -226,7 +226,7 @@ github.com/microsoft/go-mssqldb/internal/cp
 github.com/microsoft/go-mssqldb/internal/decimal
 github.com/microsoft/go-mssqldb/internal/querytext
 github.com/microsoft/go-mssqldb/msdsn
-# github.com/newrelic/go-agent/v3 v3.19.2
+# github.com/newrelic/go-agent/v3 v3.20.0
 ## explicit; go 1.17
 github.com/newrelic/go-agent/v3/internal
 github.com/newrelic/go-agent/v3/internal/cat
