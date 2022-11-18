@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/fairy/limit/atomic"
 	"github.com/rl404/nagato"
 )
@@ -38,7 +37,7 @@ func (c *clientIDTransport) RoundTrip(req *http.Request) (*http.Response, error)
 	if c.transport == nil {
 		c.transport = http.DefaultTransport
 	}
-	c.transport = newrelic.NewRoundTripper(c.transport)
+	// c.transport = newrelic.NewRoundTripper(c.transport)
 	req.Header.Add("X-MAL-CLIENT-ID", c.clientID)
 	return c.transport.RoundTrip(req)
 }
