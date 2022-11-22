@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/fairy/limit/atomic"
 	"github.com/rl404/nagato"
 )
@@ -19,9 +20,9 @@ func New(clientID string) *Client {
 	c.SetLimiter(atomic.New(1, time.Second))
 	c.SetHttpClient(&http.Client{
 		Timeout: 10 * time.Second,
-		Transport: &clientIDTransport{
+		Transport: newrelic.NewRoundTripper(&clientIDTransport{
 			clientID: clientID,
-		},
+		}),
 	})
 	return &Client{
 		client: c,
@@ -37,7 +38,6 @@ func (c *clientIDTransport) RoundTrip(req *http.Request) (*http.Response, error)
 	if c.transport == nil {
 		c.transport = http.DefaultTransport
 	}
-	// c.transport = newrelic.NewRoundTripper(c.transport)
 	req.Header.Add("X-MAL-CLIENT-ID", c.clientID)
 	return c.transport.RoundTrip(req)
 }
