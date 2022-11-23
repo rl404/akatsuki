@@ -64,7 +64,7 @@ jobs:
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v1
       - name: Setup GKE
-        uses: google-github-actions/get-gke-credentials@v0
+        uses: google-github-actions/get-gke-credentials@v1
         with:
           cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
