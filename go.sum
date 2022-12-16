@@ -356,8 +356,8 @@ github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a h1:kAe4YSu0O0UFn1DowN
 github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a/go.mod h1:lKJPbtWzJ9JhsTN1k1gZgleJWY/cqq0psdoMmaThG3w=
 github.com/swaggo/http-swagger v1.3.3 h1:Hu5Z0L9ssyBLofaama21iYaF2VbWyA8jdohaaCGpHsc=
 github.com/swaggo/http-swagger v1.3.3/go.mod h1:sE+4PjD89IxMPm77FnkDz0sdO+p5lbXzrVWT6OTVVGo=
-github.com/swaggo/swag v1.8.8 h1:/GgJmrJ8/c0z4R4hoEPZ5UeEhVGdvsII4JbVDLbR7Xc=
-github.com/swaggo/swag v1.8.8/go.mod h1:ezQVUUhly8dludpVk+/PuwJWvLLanB13ygV5Pr9enSk=
+github.com/swaggo/swag v1.8.9 h1:kHtaBe/Ob9AZzAANfcn5c6RyCke9gG9QpH0jky0I/sA=
+github.com/swaggo/swag v1.8.9/go.mod h1:ezQVUUhly8dludpVk+/PuwJWvLLanB13ygV5Pr9enSk=
 github.com/tklauser/go-sysconf v0.3.10/go.mod h1:C8XykCvCb+Gn0oNCWPIlcb0RuglQTYaQ2hGm7jmxEFk=
 github.com/tklauser/numcpus v0.4.0/go.mod h1:1+UI3pD8NW14VMwdgJNJ1ESk2UnwhAnz5hMwiKKqXCQ=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
