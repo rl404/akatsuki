@@ -22,7 +22,7 @@ require (
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/driver/postgres v1.4.6
 	gorm.io/driver/sqlite v1.4.4
-	gorm.io/driver/sqlserver v1.4.1
+	gorm.io/driver/sqlserver v1.4.2
 	gorm.io/gorm v1.24.3
 )
 
@@ -75,7 +75,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
-	github.com/microsoft/go-mssqldb v0.17.0 // indirect
+	github.com/microsoft/go-mssqldb v0.19.0 // indirect
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.2 // indirect
 	github.com/nsqio/go-nsq v1.1.0 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect

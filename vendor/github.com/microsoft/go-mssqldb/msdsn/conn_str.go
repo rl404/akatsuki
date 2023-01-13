@@ -69,10 +69,16 @@ type Config struct {
 
 	// Do not use the following.
 
-	DialTimeout time.Duration // DialTimeout defaults to 15s. Set negative to disable.
+	DialTimeout time.Duration // DialTimeout defaults to 15s per protocol. Set negative to disable.
 	ConnTimeout time.Duration // Use context for timeouts.
 	KeepAlive   time.Duration // Leave at default.
 	PacketSize  uint16
+
+	Parameters map[string]string
+	// Protocols is an ordered list of protocols to dial
+	Protocols []string
+	// ProtocolParameters are written by non-tcp ProtocolParser implementations
+	ProtocolParameters map[string]interface{}
 }
 
 func SetupTLS(certificate string, insecureSkipVerify bool, hostInCertificate string, minTLSVersion string) (*tls.Config, error) {
@@ -109,43 +115,39 @@ func SetupTLS(certificate string, insecureSkipVerify bool, hostInCertificate str
 
 var skipSetup = errors.New("skip setting up TLS")
 
-func Parse(dsn string) (Config, map[string]string, error) {
-	p := Config{}
+func Parse(dsn string) (Config, error) {
+	p := Config{
+		ProtocolParameters: map[string]interface{}{},
+		Protocols:          []string{},
+	}
 
 	var params map[string]string
+	var err error
 	if strings.HasPrefix(dsn, "odbc:") {
-		parameters, err := splitConnectionStringOdbc(dsn[len("odbc:"):])
+		params, err = splitConnectionStringOdbc(dsn[len("odbc:"):])
 		if err != nil {
-			return p, params, err
+			return p, err
 		}
-		params = parameters
 	} else if strings.HasPrefix(dsn, "sqlserver://") {
-		parameters, err := splitConnectionStringURL(dsn)
+		params, err = splitConnectionStringURL(dsn)
 		if err != nil {
-			return p, params, err
+			return p, err
 		}
-		params = parameters
 	} else {
 		params = splitConnectionString(dsn)
 	}
+
+	p.Parameters = params
 
 	strlog, ok := params["log"]
 	if ok {
 		flags, err := strconv.ParseUint(strlog, 10, 64)
 		if err != nil {
-			return p, params, fmt.Errorf("invalid log parameter '%s': %s", strlog, err.Error())
+			return p, fmt.Errorf("invalid log parameter '%s': %s", strlog, err.Error())
 		}
 		p.LogFlags = Log(flags)
 	}
-	server := params["server"]
-	parts := strings.SplitN(server, `\`, 2)
-	p.Host = parts[0]
-	if p.Host == "." || strings.ToUpper(p.Host) == "(LOCAL)" || p.Host == "" {
-		p.Host = "localhost"
-	}
-	if len(parts) > 1 {
-		p.Instance = parts[1]
-	}
+
 	p.Database = params["database"]
 	p.User = params["user id"]
 	p.Password = params["password"]
@@ -157,7 +159,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		p.Port, err = strconv.ParseUint(strport, 10, 16)
 		if err != nil {
 			f := "invalid tcp port '%v': %v"
-			return p, params, fmt.Errorf(f, strport, err.Error())
+			return p, fmt.Errorf(f, strport, err.Error())
 		}
 	}
 
@@ -168,7 +170,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		psize, err := strconv.ParseUint(strpsize, 0, 16)
 		if err != nil {
 			f := "invalid packet size '%v': %v"
-			return p, params, fmt.Errorf(f, strpsize, err.Error())
+			return p, fmt.Errorf(f, strpsize, err.Error())
 		}
 
 		// Ensure packet size falls within the TDS protocol range of 512 to 32767 bytes
@@ -191,17 +193,22 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		timeout, err := strconv.ParseUint(strconntimeout, 10, 64)
 		if err != nil {
 			f := "invalid connection timeout '%v': %v"
-			return p, params, fmt.Errorf(f, strconntimeout, err.Error())
+			return p, fmt.Errorf(f, strconntimeout, err.Error())
 		}
 		p.ConnTimeout = time.Duration(timeout) * time.Second
 	}
-	p.DialTimeout = 15 * time.Second
+	f := len(p.Protocols)
+	if f == 0 {
+		f = 1
+	}
+	p.DialTimeout = time.Duration(15*f) * time.Second
 	if strdialtimeout, ok := params["dial timeout"]; ok {
 		timeout, err := strconv.ParseUint(strdialtimeout, 10, 64)
 		if err != nil {
 			f := "invalid dial timeout '%v': %v"
-			return p, params, fmt.Errorf(f, strdialtimeout, err.Error())
+			return p, fmt.Errorf(f, strdialtimeout, err.Error())
 		}
+
 		p.DialTimeout = time.Duration(timeout) * time.Second
 	}
 
@@ -212,7 +219,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		timeout, err := strconv.ParseUint(keepAlive, 10, 64)
 		if err != nil {
 			f := "invalid keepAlive value '%s': %s"
-			return p, params, fmt.Errorf(f, keepAlive, err.Error())
+			return p, fmt.Errorf(f, keepAlive, err.Error())
 		}
 		p.KeepAlive = time.Duration(timeout) * time.Second
 	}
@@ -230,7 +237,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 			e, err := strconv.ParseBool(encrypt)
 			if err != nil {
 				f := "invalid encrypt '%s': %s"
-				return p, params, fmt.Errorf(f, encrypt, err.Error())
+				return p, fmt.Errorf(f, encrypt, err.Error())
 			}
 			if e {
 				p.Encryption = EncryptionRequired
@@ -245,7 +252,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		trustServerCert, err = strconv.ParseBool(trust)
 		if err != nil {
 			f := "invalid trust server certificate '%s': %s"
-			return p, params, fmt.Errorf(f, trust, err.Error())
+			return p, fmt.Errorf(f, trust, err.Error())
 		}
 	}
 	certificate = params["certificate"]
@@ -262,16 +269,14 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		var err error
 		p.TLSConfig, err = SetupTLS(certificate, trustServerCert, hostInCertificate, tlsMin)
 		if err != nil {
-			return p, params, fmt.Errorf("failed to setup TLS: %w", err)
+			return p, fmt.Errorf("failed to setup TLS: %w", err)
 		}
 	}
 
 	serverSPN, ok := params["serverspn"]
 	if ok {
 		p.ServerSPN = serverSPN
-	} else {
-		p.ServerSPN = generateSpn(p.Host, p.Port)
-	}
+	} // If not set by the app, ServerSPN will be set by the successful dialer.
 
 	workstation, ok := params["workstation id"]
 	if ok {
@@ -293,7 +298,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 	if ok {
 		if appintent == "ReadOnly" {
 			if p.Database == "" {
-				return p, params, fmt.Errorf("database must be specified when ApplicationIntent is ReadOnly")
+				return p, fmt.Errorf("database must be specified when ApplicationIntent is ReadOnly")
 			}
 			p.ReadOnlyIntent = true
 		}
@@ -310,7 +315,7 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		p.FailOverPort, err = strconv.ParseUint(failOverPort, 0, 16)
 		if err != nil {
 			f := "invalid failover port '%v': %v"
-			return p, params, fmt.Errorf(f, failOverPort, err.Error())
+			return p, fmt.Errorf(f, failOverPort, err.Error())
 		}
 	}
 
@@ -320,13 +325,35 @@ func Parse(dsn string) (Config, map[string]string, error) {
 		p.DisableRetry, err = strconv.ParseBool(disableRetry)
 		if err != nil {
 			f := "invalid disableRetry '%s': %s"
-			return p, params, fmt.Errorf(f, disableRetry, err.Error())
+			return p, fmt.Errorf(f, disableRetry, err.Error())
 		}
 	} else {
 		p.DisableRetry = disableRetryDefault
 	}
 
-	return p, params, nil
+	server := params["server"]
+	protocol, ok := params["protocol"]
+
+	for _, parser := range ProtocolParsers {
+		if !ok || parser.Protocol() == protocol {
+			err = parser.ParseServer(server, &p)
+			if err != nil {
+				// if the caller only wants this protocol , fail right away
+				if ok {
+					return p, err
+				}
+			} else {
+				// Only enable a protocol if it can handle the server name
+				p.Protocols = append(p.Protocols, parser.Protocol())
+			}
+
+		}
+	}
+	if ok && len(p.Protocols) == 0 {
+		return p, fmt.Errorf("No protocol handler is available for protocol: '%s'", protocol)
+	}
+
+	return p, nil
 }
 
 // convert connectionParams to url style connection string
@@ -344,6 +371,10 @@ func (p Config) URL() *url.URL {
 		host = fmt.Sprintf("%s:%d", p.Host, p.Port)
 	}
 	q.Add("disableRetry", fmt.Sprintf("%t", p.DisableRetry))
+	protocol, ok := p.Parameters["protocol"]
+	if ok {
+		q.Add("protocol", protocol)
+	}
 	res := url.URL{
 		Scheme: "sqlserver",
 		Host:   host,
@@ -352,9 +383,11 @@ func (p Config) URL() *url.URL {
 	if p.Instance != "" {
 		res.Path = p.Instance
 	}
+	q.Add("dial timeout", strconv.FormatFloat(float64(p.DialTimeout.Seconds()), 'f', 0, 64))
 	if len(q) > 0 {
 		res.RawQuery = q.Encode()
 	}
+
 	return &res
 }
 
@@ -390,9 +423,14 @@ func splitConnectionString(dsn string) (res map[string]string) {
 			name = synonym
 		}
 		// "server" in ADO can include a protocol and a port.
-		// We only support tcp protocol
 		if name == "server" {
-			value = strings.TrimPrefix(value, "tcp:")
+			for _, parser := range ProtocolParsers {
+				prot := parser.Protocol() + ":"
+				if strings.HasPrefix(value, prot) {
+					res["protocol"] = parser.Protocol()
+				}
+				value = strings.TrimPrefix(value, prot)
+			}
 			serverParts := strings.Split(value, ",")
 			if len(serverParts) == 2 && len(serverParts[1]) > 0 {
 				value = serverParts[0]
@@ -608,6 +646,42 @@ func normalizeOdbcKey(s string) string {
 	return strings.ToLower(strings.TrimRightFunc(s, unicode.IsSpace))
 }
 
-func generateSpn(host string, port uint64) string {
-	return fmt.Sprintf("MSSQLSvc/%s:%d", host, port)
+const defaultServerPort = 1433
+
+func resolveServerPort(port uint64) uint64 {
+	if port == 0 {
+		return defaultServerPort
+	}
+
+	return port
+}
+
+// ProtocolParser can populate Config with parameters to dial using its protocol
+type ProtocolParser interface {
+	ParseServer(server string, p *Config) error
+	Protocol() string
+}
+
+// ProtocolParsers is an ordered list of protocols that can be dialed. Each parser must have a corresponding Dialer in mssql.ProtocolDialers
+var ProtocolParsers []ProtocolParser = []ProtocolParser{
+	tcpParser{},
+}
+
+type tcpParser struct{}
+
+func (t tcpParser) ParseServer(server string, p *Config) error {
+	// a server name can have different forms
+	parts := strings.SplitN(server, `\`, 2)
+	p.Host = parts[0]
+	if p.Host == "." || strings.ToUpper(p.Host) == "(LOCAL)" || p.Host == "" {
+		p.Host = "localhost"
+	}
+	if len(parts) > 1 {
+		p.Instance = parts[1]
+	}
+	return nil
+}
+
+func (t tcpParser) Protocol() string {
+	return "tcp"
 }
