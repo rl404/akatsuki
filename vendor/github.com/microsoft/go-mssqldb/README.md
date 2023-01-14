@@ -4,11 +4,13 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/jrln8cs62wj9i0a2?svg=true)](https://ci.appveyor.com/project/microsoft/go-mssqldb)
 [![codecov](https://codecov.io/gh/microsoft/go-mssqldb/branch/master/graph/badge.svg)](https://codecov.io/gh/microsoft/go-mssqldb)
 
+For more recent updates, see the [Microsoft fork](https://github.com/microsoft/go-mssqldb).
+
 ## Install
 
 Requires Go 1.8 or above.
 
-Install with `go get github.com/microsoft/go-mssqldb` .
+Install with `go install github.com/microsoft/go-mssqldb@latest`.
 
 ## Connection Parameters and DSN
 
@@ -22,12 +24,13 @@ Other supported formats are listed below.
 * `password`
 * `database`
 * `connection timeout` - in seconds (default is 0 for no timeout), set to 0 for no timeout. Recommended to set to 0 and use context to manage query and connection timeouts.
-* `dial timeout` - in seconds (default is 15), set to 0 for no timeout
+* `dial timeout` - in seconds (default is 15 times the number of registered protocols), set to 0 for no timeout.
 * `encrypt`
   * `disable` - Data send between client and server is not encrypted.
   * `false` - Data sent between client and server is not encrypted beyond the login packet. (Default)
   * `true` - Data sent between client and server is encrypted.
 * `app name` - The application name (default is go-mssqldb)
+* `authenticator` - Can be used to specify use of a registered authentication provider. (e.g. ntlm, winsspi (on windows) or krb5 (on linux))
 
 ### Connection parameters for ODBC and ADO style connection strings
 
@@ -59,6 +62,32 @@ Other supported formats are listed below.
 * `Workstation ID` - The workstation name (default is the host name)
 * `ApplicationIntent` - Can be given the value `ReadOnly` to initiate a read-only connection to an Availability Group listener. The `database` must be specified when connecting with `Application Intent` set to `ReadOnly`.
 
+### Kerberos Active Directory authentication outside Windows
+The package supports authentication via 3 methods.
+
+* Keytabs - Specify the username, keytab file, the krb5.conf file, and realm.
+
+      authenticator=krb5;server=DatabaseServerName;database=DBName;user id=MyUserName;realm=domain.com;krb5conffile=/etc/krb5.conf;keytabfile=~/MyUserName.keytab
+
+* Credential Cache - Specify the krb5.conf file path and credential cache file path.
+
+      authenticator=krb5;server=DatabaseServerName;database=DBName;krb5conffile=/etc/krb5.conf;krbcache=~/MyUserNameCachedCreds
+
+* Raw credentials - Specity krb5.confg, Username, Password and Realm.
+
+      authenticator=krb5;server=DatabaseServerName;database=DBName;user id=MyUserName;password=foo;realm=comani.com;krb5conffile=/etc/krb5.conf;
+
+### Kerberos Parameters
+
+* `authenticator` - set this to `krb5` to enable kerberos authentication. If this is not present, the default provider would be `ntlm` for unix and `winsspi` for windows.
+* `krb5conffile` (mandatory) - path to kerberos configuration file. 
+* `realm` (required with keytab and raw credentials) - Domain name for kerberos authentication. 
+* `keytabfile` - path to Keytab file.
+* `krbcache` - path to Credential cache.
+* For further information on usage: 
+  * <https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html>
+  * <https://web.mit.edu/kerberos/krb5-1.12/doc/basic/index.html>
+
 ### The connection string can be specified in one of three formats
 
 1. URL: with `sqlserver` scheme. username and password appears before the host. Any instance appears as
@@ -88,11 +117,17 @@ Other supported formats are listed below.
 
     ```
 
+* `sqlserver://username@host/instance?krb5conffile=path/to/file&krbcache=/path/to/cache`
+    * `sqlserver://username@host/instance?krb5conffile=path/to/file&realm=domain.com&keytabfile=/path/to/keytabfile`
+
 2. ADO: `key=value` pairs separated by `;`. Values may not contain `;`, leading and trailing whitespace is ignored.
      Examples:
 
     * `server=localhost\\SQLExpress;user id=sa;database=master;app name=MyAppName`
     * `server=localhost;user id=sa;database=master;app name=MyAppName`
+    * `server=localhost;user id=sa;database=master;app name=MyAppName;krb5conffile=path/to/file;krbcache=path/to/cache;authenticator=krb5`
+    * `server=localhost;user id=sa;database=master;app name=MyAppName;krb5conffile=path/to/file;realm=domain.com;keytabfile=path/to/keytabfile;authenticator=krb5`
+
 
     ADO strings support synonyms for database, app name, user id, and server
     * server <= addr, address, network address, data source
@@ -112,6 +147,8 @@ Other supported formats are listed below.
     * `odbc:server=localhost;user id=sa;password=foo}bar`   // Literal `}`, password is "foo}bar"
     * `odbc:server=localhost;user id=sa;password={foo{bar}` // Literal `{`, password is "foo{bar"
     * `odbc:server=localhost;user id=sa;password={foo}}bar}` // Escaped `} with`}}`, password is "foo}bar"
+    * `odbc:server=localhost;user id=sa;database=master;app name=MyAppName;krb5conffile=path/to/file;krbcache=path/to/cache;authenticator=krb5`
+    * `odbc:server=localhost;user id=sa;database=master;app name=MyAppName;krb5conffile=path/to/file;realm=domain.com;keytabfile=path/to/keytabfile;authenticator=krb5`
 
 ### Azure Active Directory authentication
 
@@ -322,6 +359,10 @@ db.QueryContext(ctx, `select * from t2 where user_name = @p1;`, mssql.VarChar(na
 * Supports Single-Sign-On on Windows
 * Supports connections to AlwaysOn Availability Group listeners, including re-direction to read-only replicas.
 * Supports query notifications
+* Supports Kerberos Authentication
+* Pluggable Dialer implementations through `msdsn.ProtocolParsers` and `msdsn.ProtocolDialers`
+* A `namedpipe` package to support connections using named pipes (np:) on Windows
+* A `sharedmemory` package to support connections using shared memory (lpc:) on Windows
 
 ## Tests
 
