@@ -585,7 +585,7 @@ gorm.io/driver/sqlite
 # gorm.io/driver/sqlserver v1.4.2
 ## explicit; go 1.14
 gorm.io/driver/sqlserver
-# gorm.io/gorm v1.24.3
+# gorm.io/gorm v1.24.4
 ## explicit; go 1.16
 gorm.io/gorm
 gorm.io/gorm/callbacks
