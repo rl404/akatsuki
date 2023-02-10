@@ -15,7 +15,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.10
-	golang.org/x/text v0.6.0
+	golang.org/x/text v0.7.0
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/clickhouse v0.5.0
