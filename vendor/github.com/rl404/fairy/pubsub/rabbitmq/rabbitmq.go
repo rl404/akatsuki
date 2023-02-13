@@ -77,11 +77,10 @@ func (c *Client) Publish(ctx context.Context, queue string, data interface{}) er
 		return err
 	}
 
-	err = ch.Publish("", q.Name, false, false, amqp.Publishing{
+	if err := ch.Publish("", q.Name, false, false, amqp.Publishing{
 		ContentType: "text/plain",
 		Body:        j,
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 
@@ -129,12 +128,12 @@ func (c *Client) subscribe(queue string) (*Channel, error) {
 		return nil, err
 	}
 
-	_, err = ch.QueueDeclare(queue, true, false, false, false, nil)
+	q, err := ch.QueueDeclare(queue, true, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	msgs, err := ch.Consume(queue, "", true, false, false, false, nil)
+	msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
