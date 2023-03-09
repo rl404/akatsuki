@@ -6,7 +6,7 @@ replace github.com/nstratos/go-myanimelist => github.com/rl404/go-myanimelist v0
 
 require (
 	github.com/go-chi/chi v4.1.2+incompatible
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/newrelic/go-agent/v3 v3.20.3
