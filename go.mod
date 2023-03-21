@@ -13,7 +13,7 @@ require (
 	github.com/rl404/fairy v0.22.0
 	github.com/rl404/nagato v0.3.0
 	github.com/spf13/cobra v1.6.1
-	github.com/swaggo/http-swagger v1.3.3
+	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.8.10
 	golang.org/x/text v0.8.0
 	google.golang.org/grpc v1.53.0
