@@ -56,7 +56,7 @@ type SeasonYear struct {
 	Year   int
 }
 
-//  Episode is entity for episode.
+// Episode is entity for episode.
 type Episode struct {
 	Count    int
 	Duration int

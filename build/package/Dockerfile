@@ -4,7 +4,7 @@ LABEL stage="akatsuki_builder"
 WORKDIR /akatsuki
 COPY . .
 WORKDIR /akatsuki/cmd/akatsuki
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -mod vendor -o akatsuki
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -mod vendor -o akatsuki
 
 # New stage from scratch
 FROM alpine:3.16

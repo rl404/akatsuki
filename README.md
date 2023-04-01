@@ -54,6 +54,7 @@ Powered by my [nagato](https://github.com/rl404/nagato) library and [MyAnimeList
 ## Requirement
 
 - [Go](https://go.dev/)
+- [MyAnimeList](https://myanimelist.net/) [client id](https://myanimelist.net/apiconfig)
 - Database ([MySQL](https://www.mysql.com/)/[PostgreSQL](https://www.postgresql.org/)/[SQLite](https://www.sqlite.org/)/[SQL server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)/[ClickHouse](https://clickhouse.com/))
 - PubSub ([NSQ](https://nsq.io/)/[RabbitMQ](https://www.rabbitmq.com/)/[Redis](https://redis.io/)/[Google PubSub](https://cloud.google.com/pubsub))
 - (optional) Cache ([Redis](https://redis.io/)/[Memcache](https://memcached.org/))

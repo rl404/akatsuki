@@ -100,15 +100,14 @@ DOCKER_CMD   := docker
 DOCKER_IMAGE := $(DOCKER_CMD) image
 
 # Docker-compose base command and docker-compose.yml path.
-COMPOSE_CMD                 := docker-compose
-COMPOSE_BUILD               := deployment/build.yml
-COMPOSE_API                 := deployment/api.yml
-COMPOSE_CONSUMER            := deployment/consumer.yml
-COMPOSE_CRON_UPDATE         := deployment/cron-update.yml
-COMPOSE_CRON_FILL           := deployment/cron-fill.yml
-COMPOSE_CRON_CALLBACK_RETRY := deployment/cron-callback-retry.yml
-COMPOSE_MIGRATE             := deployment/migrate.yml
-COMPOSE_LINT                := deployment/lint.yml
+COMPOSE_CMD         := docker-compose
+COMPOSE_BUILD       := deployment/build.yml
+COMPOSE_API         := deployment/api.yml
+COMPOSE_CONSUMER    := deployment/consumer.yml
+COMPOSE_CRON_UPDATE := deployment/cron-update.yml
+COMPOSE_CRON_FILL   := deployment/cron-fill.yml
+COMPOSE_MIGRATE     := deployment/migrate.yml
+COMPOSE_LINT        := deployment/lint.yml
 
 # Build docker images and container for the project
 # then delete builder image.
