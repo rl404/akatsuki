@@ -226,7 +226,7 @@ func (sql *SQL) GetOldNotYetIDs(ctx context.Context) ([]int64, int, error) {
 // GetMaxID to get max id.
 func (sql *SQL) GetMaxID(ctx context.Context) (int64, int, error) {
 	var id int64
-	if err := sql.db.WithContext(ctx).Model(&Anime{}).Select("max(id)").Row().Scan(&id); err != nil {
+	if err := sql.db.WithContext(ctx).Model(&Anime{}).Select("COALESCE(MAX(id), 1)").Row().Scan(&id); err != nil {
 		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 	return id, http.StatusOK, nil
