@@ -22,6 +22,7 @@ import (
 	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type offset struct {
@@ -49,7 +50,7 @@ func (col *Array) Name() string {
 	return col.name
 }
 
-func (col *Array) parse(t Type) (_ *Array, err error) {
+func (col *Array) parse(t Type, tz *time.Location) (_ *Array, err error) {
 	col.chType = t
 	var typeStr = string(t)
 
@@ -65,7 +66,7 @@ parse:
 		}
 	}
 	if col.depth != 0 {
-		if col.values, err = Type(typeStr).Column(col.name); err != nil {
+		if col.values, err = Type(typeStr).Column(col.name, tz); err != nil {
 			return nil, err
 		}
 		offsetScanTypes := make([]reflect.Type, 0, col.depth)
@@ -239,10 +240,6 @@ func (col *Array) scan(sliceType reflect.Type, row int) (reflect.Value, error) {
 		}
 		return subSlice, nil
 	}
-	return reflect.Value{}, &Error{
-		ColumnType: fmt.Sprint(sliceType.Kind()),
-		Err:        fmt.Errorf("column %s - needs a slice or interface{}", col.Name()),
-	}
 }
 
 func (col *Array) scanSlice(sliceType reflect.Type, row int, level int) (reflect.Value, error) {
@@ -351,7 +348,6 @@ func (col *Array) scanSliceOfObjects(sliceType reflect.Type, row int) (reflect.V
 				Err:        fmt.Errorf("column %s - needs a slice of objects or an interface{}", col.Name()),
 			}
 		}
-		return reflect.Value{}, nil
 	}
 	return reflect.Value{}, &Error{
 		ColumnType: fmt.Sprint(sliceType.Kind()),

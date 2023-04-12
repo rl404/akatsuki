@@ -22,6 +22,7 @@ import (
 	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // inverse mapping - go types to clickhouse types
@@ -426,6 +427,12 @@ func iterateMap(mapVal reflect.Value, col JSONParent, preFill int) error {
 	addedColumns := make([]string, len(mapVal.MapKeys()), len(mapVal.MapKeys()))
 	newColumn := false
 	for i, key := range mapVal.MapKeys() {
+		if newColumn {
+			// reset as otherwise prefill overflow to other fields. But don't reset if this prefill has come from
+			// a higher level
+			preFill = 0
+		}
+
 		name := getMapFieldName(key.Interface().(string))
 		if _, ok := columnLookup[name]; !ok && len(currentColumns) > 0 {
 			// new column - need to handle
@@ -470,11 +477,6 @@ func iterateMap(mapVal reflect.Value, col JSONParent, preFill int) error {
 			}
 		}
 		addedColumns[i] = name
-		if newColumn {
-			// reset as otherwise prefill overflow to other fields. But don't reset if this prefill has come from
-			// a higher level
-			preFill = 0
-		}
 	}
 	// handle missing
 	missingColumns := difference(currentColumns, addedColumns)
@@ -557,13 +559,13 @@ func (jCol *JSONList) rows() int {
 	return jCol.values.(*JSONObject).Rows()
 }
 
-func createJSONList(name string) (jCol *JSONList) {
+func createJSONList(name string, tz *time.Location) (jCol *JSONList) {
 	// lists are represented as Nested which are in turn encoded as Array(Tuple()). We thus pass a Array(JSONObject())
 	// as this encodes like a tuple
 	lCol := &JSONList{
 		name: name,
 	}
-	lCol.values = &JSONObject{}
+	lCol.values = &JSONObject{tz: tz}
 	// depth should always be one as nested arrays aren't possible
 	lCol.depth = 1
 	lCol.scanType = scanTypeSlice
@@ -586,7 +588,8 @@ func (jCol *JSONList) insertEmptyColumn(name string) error {
 
 func (jCol *JSONList) upsertValue(name string, ct string) (*JSONValue, error) {
 	// check if column exists and reuse if same type, error if same name and different type
-	cols := jCol.values.(*JSONObject).columns
+	jObj := jCol.values.(*JSONObject)
+	cols := jObj.columns
 	for i := range cols {
 		sCol := cols[i]
 		if sCol.Name() == name {
@@ -608,7 +611,7 @@ func (jCol *JSONList) upsertValue(name string, ct string) (*JSONValue, error) {
 			return vCol, nil
 		}
 	}
-	col, err := Type(ct).Column(name)
+	col, err := Type(ct).Column(name, jObj.tz)
 	if err != nil {
 		return nil, err
 	}
@@ -621,6 +624,7 @@ func (jCol *JSONList) upsertValue(name string, ct string) (*JSONValue, error) {
 
 func (jCol *JSONList) upsertList(name string) (*JSONList, error) {
 	// check if column exists and reuse if same type, error if same name and different type
+	jObj := jCol.values.(*JSONObject)
 	cols := jCol.values.(*JSONObject).columns
 	for i := range cols {
 		sCol := cols[i]
@@ -635,7 +639,7 @@ func (jCol *JSONList) upsertList(name string) (*JSONList, error) {
 			return sCol, nil
 		}
 	}
-	lCol := createJSONList(name)
+	lCol := createJSONList(name, jObj.tz)
 	jCol.values.(*JSONObject).columns = append(cols, lCol)
 	return lCol, nil
 
@@ -643,7 +647,8 @@ func (jCol *JSONList) upsertList(name string) (*JSONList, error) {
 
 func (jCol *JSONList) upsertObject(name string) (*JSONObject, error) {
 	// check if column exists and reuse if same type, error if same name and different type
-	cols := jCol.values.(*JSONObject).columns
+	jObj := jCol.values.(*JSONObject)
+	cols := jObj.columns
 	for i := range cols {
 		sCol := cols[i]
 		if sCol.Name() == name {
@@ -662,6 +667,7 @@ func (jCol *JSONList) upsertObject(name string) (*JSONObject, error) {
 	// as this encodes like a tuple
 	oCol := &JSONObject{
 		name: name,
+		tz:   jObj.tz,
 	}
 	jCol.values.(*JSONObject).columns = append(cols, oCol)
 	return oCol, nil
@@ -685,6 +691,7 @@ type JSONObject struct {
 	name     string
 	root     bool
 	encoding uint8
+	tz       *time.Location
 }
 
 func (jCol *JSONObject) Reset() {
@@ -754,7 +761,7 @@ func (jCol *JSONObject) upsertValue(name string, ct string) (*JSONValue, error) 
 			return vCol, nil
 		}
 	}
-	col, err := Type(ct).Column(name)
+	col, err := Type(ct).Column(name, jCol.tz)
 	if err != nil {
 		return nil, err
 	}
@@ -780,7 +787,7 @@ func (jCol *JSONObject) upsertList(name string) (*JSONList, error) {
 			return sCol, nil
 		}
 	}
-	lCol := createJSONList(name)
+	lCol := createJSONList(name, jCol.tz)
 	jCol.columns = append(jCol.columns, lCol)
 	return lCol, nil
 }
@@ -804,6 +811,7 @@ func (jCol *JSONObject) upsertObject(name string) (*JSONObject, error) {
 	// not present so create
 	oCol := &JSONObject{
 		name: name,
+		tz:   jCol.tz,
 	}
 	jCol.columns = append(jCol.columns, oCol)
 	return oCol, nil

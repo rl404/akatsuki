@@ -25,14 +25,13 @@ import (
 )
 
 func (h *httpConnect) exec(ctx context.Context, query string, args ...interface{}) error {
-	query, err := bind(h.location, query, args...)
+	options := queryOptions(ctx)
+	query, err := bindQueryOrAppendParameters(true, &options, query, h.location, args...)
 	if err != nil {
 		return err
 	}
 
-	options := queryOptions(ctx)
-
-	res, err := h.sendQuery(ctx, strings.NewReader(query), &options, nil)
+	res, err := h.sendQuery(ctx, strings.NewReader(query), &options, h.headers)
 	if res != nil {
 		defer res.Body.Close()
 		// we don't care about result, so just discard it to reuse connection

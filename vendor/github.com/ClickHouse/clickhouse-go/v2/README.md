@@ -29,27 +29,80 @@ The client is tested against the currently [supported versions](https://github.c
 * Supports native ClickHouse TCP client-server protocol
 * Compatibility with [`database/sql`](#std-databasesql-interface) ([slower](#benchmark) than [native interface](#native-interface)!)
 * [`database/sql`](#std-databasesql-interface) supports http protocol for transport. (Experimental)
-* Marshal rows into structs ([ScanStruct](tests/scan_struct_test.go), [Select](examples/native/scan_struct/main.go))
+* Marshal rows into structs ([ScanStruct](examples/clickhouse_api/scan_struct.go), [Select](examples/clickhouse_api/select_struct.go))
 * Unmarshal struct to row ([AppendStruct](benchmark/v2/write-native-struct/main.go))
 * Connection pool
 * Failover and load balancing
-* [Bulk write support](examples/native/batch/main.go) (for `database/sql` [use](examples/std/batch/main.go) `begin->prepare->(in loop exec)->commit`)
+* [Bulk write support](examples/clickhouse_api/batch.go) (for `database/sql` [use](examples/std/batch.go) `begin->prepare->(in loop exec)->commit`)
 * [AsyncInsert](benchmark/v2/write-async/main.go)
 * Named and numeric placeholders support
 * LZ4/ZSTD compression support
 * External data
+* [Query parameters](examples/std/query_parameters.go)
 
 Support for the ClickHouse protocol advanced features using `Context`:
 
 * Query ID
 * Quota Key
 * Settings
+* [Query parameters](examples/clickhouse_api/query_parameters.go)
 * OpenTelemetry
 * Execution events:
 	* Logs
 	* Progress
 	* Profile info
 	* Profile events
+
+## Documentation
+
+[https://clickhouse.com/docs/en/integrations/go](https://clickhouse.com/docs/en/integrations/go)
+
+# `clickhouse` interface (formally `native` interface)
+
+```go
+	conn, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{"127.0.0.1:9000"},
+		Auth: clickhouse.Auth{
+			Database: "default",
+			Username: "default",
+			Password: "",
+		},
+		DialContext: func(ctx context.Context, addr string) (net.Conn, error) {
+			dialCount++
+			var d net.Dialer
+			return d.DialContext(ctx, "tcp", addr)
+		},
+		Debug: true,
+		Debugf: func(format string, v ...interface{}) {
+			fmt.Printf(format, v)
+		},
+		Settings: clickhouse.Settings{
+			"max_execution_time": 60,
+		},
+		Compression: &clickhouse.Compression{
+			Method: clickhouse.CompressionLZ4,
+		},
+		DialTimeout:      time.Second * 30,
+		MaxOpenConns:     5,
+		MaxIdleConns:     5,
+		ConnMaxLifetime:  time.Duration(10) * time.Minute,
+		ConnOpenStrategy: clickhouse.ConnOpenInOrder,
+		BlockBufferSize: 10,
+		MaxCompressionBuffer: 10240,
+		ClientInfo: clickhouse.ClientInfo{ // optional, please see Client info section in the README.md
+			Products: []struct {
+				Name    string
+				Version string
+			}{
+				{Name: "my-app", Version: "0.1"},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return conn.Ping(context.Background())
+```
 
 # `database/sql` interface
 
@@ -69,27 +122,47 @@ conn := clickhouse.OpenDB(&clickhouse.Options{
 	Settings: clickhouse.Settings{
 		"max_execution_time": 60,
 	},
-	DialTimeout: 5 * time.Second,
+	DialTimeout: time.Second * 30,
 	Compression: &clickhouse.Compression{
 		clickhouse.CompressionLZ4,
 	},
 	Debug: true,
+	BlockBufferSize: 10,
+	MaxCompressionBuffer: 10240,
+	ClientInfo: clickhouse.ClientInfo{ // optional, please see Client info section in the README.md
+		Products: []struct {
+			Name    string
+			Version string
+		}{
+			{Name: "my-app", Version: "0.1"},
+		},
+	},
 })
 conn.SetMaxIdleConns(5)
 conn.SetMaxOpenConns(10)
 conn.SetConnMaxLifetime(time.Hour)
 ```
+
 ## DSN
 
 * hosts  - comma-separated list of single address hosts for load-balancing and failover
 * username/password - auth credentials
 * database - select the current default database
-* dial_timeout -  a duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix such as "300ms", "1s". Valid time units are "ms", "s", "m".
+* dial_timeout -  a duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix such as "300ms", "1s". Valid time units are "ms", "s", "m". (default 30s)
 * connection_open_strategy - round_robin/in_order (default in_order).
     * round_robin      - choose a round-robin server from the set
     * in_order    - first live server is chosen in specified order
 * debug - enable debug output (boolean value)
-* compress - enable lz4 compression (boolean value)
+* compress - compress - specify the compression algorithm - “none” (default), `zstd`, `lz4`, `gzip`, `deflate`, `br`. If set to `true`, `lz4` will be used.
+* compress_level - Level of compression (default is 0). This is algorithm specific:
+  - `gzip` - `-2` (Best Speed) to `9` (Best Compression)
+  - `deflate` - `-2` (Best Speed) to `9` (Best Compression)
+  - `br` - `0` (Best Speed) to `11` (Best Compression)
+  - `zstd`, `lz4` - ignored
+* block_buffer_size - size of block buffer (default 2)
+* read_timeout - a duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix such as "300ms", "1s". Valid time units are "ms", "s", "m" (default 5m).
+* max_compression_buffer - max size (bytes) of compression buffer during column by column compression (default 10MiB)
+* client_info_product - optional list (comma separated) of product name and version pair separated with `/`. This value will be pass a part of client info. e.g. `client_info_product=my_app/1.0,my_module/0.1` More details in [Client info](#client-info) section.
 
 SSL/TLS parameters:
 
@@ -109,14 +182,14 @@ The native format can be used over the HTTP protocol. This is useful in scenario
 This can be achieved by modifying the DSN to specify the http protocol.
 
 ```sh
-http://host1:9000,host2:9000/database?dial_timeout=200ms&max_execution_time=60
+http://host1:8123,host2:8123/database?dial_timeout=200ms&max_execution_time=60
 ```
 
 Alternatively, use `OpenDB` and specify the interface type.
 
 ```go
 conn := clickhouse.OpenDB(&clickhouse.Options{
-	Addr: []string{"127.0.0.1:8123")},
+	Addr: []string{"127.0.0.1:8123"},
 	Auth: clickhouse.Auth{
 		Database: "default",
 		Username: "default",
@@ -125,7 +198,7 @@ conn := clickhouse.OpenDB(&clickhouse.Options{
 	Settings: clickhouse.Settings{
 		"max_execution_time": 60,
 	},
-	DialTimeout: 5 * time.Second,
+	DialTimeout: 30 * time.Second,
 	Compression: &clickhouse.Compression{
 		Method: clickhouse.CompressionLZ4,
 	},
@@ -135,7 +208,7 @@ conn := clickhouse.OpenDB(&clickhouse.Options{
 
 ## Compression
 
-ZSTD/LZ4 compression is supported over native and http. This is performed at a block level and is only used for inserts.
+ZSTD/LZ4 compression is supported over native and http protocols. This is performed column by column at a block level and is only used for inserts. Compression buffer size is set as `MaxCompressionBuffer` option.
 
 If using `Open` via the std interface and specifying a DSN, compression can be enabled via the `compress` flag. Currently, this is a boolean flag which enables `LZ4` compression.
 
@@ -167,14 +240,14 @@ To connect using HTTPS either:
 - Use `https` in your dsn string e.g.
 
     ```sh
-    https://host1:9000,host2:9000/database?dial_timeout=200ms&max_execution_time=60
+    https://host1:8443,host2:8443/database?dial_timeout=200ms&max_execution_time=60
     ```
 
 - Specify the interface type as `HttpsInterface` e.g.
 
 ```go
 conn := clickhouse.OpenDB(&clickhouse.Options{
-	Addr: []string{"127.0.0.1:8443")},
+	Addr: []string{"127.0.0.1:8443"},
 	Auth: clickhouse.Auth{
 		Database: "default",
 		Username: "default",
@@ -184,15 +257,25 @@ conn := clickhouse.OpenDB(&clickhouse.Options{
 })
 ```
 
+## Client info
+
+
+Clickhouse-go implements [client info](https://docs.google.com/document/d/1924Dvy79KXIhfqKpi1EBVY3133pIdoMwgCQtZ-uhEKs/edit#heading=h.ah33hoz5xei2) as a part of language client specification. `client_name` for native protocol and HTTP `User-Agent` header values are provided with the exact client info string.
+
+Users can extend client options with additional product information included in client info. This might be useful for analysis [on a server side](https://clickhouse.com/docs/en/operations/system-tables/query_log/).
+
+Order is the highest abstraction to the lowest level implementation left to right.
+
+Usage examples for [native API](examples/clickhouse_api/client_info.go) and [database/sql](examples/std/client_info.go)  are provided.
 
 ## Benchmark
 
-| [V1 (READ)](benchmark/v1/read/main.go) | [V2 (READ) std](benchmark/v2/read/main.go) | [V2 (READ) native](benchmark/v2/read-native/main.go) |
-| -------------------------------------- | ------------------------------------------ | ---------------------------------------------------- |
-| 1.218s                                 | 924.390ms                                  | 675.721ms                                            |
+| [V1 (READ)](benchmark/v1/read/main.go) | [V2 (READ) std](benchmark/v2/read/main.go) | [V2 (READ) clickhouse API](benchmark/v2/read-native/main.go) |
+| -------------------------------------- | ------------------------------------------ |--------------------------------------------------------------|
+| 1.218s                                 | 924.390ms                                  | 675.721ms                                                    |
 
 
-| [V1 (WRITE)](benchmark/v1/write/main.go) | [V2 (WRITE) std](benchmark/v2/write/main.go) | [V2 (WRITE) native](benchmark/v2/write-native/main.go) | [V2 (WRITE) by column](benchmark/v2/write-native-columnar/main.go) |
+| [V1 (WRITE)](benchmark/v1/write/main.go) | [V2 (WRITE) std](benchmark/v2/write/main.go) | [V2 (WRITE) clickhouse API](benchmark/v2/write-native/main.go) | [V2 (WRITE) by column](benchmark/v2/write-native-columnar/main.go) |
 | ---------------------------------------- | -------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------ |
 | 1.899s                                   | 1.177s                                       | 699.203ms                                              | 661.973ms                                                          |
 
@@ -208,19 +291,23 @@ go get -u github.com/ClickHouse/clickhouse-go/v2
 
 ### native interface
 
-* [batch](examples/native/batch/main.go)
-* [async insert](examples/native/write-async)
-* [batch struct](examples/native/write-struct/main.go)
-* [columnar](examples/native/write-columnar/main.go)
-* [scan struct](examples/native/scan_struct/main.go)
-* [bind params](examples/native/bind/main.go)
-
+* [batch](examples/clickhouse_api/batch.go)
+* [async insert](examples/clickhouse_api/async.go)
+* [batch struct](examples/clickhouse_api/append_struct.go)
+* [columnar](examples/clickhouse_api/columnar_insert.go)
+* [scan struct](examples/clickhouse_api/scan_struct.go)
+* [query parameters](examples/clickhouse_api/query_parameters.go) (deprecated in favour of native query parameters)
+* [bind params](examples/clickhouse_api/bind.go) (deprecated in favour of native query parameters)
+* [client info](examples/clickhouse_api/client_info.go)
+* 
 ### std `database/sql` interface
 
-* [batch](examples/std/batch/main.go)
-* [async insert](examples/std/write-async)
-* [open db](examples/std/open_db/main.go)
-* [bind params](examples/std/bind/main.go)
+* [batch](examples/std/batch.go)
+* [async insert](examples/std/async.go)
+* [open db](examples/std/connect.go)
+* [query parameters](examples/std/query_parameters.go)
+* [bind params](examples/std/bind.go) (deprecated in favour of native query parameters)
+* [client info](examples/std/client_info.go)
 
 ## ClickHouse alternatives - ch-go
 

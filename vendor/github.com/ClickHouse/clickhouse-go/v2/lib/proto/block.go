@@ -20,15 +20,18 @@ package proto
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"time"
 
 	"github.com/ClickHouse/ch-go/proto"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/column"
 )
 
 type Block struct {
-	names   []string
-	Packet  byte
-	Columns []column.Interface
+	names    []string
+	Packet   byte
+	Columns  []column.Interface
+	Timezone *time.Location
 }
 
 func (b *Block) Rows() int {
@@ -39,7 +42,7 @@ func (b *Block) Rows() int {
 }
 
 func (b *Block) AddColumn(name string, ct column.Type) error {
-	column, err := ct.Column(name)
+	column, err := ct.Column(name, b.Timezone)
 	if err != nil {
 		return err
 	}
@@ -71,7 +74,50 @@ func (b *Block) ColumnsNames() []string {
 	return b.names
 }
 
-func (b *Block) Encode(buffer *proto.Buffer, revision uint64) error {
+// SortColumns sorts our block according to the requested order - a slice of column names. Names must be identical in requested order and block.
+func (b *Block) SortColumns(columns []string) error {
+	if len(columns) == 0 {
+		// no preferred sort order
+		return nil
+	}
+	if len(columns) != len(b.Columns) {
+		return fmt.Errorf("requested column order is incorrect length to sort block - expected %d, got %d", len(b.Columns), len(columns))
+	}
+	missing := difference(b.names, columns)
+	if len(missing) > 0 {
+		return fmt.Errorf("block cannot be sorted - missing columns in requested order: %v", missing)
+	}
+	lookup := make(map[string]int)
+	for i, col := range columns {
+		lookup[col] = i
+	}
+	// we assume both lists have the same
+	sort.Slice(b.Columns, func(i, j int) bool {
+		iRank, jRank := lookup[b.Columns[i].Name()], lookup[b.Columns[j].Name()]
+		return iRank < jRank
+	})
+	sort.Slice(b.names, func(i, j int) bool {
+		iRank, jRank := lookup[b.names[i]], lookup[b.names[j]]
+		return iRank < jRank
+	})
+	return nil
+}
+
+func difference(a, b []string) []string {
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
+}
+
+func (b *Block) EncodeHeader(buffer *proto.Buffer, revision uint64) (err error) {
 	if revision > 0 {
 		encodeBlockInfo(buffer)
 	}
@@ -83,16 +129,26 @@ func (b *Block) Encode(buffer *proto.Buffer, revision uint64) error {
 			if rows != cRows {
 				return &BlockError{
 					Op:  "Encode",
-					Err: fmt.Errorf("mismatched len of columns - expected %d, recieved %d for col %s", rows, cRows, c.Name()),
+					Err: fmt.Errorf("mismatched len of columns - expected %d, received %d for col %s", rows, cRows, c.Name()),
 				}
 			}
 		}
 	}
 	buffer.PutUVarInt(uint64(len(b.Columns)))
 	buffer.PutUVarInt(uint64(rows))
-	for _, c := range b.Columns {
+	return nil
+}
+
+func (b *Block) EncodeColumn(buffer *proto.Buffer, revision uint64, i int) (err error) {
+	if i >= 0 && i < len(b.Columns) {
+		c := b.Columns[i]
 		buffer.PutString(c.Name())
 		buffer.PutString(string(c.Type()))
+
+		if revision >= DBMS_MIN_REVISION_WITH_CUSTOM_SERIALIZATION {
+			buffer.PutBool(false)
+		}
+
 		if serialize, ok := c.(column.CustomSerialization); ok {
 			if err := serialize.WriteStatePrefix(buffer); err != nil {
 				return &BlockError{
@@ -103,6 +159,22 @@ func (b *Block) Encode(buffer *proto.Buffer, revision uint64) error {
 			}
 		}
 		c.Encode(buffer)
+		return nil
+	}
+	return &BlockError{
+		Op:  "Encode",
+		Err: fmt.Errorf("%d is out of range of %d columns", i, len(b.Columns)),
+	}
+}
+
+func (b *Block) Encode(buffer *proto.Buffer, revision uint64) (err error) {
+	if err := b.EncodeHeader(buffer, revision); err != nil {
+		return err
+	}
+	for i := range b.Columns {
+		if err := b.EncodeColumn(buffer, revision, i); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -126,10 +198,11 @@ func (b *Block) Decode(reader *proto.Reader, revision uint64) (err error) {
 	if numRows > 1_000_000_000 {
 		return &BlockError{
 			Op:  "Decode",
-			Err: errors.New("more then 1 billion rows in block"),
+			Err: errors.New("more then 1 billion rows in block - suspiciously big - preventing OOM"),
 		}
 	}
-	b.Columns = make([]column.Interface, 0, numCols)
+	b.Columns = make([]column.Interface, numCols, numCols)
+	b.names = make([]string, numCols, numCols)
 	for i := 0; i < int(numCols); i++ {
 		var (
 			columnName string
@@ -141,10 +214,24 @@ func (b *Block) Decode(reader *proto.Reader, revision uint64) (err error) {
 		if columnType, err = reader.Str(); err != nil {
 			return err
 		}
-		c, err := column.Type(columnType).Column(columnName)
+		c, err := column.Type(columnType).Column(columnName, b.Timezone)
 		if err != nil {
 			return err
 		}
+
+		if revision >= DBMS_MIN_REVISION_WITH_CUSTOM_SERIALIZATION {
+			hasCustom, err := reader.Bool()
+			if err != nil {
+				return err
+			}
+			if hasCustom {
+				return &BlockError{
+					Op:  "Decode",
+					Err: errors.New(fmt.Sprintf("custom serialization for column %s. not supported", columnName)),
+				}
+			}
+		}
+
 		if numRows != 0 {
 			if serialize, ok := c.(column.CustomSerialization); ok {
 				if err := serialize.ReadStatePrefix(reader); err != nil {
@@ -163,7 +250,8 @@ func (b *Block) Decode(reader *proto.Reader, revision uint64) (err error) {
 				}
 			}
 		}
-		b.names, b.Columns = append(b.names, columnName), append(b.Columns, c)
+		b.names[i] = columnName
+		b.Columns[i] = c
 	}
 	return nil
 }

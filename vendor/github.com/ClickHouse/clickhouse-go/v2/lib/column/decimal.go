@@ -18,14 +18,16 @@
 package column
 
 import (
+	"database/sql"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/ClickHouse/ch-go/proto"
 	"math/big"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/ClickHouse/ch-go/proto"
 
 	"github.com/shopspring/decimal"
 )
@@ -136,6 +138,9 @@ func (col *Decimal) ScanRow(dest interface{}, row int) error {
 		*d = new(decimal.Decimal)
 		**d = *col.row(row)
 	default:
+		if scan, ok := dest.(sql.Scanner); ok {
+			return scan.Scan(*col.row(row))
+		}
 		return &ColumnConverterError{
 			Op:   "ScanRow",
 			To:   fmt.Sprintf("%T", dest),
@@ -156,7 +161,7 @@ func (col *Decimal) Append(v interface{}) (nulls []uint8, err error) {
 		nulls = make([]uint8, len(v))
 		for i := range v {
 			switch {
-			case v != nil:
+			case v[i] != nil:
 				col.append(v[i])
 			default:
 				nulls[i] = 1
@@ -199,30 +204,15 @@ func (col *Decimal) append(v *decimal.Decimal) {
 	switch vCol := col.col.(type) {
 	case *proto.ColDecimal32:
 		var part uint32
-		switch {
-		case v.Exponent() != int32(col.scale):
-			part = uint32(decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).IntPart())
-		default:
-			part = uint32(v.IntPart())
-		}
+		part = uint32(decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).IntPart())
 		vCol.Append(proto.Decimal32(part))
 	case *proto.ColDecimal64:
 		var part uint64
-		switch {
-		case v.Exponent() != int32(col.scale):
-			part = uint64(decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).IntPart())
-		default:
-			part = uint64(v.IntPart())
-		}
+		part = uint64(decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).IntPart())
 		vCol.Append(proto.Decimal64(part))
 	case *proto.ColDecimal128:
 		var bi *big.Int
-		switch {
-		case v.Exponent() != int32(col.scale):
-			bi = decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).BigInt()
-		default:
-			bi = v.BigInt()
-		}
+		bi = decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).BigInt()
 		dest := make([]byte, 16)
 		bigIntToRaw(dest, bi)
 		vCol.Append(proto.Decimal128{
@@ -231,12 +221,7 @@ func (col *Decimal) append(v *decimal.Decimal) {
 		})
 	case *proto.ColDecimal256:
 		var bi *big.Int
-		switch {
-		case v.Exponent() != int32(col.scale):
-			bi = decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).BigInt()
-		default:
-			bi = v.BigInt()
-		}
+		bi = decimal.NewFromBigInt(v.Coefficient(), v.Exponent()+int32(col.scale)).BigInt()
 		dest := make([]byte, 32)
 		bigIntToRaw(dest, bi)
 		vCol.Append(proto.Decimal256{
