@@ -28,6 +28,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2/lib/column"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
+	_ "time/tzdata"
 )
 
 type Conn = driver.Conn
@@ -40,6 +41,7 @@ type (
 )
 
 var (
+	ErrBatchInvalid              = errors.New("clickhouse: batch is invalid. check appended data is correct")
 	ErrBatchAlreadySent          = errors.New("clickhouse: batch has already been sent")
 	ErrAcquireConnTimeout        = errors.New("clickhouse: acquire conn timeout. you can increase the number of max open conn or the dial timeout")
 	ErrUnsupportedServerRevision = errors.New("clickhouse: unsupported server revision")
@@ -116,6 +118,7 @@ func (ch *clickhouse) Query(ctx context.Context, query string, args ...interface
 	if err != nil {
 		return nil, err
 	}
+	conn.debugf("[acquired] connection [%d]", conn.id)
 	return conn.query(ctx, ch.release, query, args...)
 }
 
@@ -126,6 +129,7 @@ func (ch *clickhouse) QueryRow(ctx context.Context, query string, args ...interf
 			err: err,
 		}
 	}
+	conn.debugf("[acquired] connection [%d]", conn.id)
 	return conn.queryRow(ctx, ch.release, query, args...)
 }
 
@@ -191,22 +195,45 @@ func (ch *clickhouse) Stats() driver.Stats {
 
 func (ch *clickhouse) dial(ctx context.Context) (conn *connect, err error) {
 	connID := int(atomic.AddInt64(&ch.connID, 1))
-	for i := range ch.opt.Addr {
+
+	dialFunc := func(ctx context.Context, addr string, opt *Options) (DialResult, error) {
+		conn, err := dial(ctx, addr, connID, opt)
+
+		return DialResult{conn}, err
+	}
+
+	dialStrategy := DefaultDialStrategy
+	if ch.opt.DialStrategy != nil {
+		dialStrategy = ch.opt.DialStrategy
+	}
+
+	result, err := dialStrategy(ctx, connID, ch.opt, dialFunc)
+	if err != nil {
+		return nil, err
+	}
+	return result.conn, nil
+}
+
+func DefaultDialStrategy(ctx context.Context, connID int, opt *Options, dial Dial) (r DialResult, err error) {
+	for i := range opt.Addr {
 		var num int
-		switch ch.opt.ConnOpenStrategy {
+		switch opt.ConnOpenStrategy {
 		case ConnOpenInOrder:
 			num = i
 		case ConnOpenRoundRobin:
-			num = (int(connID) + i) % len(ch.opt.Addr)
+			num = (int(connID) + i) % len(opt.Addr)
 		}
-		if conn, err = dial(ctx, ch.opt.Addr[num], connID, ch.opt); err == nil {
-			return conn, nil
+
+		if r, err = dial(ctx, opt.Addr[num], opt); err == nil {
+			return r, nil
 		}
 	}
+
 	if err == nil {
 		err = ErrAcquireConnNoAddress
 	}
-	return nil, err
+
+	return r, err
 }
 
 func (ch *clickhouse) acquire(ctx context.Context) (conn *connect, err error) {

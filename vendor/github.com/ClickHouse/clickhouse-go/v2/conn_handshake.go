@@ -18,6 +18,7 @@
 package clickhouse
 
 import (
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -35,7 +36,12 @@ func (c *connect) handshake(database, username, password string) error {
 	defer c.conn.SetDeadline(time.Time{})
 	{
 		c.buffer.PutByte(proto.ClientHello)
-		(&proto.ClientHandshake{}).Encode(c.buffer)
+		handshake := &proto.ClientHandshake{
+			ProtocolVersion: ClientTCPProtocolVersion,
+			ClientName:      c.opt.ClientInfo.String(),
+			ClientVersion:   proto.Version{ClientVersionMajor, ClientVersionMinor, ClientVersionPatch}, //nolint:govet
+		}
+		handshake.Encode(c.buffer)
 		{
 			c.buffer.PutString(database)
 			c.buffer.PutString(username)
@@ -67,10 +73,19 @@ func (c *connect) handshake(database, username, password string) error {
 	if c.server.Revision < proto.DBMS_MIN_REVISION_WITH_CLIENT_INFO {
 		return ErrUnsupportedServerRevision
 	}
+
 	if c.revision > c.server.Revision {
 		c.revision = c.server.Revision
 		c.debugf("[handshake] downgrade client proto")
 	}
 	c.debugf("[handshake] <- %s", c.server)
 	return nil
+}
+
+func (c *connect) sendAddendum() error {
+	if c.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_QUOTA_KEY {
+		c.buffer.PutString("") // todo quota key support
+	}
+
+	return c.flush()
 }

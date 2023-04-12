@@ -22,6 +22,7 @@ import (
 	"database/sql/driver"
 	"github.com/ClickHouse/ch-go/proto"
 	"reflect"
+	"time"
 )
 
 type Nullable struct {
@@ -41,9 +42,9 @@ func (col *Nullable) Name() string {
 	return col.name
 }
 
-func (col *Nullable) parse(t Type) (_ *Nullable, err error) {
+func (col *Nullable) parse(t Type, tz *time.Location) (_ *Nullable, err error) {
 	col.enable = true
-	if col.base, err = Type(t.params()).Column(col.name); err != nil {
+	if col.base, err = Type(t.params()).Column(col.name, tz); err != nil {
 		return nil, err
 	}
 	switch base := col.base.ScanType(); {
@@ -110,7 +111,15 @@ func (col *Nullable) Append(v interface{}) ([]uint8, error) {
 }
 
 func (col *Nullable) AppendRow(v interface{}) error {
-	if v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil()) {
+	// Might receive double pointers like **String, because of how Nullable columns are read
+	// Unpack because we can't write double pointers
+	rv := reflect.ValueOf(v)
+	if v != nil && rv.Kind() == reflect.Pointer && !rv.IsNil() && rv.Elem().Kind() == reflect.Pointer {
+		v = rv.Elem().Interface()
+		rv = reflect.ValueOf(v)
+	}
+
+	if v == nil || (rv.Kind() == reflect.Pointer && rv.IsNil()) {
 		col.nulls.Append(1)
 		// used to detect sql.Null* types
 	} else if val, ok := v.(driver.Valuer); ok {

@@ -84,10 +84,10 @@ func (col *LowCardinality) Name() string {
 	return col.name
 }
 
-func (col *LowCardinality) parse(t Type) (_ *LowCardinality, err error) {
+func (col *LowCardinality) parse(t Type, tz *time.Location) (_ *LowCardinality, err error) {
 	col.chType = t
 	col.append.index = make(map[interface{}]int)
-	if col.index, err = Type(t.params()).Column(col.name); err != nil {
+	if col.index, err = Type(t.params()).Column(col.name, tz); err != nil {
 		return nil, err
 	}
 	if nullable, ok := col.index.(*Nullable); ok {
@@ -148,7 +148,8 @@ func (col *LowCardinality) AppendRow(v interface{}) error {
 			col.index.AppendRow(nil)
 		}
 	}
-	if v == nil {
+	// second check is unfortunate - but we could be passed a *type(nil) e.g. via LowCardinality(Nullable(String))
+	if v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil()) {
 		col.append.keys = append(col.append.keys, 0)
 		return nil
 	}

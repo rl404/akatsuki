@@ -32,6 +32,7 @@ var _contextOptionKey = &QueryOptions{
 }
 
 type Settings map[string]interface{}
+type Parameters map[string]string
 type (
 	QueryOption  func(*QueryOptions) error
 	QueryOptions struct {
@@ -48,8 +49,11 @@ type (
 			profileInfo   func(*ProfileInfo)
 			profileEvents func([]ProfileEvent)
 		}
-		settings Settings
-		external []*ext.Table
+		settings        Settings
+		parameters      Parameters
+		external        []*ext.Table
+		blockBufferSize uint8
+		userLocation    *time.Location
 	}
 )
 
@@ -67,6 +71,13 @@ func WithQueryID(queryID string) QueryOption {
 	}
 }
 
+func WithBlockBufferSize(size uint8) QueryOption {
+	return func(o *QueryOptions) error {
+		o.blockBufferSize = size
+		return nil
+	}
+}
+
 func WithQuotaKey(quotaKey string) QueryOption {
 	return func(o *QueryOptions) error {
 		o.quotaKey = quotaKey
@@ -77,6 +88,13 @@ func WithQuotaKey(quotaKey string) QueryOption {
 func WithSettings(settings Settings) QueryOption {
 	return func(o *QueryOptions) error {
 		o.settings = settings
+		return nil
+	}
+}
+
+func WithParameters(params Parameters) QueryOption {
+	return func(o *QueryOptions) error {
+		o.parameters = params
 		return nil
 	}
 }
@@ -123,10 +141,15 @@ func WithStdAsync(wait bool) QueryOption {
 	}
 }
 
-func Context(parent context.Context, options ...QueryOption) context.Context {
-	opt := QueryOptions{
-		settings: make(Settings),
+func WithUserLocation(location *time.Location) QueryOption {
+	return func(o *QueryOptions) error {
+		o.userLocation = location
+		return nil
 	}
+}
+
+func Context(parent context.Context, options ...QueryOption) context.Context {
+	opt := queryOptions(parent)
 	for _, f := range options {
 		f(&opt)
 	}

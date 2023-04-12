@@ -25,6 +25,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"github.com/ClickHouse/clickhouse-go/v2/resources"
 	"io"
 	"io/ioutil"
 	"net"
@@ -146,15 +147,28 @@ func dialHttp(ctx context.Context, addr string, num int, opt *Options) (*httpCon
 	u := &url.URL{
 		Scheme: opt.scheme,
 		Host:   addr,
+		Path:   opt.HttpUrlPath,
 	}
 
-	if len(opt.Auth.Username) > 0 {
+	headers := make(map[string]string)
+	for k, v := range opt.HttpHeaders {
+		headers[k] = v
+	}
+
+	if opt.TLS == nil && len(opt.Auth.Username) > 0 {
 		if len(opt.Auth.Password) > 0 {
 			u.User = url.UserPassword(opt.Auth.Username, opt.Auth.Password)
 		} else {
 			u.User = url.User(opt.Auth.Username)
 		}
+	} else if opt.TLS != nil && len(opt.Auth.Username) > 0 {
+		headers["X-ClickHouse-User"] = opt.Auth.Username
+		if len(opt.Auth.Password) > 0 {
+			headers["X-ClickHouse-Key"] = opt.Auth.Password
+		}
 	}
+
+	headers["User-Agent"] = opt.ClientInfo.String()
 
 	query := u.Query()
 	if len(opt.Auth.Database) > 0 {
@@ -199,9 +213,59 @@ func dialHttp(ctx context.Context, addr string, num int, opt *Options) (*httpCon
 		compression:     opt.Compression.Method,
 		blockCompressor: compress.NewWriter(),
 		compressionPool: compressionPool,
+		blockBufferSize: opt.BlockBufferSize,
+		headers:         headers,
+	}
+	location, err := conn.readTimeZone(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if num == 1 {
+		version, err := conn.readVersion(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if !resources.ClientMeta.IsSupportedClickHouseVersion(version) {
+			fmt.Printf("WARNING: version %v of ClickHouse is not supported by this client\n", version)
+		}
 	}
 
-	rows, err := conn.query(ctx, func(*connect, error) {}, "SELECT timeZone()")
+	return &httpConnect{
+		client: &http.Client{
+			Transport: t,
+		},
+		url:             u,
+		buffer:          new(chproto.Buffer),
+		compression:     opt.Compression.Method,
+		blockCompressor: compress.NewWriter(),
+		compressionPool: compressionPool,
+		location:        location,
+		blockBufferSize: opt.BlockBufferSize,
+		headers:         headers,
+	}, nil
+}
+
+type httpConnect struct {
+	url             *url.URL
+	client          *http.Client
+	location        *time.Location
+	buffer          *chproto.Buffer
+	compression     CompressionMethod
+	blockCompressor *compress.Writer
+	compressionPool Pool[HTTPReaderWriter]
+	blockBufferSize uint8
+	headers         map[string]string
+}
+
+func (h *httpConnect) isBad() bool {
+	if h.client == nil {
+		return true
+	}
+	return false
+}
+
+func (h *httpConnect) readTimeZone(ctx context.Context) (*time.Location, error) {
+	rows, err := h.query(ctx, func(*connect, error) {}, "SELECT timezone()")
 	if err != nil {
 		return nil, err
 	}
@@ -213,27 +277,26 @@ func dialHttp(ctx context.Context, addr string, num int, opt *Options) (*httpCon
 		if err != nil {
 			return nil, err
 		}
-		conn.location = location
+		return location, nil
 	}
-
-	return conn, nil
+	return nil, errors.New("unable to determine server timezone")
 }
 
-type httpConnect struct {
-	url             *url.URL
-	client          *http.Client
-	location        *time.Location
-	buffer          *chproto.Buffer
-	compression     CompressionMethod
-	blockCompressor *compress.Writer
-	compressionPool Pool[HTTPReaderWriter]
-}
-
-func (h *httpConnect) isBad() bool {
-	if h.client == nil {
-		return true
+func (h *httpConnect) readVersion(ctx context.Context) (proto.Version, error) {
+	rows, err := h.query(ctx, func(*connect, error) {}, "SELECT version()")
+	if err != nil {
+		return proto.Version{}, err
 	}
-	return false
+	for rows.Next() {
+		var v string
+		rows.Scan(&v)
+		version, err := proto.ParseVersion(v)
+		if err != nil {
+			return proto.Version{}, err
+		}
+		return version, nil
+	}
+	return proto.Version{}, errors.New("unable to determine version")
 }
 
 func createCompressionPool(compression *Compression) (Pool[HTTPReaderWriter], error) {
@@ -301,8 +364,14 @@ func (h *httpConnect) writeData(block *proto.Block) error {
 	return nil
 }
 
-func (h *httpConnect) readData(reader *chproto.Reader) (*proto.Block, error) {
-	var block proto.Block
+func (h *httpConnect) readData(ctx context.Context, reader *chproto.Reader) (*proto.Block, error) {
+	opts := queryOptions(ctx)
+	location := h.location
+	if opts.userLocation != nil {
+		location = opts.userLocation
+	}
+
+	block := proto.Block{Timezone: location}
 	if h.compression == CompressionLZ4 || h.compression == CompressionZSTD {
 		reader.EnableCompression()
 		defer reader.DisableCompression()
@@ -327,18 +396,31 @@ func (h *httpConnect) sendQuery(ctx context.Context, r io.Reader, options *Query
 	return res, nil
 }
 
-func readResponse(response *http.Response) ([]byte, error) {
-	var result []byte
-	if response.ContentLength > 0 {
-		result = make([]byte, 0, response.ContentLength)
-	}
-	buf := bytes.NewBuffer(result)
+func (h *httpConnect) readRawResponse(response *http.Response) (body []byte, err error) {
+	rw := h.compressionPool.Get()
 	defer response.Body.Close()
-	_, err := buf.ReadFrom(response.Body)
-	if err != nil {
+	defer h.compressionPool.Put(rw)
+	if body, err = rw.read(response); err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	if h.compression == CompressionLZ4 || h.compression == CompressionZSTD {
+		result := make([]byte, len(body))
+		reader := chproto.NewReader(bytes.NewReader(body))
+		reader.EnableCompression()
+		defer reader.DisableCompression()
+		for {
+			b, err := reader.ReadByte()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break
+				}
+				return nil, err
+			}
+			result = append(result, b)
+		}
+		return result, nil
+	}
+	return body, nil
 }
 
 func (h *httpConnect) prepareRequest(ctx context.Context, reader io.Reader, options *QueryOptions, headers map[string]string) (*http.Request, error) {
@@ -367,6 +449,9 @@ func (h *httpConnect) prepareRequest(ctx context.Context, reader io.Reader, opti
 			}
 			query.Set(key, fmt.Sprint(value))
 		}
+		for key, value := range options.parameters {
+			query.Set(fmt.Sprintf("param_%s", key), value)
+		}
 		req.URL.RawQuery = query.Encode()
 	}
 
@@ -382,7 +467,8 @@ func (h *httpConnect) executeRequest(req *http.Request) (*http.Response, error) 
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		msg, err := readResponse(resp)
+
+		msg, err := h.readRawResponse(resp)
 
 		if err != nil {
 			return nil, errors.Wrap(err, "clickhouse [execute]:: failed to read the response")

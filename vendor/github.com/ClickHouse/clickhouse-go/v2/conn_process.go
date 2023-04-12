@@ -20,10 +20,8 @@ package clickhouse
 import (
 	"context"
 	"fmt"
-	"io"
-	"time"
-
 	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
+	"io"
 )
 
 type onProcess struct {
@@ -48,12 +46,12 @@ func (c *connect) firstBlock(ctx context.Context, on *onProcess) (*proto.Block, 
 		}
 		switch packet {
 		case proto.ServerData:
-			return c.readData(packet, true)
+			return c.readData(ctx, packet, true)
 		case proto.ServerEndOfStream:
 			c.debugf("[end of stream]")
 			return nil, io.EOF
 		default:
-			if err := c.handle(packet, on); err != nil {
+			if err := c.handle(ctx, packet, on); err != nil {
 				return nil, err
 			}
 		}
@@ -77,16 +75,16 @@ func (c *connect) process(ctx context.Context, on *onProcess) error {
 			c.debugf("[end of stream]")
 			return nil
 		}
-		if err := c.handle(packet, on); err != nil {
+		if err := c.handle(ctx, packet, on); err != nil {
 			return err
 		}
 	}
 }
 
-func (c *connect) handle(packet byte, on *onProcess) error {
+func (c *connect) handle(ctx context.Context, packet byte, on *onProcess) error {
 	switch packet {
 	case proto.ServerData, proto.ServerTotals, proto.ServerExtremes:
-		block, err := c.readData(packet, true)
+		block, err := c.readData(ctx, packet, true)
 		if err != nil {
 			return err
 		}
@@ -109,13 +107,13 @@ func (c *connect) handle(packet byte, on *onProcess) error {
 		}
 		c.debugf("[table columns]")
 	case proto.ServerProfileEvents:
-		events, err := c.profileEvents()
+		events, err := c.profileEvents(ctx)
 		if err != nil {
 			return err
 		}
 		on.profileEvents(events)
 	case proto.ServerLog:
-		logs, err := c.logs()
+		logs, err := c.logs(ctx)
 		if err != nil {
 			return err
 		}
@@ -137,9 +135,12 @@ func (c *connect) handle(packet byte, on *onProcess) error {
 }
 
 func (c *connect) cancel() error {
-	c.conn.SetDeadline(time.Now().Add(2 * time.Second))
 	c.debugf("[cancel]")
-	c.closed = true
 	c.buffer.PutUVarInt(proto.ClientCancel)
-	return c.flush()
+	wErr := c.flush()
+	// don't reuse a cancelled query as we don't drain the connection
+	if cErr := c.close(); cErr != nil {
+		return cErr
+	}
+	return wErr
 }

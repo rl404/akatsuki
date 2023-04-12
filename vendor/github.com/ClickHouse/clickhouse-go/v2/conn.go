@@ -21,11 +21,15 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/pkg/errors"
+	"io"
 	"log"
 	"net"
 	"os"
+	"syscall"
 	"time"
+
+	"github.com/ClickHouse/clickhouse-go/v2/resources"
+	"github.com/pkg/errors"
 
 	"github.com/ClickHouse/ch-go/compress"
 	chproto "github.com/ClickHouse/ch-go/proto"
@@ -68,43 +72,62 @@ func dial(ctx context.Context, addr string, num int, opt *Options) (*connect, er
 			return nil, fmt.Errorf("unsupported compression method for native protocol")
 		}
 	}
+
 	var (
 		connect = &connect{
-			opt:         opt,
-			conn:        conn,
-			debugf:      debugf,
-			buffer:      new(chproto.Buffer),
-			reader:      chproto.NewReader(conn),
-			revision:    proto.ClientTCPProtocolVersion,
-			structMap:   &structMap{},
-			compression: compression,
-			connectedAt: time.Now(),
-			compressor:  compress.NewWriter(),
-			readTimeout: opt.ReadTimeout,
+			id:                   num,
+			opt:                  opt,
+			conn:                 conn,
+			debugf:               debugf,
+			buffer:               new(chproto.Buffer),
+			reader:               chproto.NewReader(conn),
+			revision:             ClientTCPProtocolVersion,
+			structMap:            &structMap{},
+			compression:          compression,
+			connectedAt:          time.Now(),
+			compressor:           compress.NewWriter(),
+			readTimeout:          opt.ReadTimeout,
+			blockBufferSize:      opt.BlockBufferSize,
+			maxCompressionBuffer: opt.MaxCompressionBuffer,
 		}
 	)
 	if err := connect.handshake(opt.Auth.Database, opt.Auth.Username, opt.Auth.Password); err != nil {
 		return nil, err
+	}
+	if connect.revision >= proto.DBMS_MIN_PROTOCOL_VERSION_WITH_ADDENDUM {
+		if err := connect.sendAddendum(); err != nil {
+			return nil, err
+		}
+	}
+
+	// warn only on the first connection in the pool
+	if num == 1 && !resources.ClientMeta.IsSupportedClickHouseVersion(connect.server.Version) {
+		// send to debugger and console
+		fmt.Printf("WARNING: version %v of ClickHouse is not supported by this client\n", connect.server.Version)
+		debugf("[handshake] WARNING: version %v of ClickHouse is not supported by this client - client supports %v", connect.server.Version, resources.ClientMeta.SupportedVersions())
 	}
 	return connect, nil
 }
 
 // https://github.com/ClickHouse/ClickHouse/blob/master/src/Client/Connection.cpp
 type connect struct {
-	opt         *Options
-	conn        net.Conn
-	debugf      func(format string, v ...interface{})
-	server      ServerVersion
-	closed      bool
-	buffer      *chproto.Buffer
-	reader      *chproto.Reader
-	released    bool
-	revision    uint64
-	structMap   *structMap
-	compression CompressionMethod
-	connectedAt time.Time
-	compressor  *compress.Writer
-	readTimeout time.Duration
+	id                   int
+	opt                  *Options
+	conn                 net.Conn
+	debugf               func(format string, v ...interface{})
+	server               ServerVersion
+	closed               bool
+	buffer               *chproto.Buffer
+	reader               *chproto.Reader
+	released             bool
+	revision             uint64
+	structMap            *structMap
+	compression          CompressionMethod
+	connectedAt          time.Time
+	compressor           *compress.Writer
+	readTimeout          time.Duration
+	blockBufferSize      uint8
+	maxCompressionBuffer int
 }
 
 func (c *connect) settings(querySettings Settings) []proto.Setting {
@@ -129,6 +152,11 @@ func (c *connect) isBad() bool {
 	case c.closed:
 		return true
 	}
+
+	if time.Since(c.connectedAt) >= c.opt.ConnMaxLifetime {
+		return true
+	}
+
 	if err := c.connCheck(); err != nil {
 		return true
 	}
@@ -166,25 +194,55 @@ func (c *connect) exception() error {
 	return &e
 }
 
-func (c *connect) sendData(block *proto.Block, name string) error {
-	c.debugf("[send data] compression=%t", c.compression)
-	c.buffer.PutByte(proto.ClientData)
-	c.buffer.PutString(name)
-	// Saving offset of compressible data.
-	start := len(c.buffer.Buf)
-	if err := block.Encode(c.buffer, c.revision); err != nil {
-		return err
-	}
-	if c.compression != CompressionNone {
-		// Performing compression. Note: only blocks are compressed.
+func (c *connect) compressBuffer(start int) error {
+	if c.compression != CompressionNone && len(c.buffer.Buf) > 0 {
 		data := c.buffer.Buf[start:]
 		if err := c.compressor.Compress(compress.Method(c.compression), data); err != nil {
 			return errors.Wrap(err, "compress")
 		}
 		c.buffer.Buf = append(c.buffer.Buf[:start], c.compressor.Data...)
 	}
+	return nil
+}
 
+func (c *connect) sendData(block *proto.Block, name string) error {
+	c.debugf("[send data] compression=%q", c.compression)
+	c.buffer.PutByte(proto.ClientData)
+	c.buffer.PutString(name)
+
+	compressionOffset := len(c.buffer.Buf)
+
+	if err := block.EncodeHeader(c.buffer, c.revision); err != nil {
+		return err
+	}
+	for i := range block.Columns {
+		if err := block.EncodeColumn(c.buffer, c.revision, i); err != nil {
+			return err
+		}
+		if len(c.buffer.Buf) >= c.maxCompressionBuffer {
+			if err := c.compressBuffer(compressionOffset); err != nil {
+				return err
+			}
+			c.debugf("[buff compress] buffer size: %d", len(c.buffer.Buf))
+			if err := c.flush(); err != nil {
+				return err
+			}
+			compressionOffset = 0
+		}
+	}
+	if err := c.compressBuffer(compressionOffset); err != nil {
+		return err
+	}
 	if err := c.flush(); err != nil {
+		if errors.Is(err, syscall.EPIPE) {
+			c.debugf("[send data] pipe is broken, closing connection")
+			c.closed = true
+		} else if errors.Is(err, io.EOF) {
+			c.debugf("[send data] unexpected EOF, closing connection")
+			c.closed = true
+		} else {
+			c.debugf("[send data] unexpected error: %v", err)
+		}
 		return err
 	}
 	defer func() {
@@ -193,20 +251,29 @@ func (c *connect) sendData(block *proto.Block, name string) error {
 	return nil
 }
 
-func (c *connect) readData(packet byte, compressible bool) (*proto.Block, error) {
+func (c *connect) readData(ctx context.Context, packet byte, compressible bool) (*proto.Block, error) {
 	if _, err := c.reader.Str(); err != nil {
+		c.debugf("[read data] str error: %v", err)
 		return nil, err
 	}
 	if compressible && c.compression != CompressionNone {
 		c.reader.EnableCompression()
 		defer c.reader.DisableCompression()
 	}
-	var block proto.Block
+
+	opts := queryOptions(ctx)
+	location := c.server.Timezone
+	if opts.userLocation != nil {
+		location = opts.userLocation
+	}
+
+	block := proto.Block{Timezone: location}
 	if err := block.Decode(c.reader, c.revision); err != nil {
+		c.debugf("[read data] decode error: %v", err)
 		return nil, err
 	}
 	block.Packet = packet
-	c.debugf("[read data] compression=%t. block: columns=%d, rows=%d", c.compression, len(block.Columns), block.Rows())
+	c.debugf("[read data] compression=%q. block: columns=%d, rows=%d", c.compression, len(block.Columns), block.Rows())
 	return &block, nil
 }
 
