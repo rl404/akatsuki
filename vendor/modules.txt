@@ -644,4 +644,3 @@ gorm.io/gorm/logger
 gorm.io/gorm/migrator
 gorm.io/gorm/schema
 gorm.io/gorm/utils
-# github.com/nstratos/go-myanimelist => github.com/rl404/go-myanimelist v0.10.0
