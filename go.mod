@@ -1,8 +1,6 @@
 module github.com/rl404/akatsuki
 
-go 1.18
-
-replace github.com/nstratos/go-myanimelist => github.com/rl404/go-myanimelist v0.10.0
+go 1.20
 
 require (
 	github.com/go-chi/chi v4.1.2+incompatible
