@@ -218,7 +218,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.16
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/mattn/go-sqlite3 v1.14.15
+# github.com/mattn/go-sqlite3 v1.14.16
 ## explicit; go 1.16
 github.com/mattn/go-sqlite3
 # github.com/microsoft/go-mssqldb v0.21.0
@@ -628,8 +628,8 @@ gorm.io/driver/mysql
 # gorm.io/driver/postgres v1.5.2
 ## explicit; go 1.18
 gorm.io/driver/postgres
-# gorm.io/driver/sqlite v1.5.0
-## explicit; go 1.14
+# gorm.io/driver/sqlite v1.5.1
+## explicit; go 1.20
 gorm.io/driver/sqlite
 # gorm.io/driver/sqlserver v1.5.0
 ## explicit; go 1.14
