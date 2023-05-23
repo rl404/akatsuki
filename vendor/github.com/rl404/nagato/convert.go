@@ -491,6 +491,7 @@ func (c *Client) mangaToManga(manga *mal.Manga) *Manga {
 		RelatedManga:    c.relatedMangaToRelatedManga(manga.RelatedManga),
 		Recommendations: c.mangaRecommendationToMangaRecommendation(manga.Recommendations),
 		Serialization:   c.serializationToSerialization(manga.Serialization),
+		NumFavorites:    manga.NumFavorites,
 	}
 }
 
