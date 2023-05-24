@@ -69,7 +69,8 @@ type Manga struct {
 	RelatedAnime      []RelatedAnime // Always empty.
 	RelatedManga      []RelatedManga
 	Recommendations   []MangaRecommendation
-	Serialization     []Serialization // Undocumented.
+	Serialization     []Serialization
+	NumFavorites      int // Undocumented.
 }
 
 // Picture is picture model.
