@@ -103,17 +103,15 @@ func (c *Client) Close() error {
 func (c *Channel) Read(ctx context.Context, model interface{}) (<-chan interface{}, <-chan error) {
 	msgChan, errChan := make(chan interface{}), make(chan error)
 	go func() {
-		for {
-			if err := c.subscription.Receive(ctx, func(_ context.Context, msg *pubsub.Message) {
-				if err := json.Unmarshal(msg.Data, &model); err != nil {
-					errChan <- err
-				} else {
-					msgChan <- model
-				}
-				msg.Ack()
-			}); err != nil {
+		if err := c.subscription.Receive(ctx, func(_ context.Context, msg *pubsub.Message) {
+			if err := json.Unmarshal(msg.Data, &model); err != nil {
 				errChan <- err
+			} else {
+				msgChan <- model
 			}
+			msg.Ack()
+		}); err != nil {
+			errChan <- err
 		}
 	}()
 	return (<-chan interface{})(msgChan), (<-chan error)(errChan)

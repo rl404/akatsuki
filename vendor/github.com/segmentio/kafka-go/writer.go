@@ -27,29 +27,29 @@ import (
 // by the function and test if it an instance of kafka.WriteErrors in order to
 // identify which messages have succeeded or failed, for example:
 //
-//	// Construct a synchronous writer (the default mode).
-//	w := &kafka.Writer{
-//		Addr:         Addr: kafka.TCP("localhost:9092", "localhost:9093", "localhost:9094"),
-//		Topic:        "topic-A",
-//		RequiredAcks: kafka.RequireAll,
-//	}
-//
-//	...
-//
-//  // Passing a context can prevent the operation from blocking indefinitely.
-//	switch err := w.WriteMessages(ctx, msgs...).(type) {
-//	case nil:
-//	case kafka.WriteErrors:
-//		for i := range msgs {
-//			if err[i] != nil {
-//				// handle the error writing msgs[i]
-//				...
-//			}
+//		// Construct a synchronous writer (the default mode).
+//		w := &kafka.Writer{
+//			Addr:         Addr: kafka.TCP("localhost:9092", "localhost:9093", "localhost:9094"),
+//			Topic:        "topic-A",
+//			RequiredAcks: kafka.RequireAll,
 //		}
-//	default:
-//		// handle other errors
+//
 //		...
-//	}
+//
+//	 // Passing a context can prevent the operation from blocking indefinitely.
+//		switch err := w.WriteMessages(ctx, msgs...).(type) {
+//		case nil:
+//		case kafka.WriteErrors:
+//			for i := range msgs {
+//				if err[i] != nil {
+//					// handle the error writing msgs[i]
+//					...
+//				}
+//			}
+//		default:
+//			// handle other errors
+//			...
+//		}
 //
 // In asynchronous mode, the program may configure a completion handler on the
 // writer to receive notifications of messages being written to kafka:
@@ -307,10 +307,6 @@ type WriterConfig struct {
 	// a response to a produce request. The default is -1, which means to wait for
 	// all replicas, and a value above 0 is required to indicate how many replicas
 	// should acknowledge a message to be considered successful.
-	//
-	// This version of kafka-go (v0.3) does not support 0 required acks, due to
-	// some internal complexity implementing this with the Kafka protocol. If you
-	// need that functionality specifically, you'll need to upgrade to v0.4.
 	RequiredAcks int
 
 	// Setting this flag to true causes the WriteMessages method to never block.
@@ -352,12 +348,13 @@ type WriterStats struct {
 	Bytes    int64 `metric:"kafka.writer.message.bytes"   type:"counter"`
 	Errors   int64 `metric:"kafka.writer.error.count"     type:"counter"`
 
-	BatchTime  DurationStats `metric:"kafka.writer.batch.seconds"`
-	WriteTime  DurationStats `metric:"kafka.writer.write.seconds"`
-	WaitTime   DurationStats `metric:"kafka.writer.wait.seconds"`
-	Retries    int64         `metric:"kafka.writer.retries.count" type:"counter"`
-	BatchSize  SummaryStats  `metric:"kafka.writer.batch.size"`
-	BatchBytes SummaryStats  `metric:"kafka.writer.batch.bytes"`
+	BatchTime      DurationStats `metric:"kafka.writer.batch.seconds"`
+	BatchQueueTime DurationStats `metric:"kafka.writer.batch.queue.seconds"`
+	WriteTime      DurationStats `metric:"kafka.writer.write.seconds"`
+	WaitTime       DurationStats `metric:"kafka.writer.wait.seconds"`
+	Retries        int64         `metric:"kafka.writer.retries.count" type:"counter"`
+	BatchSize      SummaryStats  `metric:"kafka.writer.batch.size"`
+	BatchBytes     SummaryStats  `metric:"kafka.writer.batch.bytes"`
 
 	MaxAttempts     int64         `metric:"kafka.writer.attempts.max"  type:"gauge"`
 	WriteBackoffMin time.Duration `metric:"kafka.writer.backoff.min"   type:"gauge"`
@@ -402,6 +399,7 @@ type writerStats struct {
 	errors         counter
 	dialTime       summary
 	batchTime      summary
+	batchQueueTime summary
 	writeTime      summary
 	waitTime       summary
 	retries        counter
@@ -537,7 +535,7 @@ func (w *Writer) enter() bool {
 // completed.
 func (w *Writer) leave() { w.group.Done() }
 
-// spawn starts an new asynchronous operation on the writer. This method is used
+// spawn starts a new asynchronous operation on the writer. This method is used
 // instead of starting goroutines inline to help manage the state of the
 // writer's wait group. The wait group is used to block Close calls until all
 // inflight operations have completed, therefore automatically including those
@@ -884,6 +882,7 @@ func (w *Writer) Stats() WriterStats {
 		Errors:          stats.errors.snapshot(),
 		DialTime:        stats.dialTime.snapshotDuration(),
 		BatchTime:       stats.batchTime.snapshotDuration(),
+		BatchQueueTime:  stats.batchQueueTime.snapshotDuration(),
 		WriteTime:       stats.writeTime.snapshotDuration(),
 		WaitTime:        stats.waitTime.snapshotDuration(),
 		Retries:         stats.retries.snapshot(),
@@ -1092,6 +1091,8 @@ func (ptw *partitionWriter) awaitBatch(batch *writeBatch) {
 		// having it leak until it expires.
 		batch.timer.Stop()
 	}
+	stats := ptw.w.stats()
+	stats.batchQueueTime.observe(int64(time.Since(batch.time)))
 }
 
 func (ptw *partitionWriter) writeBatch(batch *writeBatch) {
