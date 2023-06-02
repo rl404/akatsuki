@@ -1,3 +1,17 @@
+# v7.17.10
+
+## Transport
+
+* Fixed an issue with subdirectory in url during retry. (#657)
+* Fixed a deadlock in transport (#603 & #640)
+
+# v7.17.7
+
+## Client
+
+* Added the option to override the `Content-Type` to enable usage of alternative serialization. ([#542](https://github.com/elastic/go-elasticsearch/pull/542))
+* API is compatible with Elasticsearch 7.17.7
+
 # v7.17.1
 
 ## Client
