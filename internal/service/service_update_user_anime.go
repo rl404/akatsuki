@@ -22,7 +22,7 @@ func (s *service) UpdateUserAnime(ctx context.Context, username string) (int, er
 	return http.StatusAccepted, nil
 }
 
-func (s *service) updateUserAnime(ctx context.Context, username string) (int, error) {
+func (s *service) updateUserAnime(ctx context.Context, username, status string) (int, error) {
 	username = strings.ToLower(username)
 
 	var ids []int64
@@ -31,6 +31,7 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 		// Call mal api.
 		anime, code, err := s.mal.GetUserAnime(ctx, entity.GetUserAnimeRequest{
 			Username: username,
+			Status:   status,
 			Limit:    limit + 1,
 			Offset:   offset,
 		})
@@ -60,7 +61,7 @@ func (s *service) updateUserAnime(ctx context.Context, username string) (int, er
 	}
 
 	// Delete anime not in list.
-	if code, err := s.userAnime.DeleteNotInList(ctx, username, ids); err != nil {
+	if code, err := s.userAnime.DeleteNotInList(ctx, username, ids, status); err != nil {
 		return code, errors.Wrap(ctx, err)
 	}
 

@@ -13,6 +13,7 @@ import (
 func (c *Client) GetUserAnime(ctx context.Context, data entity.GetUserAnimeRequest) ([]nagato.UserAnime, int, error) {
 	anime, code, err := c.client.GetUserAnimeListWithContext(ctx, nagato.GetUserAnimeListParam{
 		Username: data.Username,
+		Status:   nagato.UserAnimeStatusType(data.Status),
 		NSFW:     true,
 		Limit:    data.Limit,
 		Offset:   data.Offset,

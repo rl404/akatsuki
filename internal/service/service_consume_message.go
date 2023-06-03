@@ -7,6 +7,7 @@ import (
 
 	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/nagato"
 )
 
 // ConsumeMessage to consume message from queue.
@@ -74,8 +75,29 @@ func (s *service) consumeParseUserAnime(ctx context.Context, data []byte) error 
 		}
 	}
 
-	if _, err := s.updateUserAnime(ctx, req.Username); err != nil {
-		return errors.Wrap(ctx, err)
+	if req.Status != "" {
+		if _, err := s.updateUserAnime(ctx, req.Username, req.Status); err != nil {
+			return errors.Wrap(ctx, err)
+		}
+		return nil
+	}
+
+	statuses := []nagato.UserAnimeStatusType{
+		nagato.UserAnimeStatusWatching,
+		nagato.UserAnimeStatusCompleted,
+		nagato.UserAnimeStatusOnHold,
+		nagato.UserAnimeStatusDropped,
+		nagato.UserAnimeStatusPlanToWatch,
+	}
+
+	for _, status := range statuses {
+		if err := s.publisher.PublishParseUserAnime(ctx, entity.ParseUserAnimeRequest{
+			Username: req.Username,
+			Status:   string(status),
+			Forced:   true,
+		}); err != nil {
+			return errors.Wrap(ctx, err)
+		}
 	}
 
 	return nil
