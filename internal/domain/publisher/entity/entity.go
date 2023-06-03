@@ -23,5 +23,6 @@ type ParseAnimeRequest struct {
 // ParseUserAnimeRequest is parse user anime request model.
 type ParseUserAnimeRequest struct {
 	Username string `json:"username"`
+	Status   string `json:"status"`
 	Forced   bool   `json:"forced"`
 }
