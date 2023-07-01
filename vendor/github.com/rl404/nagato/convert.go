@@ -95,7 +95,7 @@ func (c *Client) animeToAnime(anime *mal.Anime) *Anime {
 		Statistics: Statistic{
 			NumListUsers: anime.Statistics.NumListUsers,
 			Status: StatisticStatus{
-				Watching:    c.statisticStatusToStatisticStatus(anime.Statistics.Status.Completed),
+				Watching:    c.statisticStatusToStatisticStatus(anime.Statistics.Status.Watching),
 				Completed:   c.statisticStatusToStatisticStatus(anime.Statistics.Status.Completed),
 				OnHold:      c.statisticStatusToStatisticStatus(anime.Statistics.Status.OnHold),
 				Dropped:     c.statisticStatusToStatisticStatus(anime.Statistics.Status.Dropped),
