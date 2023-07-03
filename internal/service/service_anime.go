@@ -37,7 +37,7 @@ type Anime struct {
 	Genres            []genre          `json:"genres"`
 	Pictures          []string         `json:"pictures"`
 	Related           []related        `json:"related"`
-	Studios           []studio         `json:"studio"`
+	Studios           []studio         `json:"studios"`
 	UpdatedAt         time.Time        `json:"updated_at"`
 }
 

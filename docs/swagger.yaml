@@ -50,7 +50,7 @@ definitions:
         $ref: '#/definitions/service.stats'
       status:
         type: string
-      studio:
+      studios:
         items:
           $ref: '#/definitions/service.studio'
         type: array
