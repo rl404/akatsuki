@@ -10,7 +10,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/allegro/bigcache"
+	"github.com/allegro/bigcache/v3"
 )
 
 // Client is bigcache client.

@@ -1,4 +1,4 @@
-// Package redis is a wrapper of the original "github.com/go-redis/redis/v8" library.
+// Package redis is a wrapper of the original "github.com/redis/go-redis" library.
 //
 // Only contains basic publish, subscribe, and close methods.
 // Data will be encoded to JSON before publishing the message.
@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 // Client is redis pubsub client.
