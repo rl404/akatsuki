@@ -2,7 +2,7 @@ package swagger
 
 import (
 	"github.com/go-chi/chi"
-	httpSwagger "github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // Swagger to handle swagger API docs.
