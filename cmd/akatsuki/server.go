@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	grpcAPI "github.com/rl404/akatsuki/internal/delivery/grpc/api"
 	"github.com/rl404/akatsuki/internal/delivery/grpc/schema"

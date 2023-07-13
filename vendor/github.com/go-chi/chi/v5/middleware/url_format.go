@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 var (
@@ -51,15 +51,19 @@ func URLFormat(next http.Handler) http.Handler {
 		var format string
 		path := r.URL.Path
 
+		rctx := chi.RouteContext(r.Context())
+		if rctx != nil && rctx.RoutePath != "" {
+			path = rctx.RoutePath
+		}
+
 		if strings.Index(path, ".") > 0 {
 			base := strings.LastIndex(path, "/")
-			idx := strings.Index(path[base:], ".")
+			idx := strings.LastIndex(path[base:], ".")
 
 			if idx > 0 {
 				idx += base
 				format = path[idx+1:]
 
-				rctx := chi.RouteContext(r.Context())
 				rctx.RoutePath = path[:idx]
 			}
 		}

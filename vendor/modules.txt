@@ -682,10 +682,10 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
-# github.com/go-chi/chi v4.1.2+incompatible
-## explicit
-github.com/go-chi/chi
-github.com/go-chi/chi/middleware
+# github.com/go-chi/chi/v5 v5.0.8
+## explicit; go 1.14
+github.com/go-chi/chi/v5
+github.com/go-chi/chi/v5/middleware
 # github.com/go-faster/city v1.0.1
 ## explicit; go 1.17
 github.com/go-faster/city
@@ -911,7 +911,7 @@ github.com/redis/go-redis/v9/internal/pool
 github.com/redis/go-redis/v9/internal/proto
 github.com/redis/go-redis/v9/internal/rand
 github.com/redis/go-redis/v9/internal/util
-# github.com/rl404/fairy v0.22.2
+# github.com/rl404/fairy v0.22.3
 ## explicit; go 1.17
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/bigcache
