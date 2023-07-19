@@ -281,3 +281,19 @@ func (sql *SQL) animeRelatedToEntities(data []AnimeRelated) []*entity.AnimeRelat
 	}
 	return ar
 }
+
+type animeStatsHistory struct {
+	Year          int
+	Month         int
+	Week          int
+	Mean          float64
+	Rank          int
+	Popularity    int
+	Member        int
+	Voter         int
+	UserWatching  int
+	UserCompleted int
+	UserOnHold    int
+	UserDropped   int
+	UserPlanned   int
+}

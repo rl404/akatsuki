@@ -102,3 +102,8 @@ func (c *Cache) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.Ani
 func (c *Cache) DeleteByID(ctx context.Context, id int64) (int, error) {
 	return c.repo.DeleteByID(ctx, id)
 }
+
+// GetHistories to get histories.
+func (c *Cache) GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error) {
+	return c.repo.GetHistories(ctx, data)
+}

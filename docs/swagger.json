@@ -75,6 +75,97 @@
                 }
             }
         },
+        "/anime/{animeID}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime"
+                ],
+                "summary": "Get anime stats histories by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "anime id",
+                        "name": "animeID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "start date (yyyy-mm-dd)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "end date (yyyy-mm-dd)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "WEEKLY",
+                            "MONTHLY",
+                            "YEARLY"
+                        ],
+                        "type": "string",
+                        "default": "MONTHLY",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.AnimeHistory"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/anime/{animeID}/update": {
             "post": {
                 "produces": [
@@ -411,6 +502,50 @@
                     "type": "string"
                 },
                 "voter": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.AnimeHistory": {
+            "type": "object",
+            "properties": {
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "user_completed": {
+                    "type": "integer"
+                },
+                "user_dropped": {
+                    "type": "integer"
+                },
+                "user_on_hold": {
+                    "type": "integer"
+                },
+                "user_planned": {
+                    "type": "integer"
+                },
+                "user_watching": {
+                    "type": "integer"
+                },
+                "voter": {
+                    "type": "integer"
+                },
+                "week": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "integer"
                 }
             }

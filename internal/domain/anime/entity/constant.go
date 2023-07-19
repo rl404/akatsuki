@@ -92,16 +92,26 @@ type Relation string
 
 // Available anime relation.
 const (
-	RelationSequel             = "SEQUEL"
-	RelationPrequel            = "PREQUEL"
-	RelationAlternativeSetting = "ALTERNATIVE_SETTING"
-	RelationAlternativeVersion = "ALTERNATIVE_VERSION"
-	RelationSideStory          = "SIDE_STORY"
-	RelationParentStory        = "PARENT_STORY"
-	RelationSummary            = "SUMMARY"
-	RelationFullStory          = "FULL_STORY"
-	RelationSpinOff            = "SPIN_OFF"
-	RelationAdaptation         = "ADAPTATION"
-	RelationCharacter          = "CHARACTER"
-	RelationOther              = "OTHER"
+	RelationSequel             Relation = "SEQUEL"
+	RelationPrequel            Relation = "PREQUEL"
+	RelationAlternativeSetting Relation = "ALTERNATIVE_SETTING"
+	RelationAlternativeVersion Relation = "ALTERNATIVE_VERSION"
+	RelationSideStory          Relation = "SIDE_STORY"
+	RelationParentStory        Relation = "PARENT_STORY"
+	RelationSummary            Relation = "SUMMARY"
+	RelationFullStory          Relation = "FULL_STORY"
+	RelationSpinOff            Relation = "SPIN_OFF"
+	RelationAdaptation         Relation = "ADAPTATION"
+	RelationCharacter          Relation = "CHARACTER"
+	RelationOther              Relation = "OTHER"
+)
+
+// HistoryGroup is anime history group.
+type HistoryGroup string
+
+// Available anime history group.
+const (
+	Yearly  HistoryGroup = "YEARLY"
+	Monthly HistoryGroup = "MONTHLY"
+	Weekly  HistoryGroup = "WEEKLY"
 )

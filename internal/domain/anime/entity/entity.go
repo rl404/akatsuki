@@ -95,3 +95,28 @@ type AnimeRelated struct {
 	AnimeID2 int64
 	Relation Relation
 }
+
+// History is entity for anime history.
+type History struct {
+	Year          int
+	Month         int
+	Week          int
+	Mean          float64
+	Rank          int
+	Popularity    int
+	Member        int
+	Voter         int
+	UserWatching  int
+	UserCompleted int
+	UserOnHold    int
+	UserDropped   int
+	UserPlanned   int
+}
+
+// GetHistoriesRequest is get histories request model.
+type GetHistoriesRequest struct {
+	AnimeID   int64
+	StartDate *time.Time
+	EndDate   *time.Time
+	Group     HistoryGroup
+}

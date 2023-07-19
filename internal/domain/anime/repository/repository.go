@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	GetByID(ctx context.Context, id int64) (*entity.Anime, int, error)
 	GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int, error)
+	GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error)
 	Update(ctx context.Context, data entity.Anime) (int, error)
 	GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.AnimeRelated, int, error)
 	DeleteByID(ctx context.Context, id int64) (int, error)
