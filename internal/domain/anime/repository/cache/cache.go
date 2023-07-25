@@ -25,6 +25,11 @@ func New(cacher cache.Cacher, repo repository.Repository) *Cache {
 	}
 }
 
+// Get to get anime list.
+func (c *Cache) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anime, int, int, error) {
+	return c.repo.Get(ctx, data)
+}
+
 // GetByID to get anime by id.
 func (c *Cache) GetByID(ctx context.Context, id int64) (data *entity.Anime, code int, err error) {
 	key := utils.GetKey("anime", id)

@@ -42,6 +42,56 @@ type Anime struct {
 	UpdatedAt         time.Time        `json:"updated_at"`
 }
 
+// GetAnimeRequest is get anime list request model.
+type GetAnimeRequest struct {
+	Title      string        `mod:"lcase,trim"`
+	NSFW       *bool         ``
+	Type       entity.Type   `validate:"omitempty,oneof=TV OVA ONA MOVIE SPECIAL MUSIC" mod:"ucase,no_space"`
+	Status     entity.Status `validate:"omitempty,oneof=FINISHED RELEASING NOT_YET" mod:"ucase,no_space"`
+	Season     entity.Season `validate:"omitempty,oneof=WINTER SPRING SUMMER FALL" mod:"ucase,no_space"`
+	SeasonYear int           `validate:"gte=0"`
+	StartMean  float64       `validate:"gte=0,lte=10"`
+	EndMean    float64       `validate:"gte=0,lte=10"`
+	Sort       entity.Sort   `validate:"oneof=ID -ID TITLE -TITLE START_DATE -START_DATE MEAN -MEAN RANK -RANK POPULARITY -POPULARITY MEMBER -MEMBER VOTER -VOTER" mod:"no_space,ucase,default=RANK"`
+	Page       int           `validate:"required,gte=1" mod:"default=1"`
+	Limit      int           `validate:"required,gte=-1" mod:"default=20"`
+}
+
+// GetAnime to get anime list.
+func (s *service) GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, *Pagination, int, error) {
+	if err := utils.Validate(&data); err != nil {
+		return nil, nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+	}
+
+	anime, total, code, err := s.anime.Get(ctx, entity.GetRequest{
+		Title:      data.Title,
+		NSFW:       data.NSFW,
+		Type:       data.Type,
+		Status:     data.Status,
+		Season:     data.Season,
+		SeasonYear: data.SeasonYear,
+		StartMean:  data.StartMean,
+		EndMean:    data.EndMean,
+		Sort:       data.Sort,
+		Page:       data.Page,
+		Limit:      data.Limit,
+	})
+	if err != nil {
+		return nil, nil, code, errors.Wrap(ctx, err)
+	}
+
+	res := make([]Anime, len(anime))
+	for i, a := range anime {
+		res[i] = s.animeFromEntity(a)
+	}
+
+	return res, &Pagination{
+		Page:  data.Page,
+		Limit: data.Limit,
+		Total: total,
+	}, http.StatusOK, nil
+}
+
 // GetAnimeByID to get anime by id.
 func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, error) {
 	if code, err := s.validateID(ctx, id); err != nil {

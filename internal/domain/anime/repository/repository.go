@@ -8,6 +8,7 @@ import (
 
 // Repository contains functions for anime domain.
 type Repository interface {
+	Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anime, int, int, error)
 	GetByID(ctx context.Context, id int64) (*entity.Anime, int, error)
 	GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int, error)
 	GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error)

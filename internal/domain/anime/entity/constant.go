@@ -115,3 +115,18 @@ const (
 	Monthly HistoryGroup = "MONTHLY"
 	Weekly  HistoryGroup = "WEEKLY"
 )
+
+// Sort is anime sorting.
+type Sort string
+
+// Available anime sorting.
+const (
+	SortID         Sort = "ID"
+	SortTitle      Sort = "TITLE"
+	SortStartDate  Sort = "START_DATE"
+	SortMean       Sort = "MEAN"
+	SortRank       Sort = "RANK"
+	SortPopularity Sort = "POPULARITY"
+	SortMember     Sort = "MEMBER"
+	SortVoter      Sort = "VOTER"
+)

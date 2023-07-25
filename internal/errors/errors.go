@@ -53,3 +53,8 @@ func ErrOneOfField(str, value string) error {
 func ErrDatetimeField(str, value string) error {
 	return fmt.Errorf("field %s must be in %s format", str, value)
 }
+
+// ErrInvalidFormat is error for invalid format.
+func ErrInvalidFormat(str string) error {
+	return fmt.Errorf("invalid %s format", str)
+}

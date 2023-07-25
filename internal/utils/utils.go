@@ -49,3 +49,15 @@ func ParseToTimePtr(layout, str string) *time.Time {
 	}
 	return &tmp
 }
+
+// ParseToBoolPtr to parse str to bool pointer.
+func ParseToBoolPtr(str string) *bool {
+	if str == "" {
+		return nil
+	}
+	b, err := strconv.ParseBool(str)
+	if err != nil {
+		return nil
+	}
+	return &b
+}

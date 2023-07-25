@@ -120,3 +120,18 @@ type GetHistoriesRequest struct {
 	EndDate   *time.Time
 	Group     HistoryGroup
 }
+
+// GetRequest is get request model.
+type GetRequest struct {
+	Title      string
+	NSFW       *bool
+	Type       Type
+	Status     Status
+	Season     Season
+	SeasonYear int
+	StartMean  float64
+	EndMean    float64
+	Sort       Sort
+	Page       int
+	Limit      int
+}
