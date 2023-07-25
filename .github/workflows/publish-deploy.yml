@@ -3,7 +3,7 @@ name: publish & deploy
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   publish_image:
@@ -83,5 +83,3 @@ jobs:
           kubectl set image deployment ${{ secrets.GKE_CONSUMER_DEPLOYMENT_NAME }} ${{ secrets.GKE_CONSUMER_CONTAINER_NAME }}=rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
           kubectl set image cronjob ${{ secrets.GKE_CRON_FILL_DEPLOYMENT_NAME }} ${{ secrets.GKE_CRON_FILL_CONTAINER_NAME }}=rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
           kubectl set image cronjob ${{ secrets.GKE_CRON_UPDATE_DEPLOYMENT_NAME }} ${{ secrets.GKE_CRON_UPDATE_CONTAINER_NAME }}=rl404/akatsuki:${{ needs.publish_image.outputs.img_tag }}
-
-
