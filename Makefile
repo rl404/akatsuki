@@ -3,7 +3,7 @@ GO_CMD     := go
 GO_FMT     := $(GO_CMD) fmt
 GO_INSTALL := $(GO_CMD) install
 GO_CLEAN   := $(GO_CMD) clean
-GO_BUILD   := $(GO_CMD) build -mod vendor
+GO_BUILD   := $(GO_CMD) build
 
 # Coverage output.
 COVER_OUT := cover.out

@@ -18,4 +18,4 @@ jobs:
     - name: Build
       run: |
         cd cmd/akatsuki
-        CGO_ENABLED=0 go build -a -installsuffix cgo -mod vendor -o akatsuki
+        CGO_ENABLED=0 go build -a -installsuffix cgo -o akatsuki
