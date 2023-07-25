@@ -36,6 +36,13 @@ func (s *service) updateUserAnime(ctx context.Context, username, status string) 
 			Offset:   offset,
 		})
 		if err != nil {
+			if code == http.StatusNotFound {
+				// Delete existing data.
+				if code, err := s.userAnime.DeleteByUsername(ctx, username); err != nil {
+					return code, errors.Wrap(ctx, err)
+				}
+				return http.StatusOK, nil
+			}
 			return code, errors.Wrap(ctx, err)
 		}
 

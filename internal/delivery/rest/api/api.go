@@ -36,8 +36,10 @@ func (api *API) Register(r chi.Router, nrApp *newrelic.Application) {
 		}))
 		r.Use(utils.Recoverer)
 
+		r.Get("/anime", api.handleGetAnime)
 		r.Get("/anime/{animeID}", api.handleGetAnimeByID)
 		r.Post("/anime/{animeID}/update", api.handleUpdateAnimeByID)
+		r.Get("/anime/{animeID}/history", api.handleGetAnimeHistoriesByID)
 
 		r.Get("/user/{username}/anime", api.handleGetUserAnime)
 		r.Get("/user/{username}/anime/relations", api.handleGetUserAnimeRelations)

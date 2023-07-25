@@ -48,3 +48,13 @@ func ErrLTEField(str, value string) error {
 func ErrOneOfField(str, value string) error {
 	return fmt.Errorf("field %s must be one of %s", str, strings.Join(strings.Split(value, " "), "/"))
 }
+
+// ErrDatetimeField is error for datetime field.
+func ErrDatetimeField(str, value string) error {
+	return fmt.Errorf("field %s must be in %s format", str, value)
+}
+
+// ErrInvalidFormat is error for invalid format.
+func ErrInvalidFormat(str string) error {
+	return fmt.Errorf("invalid %s format", str)
+}

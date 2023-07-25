@@ -15,7 +15,9 @@ import (
 
 // Service contains functions for service.
 type Service interface {
+	GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, *Pagination, int, error)
 	GetAnimeByID(ctx context.Context, id int64) (*Anime, int, error)
+	GetAnimeHistoriesByID(ctx context.Context, id int64, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error)
 	UpdateAnimeByID(ctx context.Context, id int64) (int, error)
 
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)

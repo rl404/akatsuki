@@ -7,11 +7,11 @@ jobs:
     name: Tag
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Create tag
-      uses: mathieudutour/github-tag-action@v6.1
-      with:
-        github_token: ${{ secrets.CR_PAT }}
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Create tag
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.CR_PAT }}

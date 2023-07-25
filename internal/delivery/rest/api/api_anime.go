@@ -5,9 +5,75 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rl404/akatsuki/internal/domain/anime/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
 )
+
+// @summary Get anime list.
+// @tags Anime
+// @produce json
+// @param title query string false "title"
+// @param nsfw query string false "nsfw" enums(true,false)
+// @param type query string false "type" enums(TV,OVA,ONA,MOVIE,SPECIAL,MUSIC)
+// @param status query string false "status" enums(FINISHED,RELEASING,NOT_YET)
+// @param season query string false "season" enums(WINTER,SPRING,SUMMER,FALL)
+// @param season_year query integer false "season year"
+// @param start_mean query number false "start mean"
+// @param end_mean query number false "end mean"
+// @param sort query string false "sort" enums(ID,-ID,TITLE,-TITLE,START_DATE,-START_DATE,MEAN,-MEAN,RANK,-RANK,POPULARITY,-POPULARITY,MEMBER,-MEMBER,VOTER,-VOTER) default(RANK)
+// @param page query integer false "page" default(1)
+// @param limit query integer false "limit" default(20)
+// @success 200 {object} utils.Response{data=[]service.Anime,meta=service.Pagination}
+// @failure 400 {object} utils.Response
+// @failure 500 {object} utils.Response
+// @router /anime [get]
+func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query().Get("title")
+	nsfw := r.URL.Query().Get("nsfw")
+	_type := r.URL.Query().Get("type")
+	status := r.URL.Query().Get("status")
+	season := r.URL.Query().Get("season")
+	seasonYear, _ := strconv.Atoi(r.URL.Query().Get("season_year"))
+	sort := r.URL.Query().Get("sort")
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+
+	var startMean, endMean float64
+	if tmp := r.URL.Query().Get("start_mean"); tmp != "" {
+		tmp2, err := strconv.ParseFloat(tmp, 64)
+		if err != nil {
+			utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), err, errors.ErrInvalidFormat("start_mean")))
+			return
+		}
+		startMean = tmp2
+	}
+	if tmp := r.URL.Query().Get("end_mean"); tmp != "" {
+		tmp2, err := strconv.ParseFloat(tmp, 64)
+		if err != nil {
+			utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), err, errors.ErrInvalidFormat("end_mean")))
+			return
+		}
+		endMean = tmp2
+	}
+
+	anime, pagination, code, err := api.service.GetAnime(r.Context(), service.GetAnimeRequest{
+		Title:      title,
+		NSFW:       utils.ParseToBoolPtr(nsfw),
+		Type:       entity.Type(_type),
+		Status:     entity.Status(status),
+		Season:     entity.Season(season),
+		SeasonYear: seasonYear,
+		StartMean:  startMean,
+		EndMean:    endMean,
+		Sort:       entity.Sort(sort),
+		Page:       page,
+		Limit:      limit,
+	})
+
+	utils.ResponseWithJSON(w, code, anime, errors.Wrap(r.Context(), err), pagination)
+}
 
 // @summary Get anime by id.
 // @tags Anime
@@ -48,4 +114,37 @@ func (api *API) handleUpdateAnimeByID(w http.ResponseWriter, r *http.Request) {
 
 	code, err := api.service.UpdateAnimeByID(r.Context(), id)
 	utils.ResponseWithJSON(w, code, nil, errors.Wrap(r.Context(), err))
+}
+
+// @summary Get anime stats histories by id.
+// @tags Anime
+// @produce json
+// @param animeID path integer true "anime id"
+// @param start_date query string false "start date (yyyy-mm-dd)"
+// @param end_date query string false "end date (yyyy-mm-dd)"
+// @param group query string false "group" enums(WEEKLY,MONTHLY,YEARLY) default(MONTHLY)
+// @success 200 {object} utils.Response{data=[]service.AnimeHistory}
+// @failure 202 {object} utils.Response
+// @failure 400 {object} utils.Response
+// @failure 404 {object} utils.Response
+// @failure 500 {object} utils.Response
+// @router /anime/{animeID}/history [get]
+func (api *API) handleGetAnimeHistoriesByID(w http.ResponseWriter, r *http.Request) {
+	startDate := r.URL.Query().Get("start_date")
+	endDate := r.URL.Query().Get("end_date")
+	group := r.URL.Query().Get("group")
+
+	id, err := strconv.ParseInt(chi.URLParam(r, "animeID"), 10, 64)
+	if err != nil {
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidAnimeID, err))
+		return
+	}
+
+	histories, code, err := api.service.GetAnimeHistoriesByID(r.Context(), id, service.GetAnimeHistoriesRequest{
+		StartDate: startDate,
+		EndDate:   endDate,
+		Group:     entity.HistoryGroup(group),
+	})
+
+	utils.ResponseWithJSON(w, code, histories, errors.Wrap(r.Context(), err))
 }

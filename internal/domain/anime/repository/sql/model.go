@@ -2,6 +2,8 @@ package sql
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/rl404/akatsuki/internal/domain/anime/entity"
@@ -280,4 +282,40 @@ func (sql *SQL) animeRelatedToEntities(data []AnimeRelated) []*entity.AnimeRelat
 		ar[i] = aa.toEntity()
 	}
 	return ar
+}
+
+type animeStatsHistory struct {
+	Year          int
+	Month         int
+	Week          int
+	Mean          float64
+	Rank          int
+	Popularity    int
+	Member        int
+	Voter         int
+	UserWatching  int
+	UserCompleted int
+	UserOnHold    int
+	UserDropped   int
+	UserPlanned   int
+}
+
+func (sql *SQL) convertSort(sort entity.Sort) string {
+	if sort == "" {
+		sort = entity.SortRank
+	}
+
+	suffix := "asc"
+	if sort[0] == '-' {
+		sort, suffix = sort[1:], "desc"
+	}
+
+	switch sort {
+	case entity.SortStartDate:
+		return fmt.Sprintf("start_year %s, start_month %s, start_day %s", suffix, suffix, suffix)
+	case entity.SortMean, entity.SortRank, entity.SortPopularity, entity.SortMember, entity.SortVoter:
+		return fmt.Sprintf("%s = 0 nulls last, %s %s", strings.ToLower(string(sort)), strings.ToLower(string(sort)), suffix)
+	default:
+		return fmt.Sprintf("%s %s", strings.ToLower(string(sort)), suffix)
+	}
 }

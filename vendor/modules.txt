@@ -3,7 +3,7 @@
 cloud.google.com/go/internal/detect
 cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/pubsub
-# cloud.google.com/go/compute v1.19.3
+# cloud.google.com/go/compute v1.20.1
 ## explicit; go 1.19
 cloud.google.com/go/compute/internal
 # cloud.google.com/go/compute/metadata v0.2.3
@@ -778,11 +778,12 @@ github.com/google/uuid
 ## explicit; go 1.19
 github.com/googleapis/enterprise-certificate-proxy/client
 github.com/googleapis/enterprise-certificate-proxy/client/util
-# github.com/googleapis/gax-go/v2 v2.11.0
+# github.com/googleapis/gax-go/v2 v2.12.0
 ## explicit; go 1.19
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
+github.com/googleapis/gax-go/v2/callctx
 github.com/googleapis/gax-go/v2/internal
 # github.com/gosimple/slug v1.13.1
 ## explicit; go 1.11
@@ -911,7 +912,7 @@ github.com/redis/go-redis/v9/internal/pool
 github.com/redis/go-redis/v9/internal/proto
 github.com/redis/go-redis/v9/internal/rand
 github.com/redis/go-redis/v9/internal/util
-# github.com/rl404/fairy v0.22.3
+# github.com/rl404/fairy v0.23.0
 ## explicit; go 1.17
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/bigcache
@@ -1103,7 +1104,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.9.0
+# golang.org/x/oauth2 v0.10.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/authhandler
@@ -1145,7 +1146,7 @@ golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
 golang.org/x/tools/internal/typeparams
-# google.golang.org/api v0.130.0
+# google.golang.org/api v0.131.0
 ## explicit; go 1.19
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
@@ -1175,15 +1176,15 @@ google.golang.org/appengine/internal/socket
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
+# google.golang.org/genproto v0.0.0-20230629202037-9506855d4529
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/type/expr
 google.golang.org/genproto/internal
-# google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
+# google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20230706204954-ccb25ca9f130
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails

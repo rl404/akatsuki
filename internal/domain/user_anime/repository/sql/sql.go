@@ -98,3 +98,11 @@ func (sql *SQL) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error)
 	}
 	return http.StatusOK, nil
 }
+
+// DeleteByUsername to delete by username.
+func (sql *SQL) DeleteByUsername(ctx context.Context, username string) (int, error) {
+	if err := sql.db.WithContext(ctx).Where("username = ?", username).Delete(&UserAnime{}).Error; err != nil {
+		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+	return http.StatusOK, nil
+}

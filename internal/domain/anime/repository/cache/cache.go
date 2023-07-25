@@ -25,6 +25,11 @@ func New(cacher cache.Cacher, repo repository.Repository) *Cache {
 	}
 }
 
+// Get to get anime list.
+func (c *Cache) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anime, int, int, error) {
+	return c.repo.Get(ctx, data)
+}
+
 // GetByID to get anime by id.
 func (c *Cache) GetByID(ctx context.Context, id int64) (data *entity.Anime, code int, err error) {
 	key := utils.GetKey("anime", id)
@@ -101,4 +106,9 @@ func (c *Cache) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.Ani
 // DeleteByID to delete by id.
 func (c *Cache) DeleteByID(ctx context.Context, id int64) (int, error) {
 	return c.repo.DeleteByID(ctx, id)
+}
+
+// GetHistories to get histories.
+func (c *Cache) GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error) {
+	return c.repo.GetHistories(ctx, data)
 }

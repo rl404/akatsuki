@@ -43,7 +43,7 @@ func New(autoMod bool) *Validator {
 }
 
 // RegisterModifier to register custom modifier.
-func (v *Validator) RegisterModifier(name string, fn func(string) string) error {
+func (v *Validator) RegisterModifier(name string, fn func(string, ...string) string) error {
 	if name == "" {
 		return ErrRequiredName
 	}
@@ -55,7 +55,7 @@ func (v *Validator) RegisterModifier(name string, fn func(string) string) error 
 	v.mod.Register(name, func(ctx context.Context, fl mold.FieldLevel) error {
 		switch fl.Field().Kind() {
 		case reflect.String:
-			fl.Field().SetString(fn(fl.Field().String()))
+			fl.Field().SetString(fn(fl.Field().String(), fl.Param()))
 		}
 		return nil
 	})

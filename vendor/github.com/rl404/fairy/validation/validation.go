@@ -7,7 +7,7 @@ import "github.com/rl404/fairy/validation/playground"
 // See usage example in example folder.
 type Validator interface {
 	// Register custom modifier.
-	RegisterModifier(name string, fn func(in string) (out string)) error
+	RegisterModifier(name string, fn func(in string, param ...string) (out string)) error
 	// Modify struct field value according to modifier tag.
 	// Param `data` should be a pointer.
 	Modify(data interface{}) error

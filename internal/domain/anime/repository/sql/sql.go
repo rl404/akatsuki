@@ -29,6 +29,55 @@ func New(db *gorm.DB, finishedAge, releasingAge, notYetAge int) *SQL {
 	}
 }
 
+// Get to get anime list.
+func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anime, int, int, error) {
+	query := sql.db
+
+	if data.Title != "" {
+		query = query.Where("title ilike ? or title_synonym ilike ? or title_english ilike ? or title_japanese ilike ?", "%"+data.Title+"%", "%"+data.Title+"%", "%"+data.Title+"%", "%"+data.Title+"%")
+	}
+
+	if data.NSFW != nil {
+		query = query.Where("nsfw = ?", data.NSFW)
+	}
+
+	if data.Type != "" {
+		query = query.Where("type = ?", data.Type)
+	}
+
+	if data.Status != "" {
+		query = query.Where("status = ?", data.Status)
+	}
+
+	if data.Season != "" {
+		query = query.Where("season = ?", data.Season)
+	}
+
+	if data.SeasonYear != 0 {
+		query = query.Where("season_year = ?", data.SeasonYear)
+	}
+
+	if data.StartMean != 0 {
+		query = query.Where("mean >= ?", data.StartMean)
+	}
+
+	if data.EndMean != 0 {
+		query = query.Where("mean <= ?", data.EndMean)
+	}
+
+	var a []Anime
+	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&a).Error; err != nil {
+		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	var total int64
+	if err := query.WithContext(ctx).Model(&Anime{}).Count(&total).Error; err != nil {
+		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	return sql.animeToEntities(a), int(total), http.StatusOK, nil
+}
+
 // GetByID to get anime by id.
 func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, error) {
 	var a Anime
@@ -287,4 +336,68 @@ func (sql *SQL) DeleteByID(ctx context.Context, id int64) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+// GetHistories to get histories.
+func (sql *SQL) GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error) {
+	selects := []string{
+		"avg(mean) as mean",
+		"floor(avg(rank)) as rank",
+		"floor(avg(popularity)) as popularity",
+		"floor(avg(member)) as member",
+		"floor(avg(voter)) as voter",
+		"floor(avg(user_watching)) as user_watching",
+		"floor(avg(user_completed)) as user_completed",
+		"floor(avg(user_on_hold)) as user_on_hold",
+		"floor(avg(user_dropped)) as user_dropped",
+		"floor(avg(user_planned)) as user_planned",
+	}
+
+	query := sql.db.WithContext(ctx).Model(&animeStatsHistory{}).Where("anime_id = ?", data.AnimeID)
+
+	if data.StartDate != nil {
+		query.Where("created_at >= ?", data.StartDate)
+	}
+
+	if data.EndDate != nil {
+		query.Where("created_at <= ?", data.EndDate)
+	}
+
+	switch data.Group {
+	case entity.Yearly:
+		selects = append(selects, "date_part('year',created_at) as year")
+		query.Group("date_part('year',created_at)").Order("year asc")
+	case entity.Monthly:
+		selects = append(selects, "date_part('year',created_at) as year, date_part('month',created_at) as month")
+		query.Group("date_part('year',created_at), date_part('month',created_at)").Order("year asc, month asc")
+	case entity.Weekly:
+		selects = append(selects, "date_part('year',created_at) as year, date_part('month',created_at) as month, to_char(created_at,'W') as week")
+		query.Group("date_part('year',created_at), date_part('month',created_at), to_char(created_at,'W')").Order("year asc, month asc, week asc")
+	}
+
+	var histories []animeStatsHistory
+	if err := query.Select(selects).Find(&histories).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	res := make([]entity.History, len(histories))
+	for i, h := range histories {
+		res[i] = entity.History{
+			Year:          h.Year,
+			Month:         h.Month,
+			Week:          h.Week,
+			Mean:          h.Mean,
+			Rank:          h.Rank,
+			Popularity:    h.Popularity,
+			Member:        h.Member,
+			Voter:         h.Voter,
+			UserWatching:  h.UserWatching,
+			UserCompleted: h.UserCompleted,
+			UserOnHold:    h.UserOnHold,
+			UserDropped:   h.UserDropped,
+			UserPlanned:   h.UserPlanned,
+		}
+	}
+
+	return res, http.StatusOK, nil
 }

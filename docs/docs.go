@@ -16,6 +16,167 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/anime": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime"
+                ],
+                "summary": "Get anime list.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "title",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "nsfw",
+                        "name": "nsfw",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "TV",
+                            "OVA",
+                            "ONA",
+                            "MOVIE",
+                            "SPECIAL",
+                            "MUSIC"
+                        ],
+                        "type": "string",
+                        "description": "type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "FINISHED",
+                            "RELEASING",
+                            "NOT_YET"
+                        ],
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "WINTER",
+                            "SPRING",
+                            "SUMMER",
+                            "FALL"
+                        ],
+                        "type": "string",
+                        "description": "season",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "season year",
+                        "name": "season_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "start mean",
+                        "name": "start_mean",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "end mean",
+                        "name": "end_mean",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "ID",
+                            "-ID",
+                            "TITLE",
+                            "-TITLE",
+                            "START_DATE",
+                            "-START_DATE",
+                            "MEAN",
+                            "-MEAN",
+                            "RANK",
+                            "-RANK",
+                            "POPULARITY",
+                            "-POPULARITY",
+                            "MEMBER",
+                            "-MEMBER",
+                            "VOTER",
+                            "-VOTER"
+                        ],
+                        "type": "string",
+                        "default": "RANK",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.Anime"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/service.Pagination"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/anime/{animeID}": {
             "get": {
                 "produces": [
@@ -47,6 +208,97 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/service.Anime"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/anime/{animeID}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Anime"
+                ],
+                "summary": "Get anime stats histories by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "anime id",
+                        "name": "animeID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "start date (yyyy-mm-dd)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "end date (yyyy-mm-dd)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "WEEKLY",
+                            "MONTHLY",
+                            "YEARLY"
+                        ],
+                        "type": "string",
+                        "default": "MONTHLY",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.AnimeHistory"
+                                            }
                                         }
                                     }
                                 }
@@ -416,6 +668,50 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "voter": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.AnimeHistory": {
+            "type": "object",
+            "properties": {
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "user_completed": {
+                    "type": "integer"
+                },
+                "user_dropped": {
+                    "type": "integer"
+                },
+                "user_on_hold": {
+                    "type": "integer"
+                },
+                "user_planned": {
+                    "type": "integer"
+                },
+                "user_watching": {
+                    "type": "integer"
+                },
+                "voter": {
+                    "type": "integer"
+                },
+                "week": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "integer"
                 }
             }

@@ -65,6 +65,35 @@ definitions:
       voter:
         type: integer
     type: object
+  service.AnimeHistory:
+    properties:
+      mean:
+        type: number
+      member:
+        type: integer
+      month:
+        type: integer
+      popularity:
+        type: integer
+      rank:
+        type: integer
+      user_completed:
+        type: integer
+      user_dropped:
+        type: integer
+      user_on_hold:
+        type: integer
+      user_planned:
+        type: integer
+      user_watching:
+        type: integer
+      voter:
+        type: integer
+      week:
+        type: integer
+      year:
+        type: integer
+    type: object
   service.Pagination:
     properties:
       limit:
@@ -244,6 +273,119 @@ info:
   description: Akatsuki API.
   title: Akatsuki API
 paths:
+  /anime:
+    get:
+      parameters:
+      - description: title
+        in: query
+        name: title
+        type: string
+      - description: nsfw
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: nsfw
+        type: string
+      - description: type
+        enum:
+        - TV
+        - OVA
+        - ONA
+        - MOVIE
+        - SPECIAL
+        - MUSIC
+        in: query
+        name: type
+        type: string
+      - description: status
+        enum:
+        - FINISHED
+        - RELEASING
+        - NOT_YET
+        in: query
+        name: status
+        type: string
+      - description: season
+        enum:
+        - WINTER
+        - SPRING
+        - SUMMER
+        - FALL
+        in: query
+        name: season
+        type: string
+      - description: season year
+        in: query
+        name: season_year
+        type: integer
+      - description: start mean
+        in: query
+        name: start_mean
+        type: number
+      - description: end mean
+        in: query
+        name: end_mean
+        type: number
+      - default: RANK
+        description: sort
+        enum:
+        - ID
+        - -ID
+        - TITLE
+        - -TITLE
+        - START_DATE
+        - -START_DATE
+        - MEAN
+        - -MEAN
+        - RANK
+        - -RANK
+        - POPULARITY
+        - -POPULARITY
+        - MEMBER
+        - -MEMBER
+        - VOTER
+        - -VOTER
+        in: query
+        name: sort
+        type: string
+      - default: 1
+        description: page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.Anime'
+                  type: array
+                meta:
+                  $ref: '#/definitions/service.Pagination'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get anime list.
+      tags:
+      - Anime
   /anime/{animeID}:
     get:
       parameters:
@@ -281,6 +423,64 @@ paths:
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Get anime by id.
+      tags:
+      - Anime
+  /anime/{animeID}/history:
+    get:
+      parameters:
+      - description: anime id
+        in: path
+        name: animeID
+        required: true
+        type: integer
+      - description: start date (yyyy-mm-dd)
+        in: query
+        name: start_date
+        type: string
+      - description: end date (yyyy-mm-dd)
+        in: query
+        name: end_date
+        type: string
+      - default: MONTHLY
+        description: group
+        enum:
+        - WEEKLY
+        - MONTHLY
+        - YEARLY
+        in: query
+        name: group
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.AnimeHistory'
+                  type: array
+              type: object
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get anime stats histories by id.
       tags:
       - Anime
   /anime/{animeID}/update:

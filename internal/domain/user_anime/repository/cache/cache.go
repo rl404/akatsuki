@@ -51,3 +51,8 @@ func (c *Cache) DeleteNotInList(ctx context.Context, username string, ids []int6
 func (c *Cache) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error) {
 	return c.repo.DeleteByAnimeID(ctx, animeID)
 }
+
+// DeleteByUsername to delete by username.
+func (c *Cache) DeleteByUsername(ctx context.Context, username string) (int, error) {
+	return c.repo.DeleteByUsername(ctx, username)
+}
