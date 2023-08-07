@@ -94,6 +94,15 @@ definitions:
       year:
         type: integer
     type: object
+  service.Genre:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   service.Pagination:
     properties:
       limit:
@@ -513,6 +522,85 @@ paths:
       summary: Update anime by id.
       tags:
       - Anime
+  /genres:
+    get:
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - default: 1
+        description: page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.Genre'
+                  type: array
+                meta:
+                  $ref: '#/definitions/service.Pagination'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get genre list.
+      tags:
+      - Genre
+  /genres/{genreID}:
+    get:
+      parameters:
+      - description: genre id
+        in: path
+        name: genreID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.Genre'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get genre by id.
+      tags:
+      - Genre
   /user/{username}/anime:
     get:
       parameters:

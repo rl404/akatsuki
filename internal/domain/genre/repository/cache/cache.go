@@ -31,3 +31,13 @@ func (c *Cache) BatchUpdate(ctx context.Context, data []entity.Genre) (int, erro
 func (c *Cache) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Genre, int, error) {
 	return c.repo.GetByIDs(ctx, ids)
 }
+
+// Get to get list.
+func (c *Cache) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Genre, int, int, error) {
+	return c.repo.Get(ctx, data)
+}
+
+// GetByID to get by id.
+func (c *Cache) GetByID(ctx context.Context, id int64) (*entity.Genre, int, error) {
+	return c.repo.GetByID(ctx, id)
+}

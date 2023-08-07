@@ -20,6 +20,9 @@ type Service interface {
 	GetAnimeHistoriesByID(ctx context.Context, id int64, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error)
 	UpdateAnimeByID(ctx context.Context, id int64) (int, error)
 
+	GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre, *Pagination, int, error)
+	GetGenreByID(ctx context.Context, id int64) (*Genre, int, error)
+
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)
 	GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error)
 	UpdateUserAnime(ctx context.Context, username string) (int, error)
