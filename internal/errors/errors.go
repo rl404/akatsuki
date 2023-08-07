@@ -16,6 +16,7 @@ var (
 	ErrInvalidMessageType   = errors.New("invalid message type")
 	ErrInvalidAnimeID       = errors.New("invalid anime id")
 	ErrInvalidGenreID       = errors.New("invalid genre id")
+	ErrInvalidStudioID      = errors.New("invalid studio id")
 	ErrAnimeNotFound        = errors.New("anime not found")
 	ErrDataStillNew         = errors.New("data is still new")
 )

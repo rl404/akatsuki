@@ -23,6 +23,9 @@ type Service interface {
 	GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre, *Pagination, int, error)
 	GetGenreByID(ctx context.Context, id int64) (*Genre, int, error)
 
+	GetStudios(ctx context.Context, data GetStudiosRequest) ([]Studio, *Pagination, int, error)
+	GetStudioByID(ctx context.Context, id int64) (*Studio, int, error)
+
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)
 	GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error)
 	UpdateUserAnime(ctx context.Context, username string) (int, error)

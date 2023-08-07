@@ -44,6 +44,9 @@ func (api *API) Register(r chi.Router, nrApp *newrelic.Application) {
 		r.Get("/genres", api.handleGetGenres)
 		r.Get("/genres/{genreID}", api.handleGetGenreByID)
 
+		r.Get("/studios", api.handleGetStudios)
+		r.Get("/studios/{studioID}", api.handleGetStudioByID)
+
 		r.Get("/user/{username}/anime", api.handleGetUserAnime)
 		r.Get("/user/{username}/anime/relations", api.handleGetUserAnimeRelations)
 		r.Post("/user/{username}/update", api.handleUpdateUserAnime)
