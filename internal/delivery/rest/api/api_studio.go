@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rl404/akatsuki/internal/domain/studio/entity"
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
@@ -52,4 +53,37 @@ func (api *API) handleGetStudioByID(w http.ResponseWriter, r *http.Request) {
 
 	studio, code, err := api.service.GetStudioByID(r.Context(), id)
 	utils.ResponseWithJSON(w, code, studio, errors.Wrap(r.Context(), err))
+}
+
+// @summary Get studio stats histories by id.
+// @tags Studio
+// @produce json
+// @param studioID path integer true "studio id"
+// @param start_year query integer false "start year"
+// @param end_date query integer false "end year"
+// @param group query string false "group" enums(MONTHLY,YEARLY) default(MONTHLY)
+// @success 200 {object} utils.Response{data=[]service.StudioHistory}
+// @failure 400 {object} utils.Response
+// @failure 404 {object} utils.Response
+// @failure 500 {object} utils.Response
+// @router /studios/{studioID}/history [get]
+func (api *API) handleGetStudioHistoriesByID(w http.ResponseWriter, r *http.Request) {
+	startYear, _ := strconv.Atoi(r.URL.Query().Get("start_year"))
+	endYear, _ := strconv.Atoi(r.URL.Query().Get("end_year"))
+	group := r.URL.Query().Get("group")
+
+	id, err := strconv.ParseInt(chi.URLParam(r, "studioID"), 10, 64)
+	if err != nil {
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidStudioID, err))
+		return
+	}
+
+	histories, code, err := api.service.GetStudioHistoriesByID(r.Context(), service.GetStudioHistoriesRequest{
+		ID:        id,
+		StartYear: startYear,
+		EndYear:   endYear,
+		Group:     entity.HistoryGroup(group),
+	})
+
+	utils.ResponseWithJSON(w, code, histories, errors.Wrap(r.Context(), err))
 }

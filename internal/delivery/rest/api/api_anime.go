@@ -124,7 +124,6 @@ func (api *API) handleUpdateAnimeByID(w http.ResponseWriter, r *http.Request) {
 // @param end_date query string false "end date (yyyy-mm-dd)"
 // @param group query string false "group" enums(WEEKLY,MONTHLY,YEARLY) default(MONTHLY)
 // @success 200 {object} utils.Response{data=[]service.AnimeHistory}
-// @failure 202 {object} utils.Response
 // @failure 400 {object} utils.Response
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response
@@ -140,7 +139,8 @@ func (api *API) handleGetAnimeHistoriesByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	histories, code, err := api.service.GetAnimeHistoriesByID(r.Context(), id, service.GetAnimeHistoriesRequest{
+	histories, code, err := api.service.GetAnimeHistoriesByID(r.Context(), service.GetAnimeHistoriesRequest{
+		ID:        id,
 		StartDate: startDate,
 		EndDate:   endDate,
 		Group:     entity.HistoryGroup(group),

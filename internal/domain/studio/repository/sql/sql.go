@@ -104,3 +104,58 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Studio, int, err
 		Count: int(cnt),
 	}, http.StatusOK, nil
 }
+
+// GetHistories to get histories.
+func (sql *SQL) GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error) {
+	selects := []string{
+		"avg(a.mean) as mean",
+		"floor(avg(nullif(a.rank, 0))) as rank",
+		"floor(avg(nullif(a.popularity, 0))) as popularity",
+		"sum(a.member) as member",
+		"sum(a.voter) as voter",
+		"count(*) as count",
+	}
+
+	query := sql.db.WithContext(ctx).
+		Table("anime_studio as ans").
+		Joins("join anime a on a.id = ans.anime_id").
+		Where("ans.studio_id = ?", data.StudioID)
+
+	if data.StartYear > 0 {
+		query.Where("a.start_year >= ?", data.StartYear)
+	}
+
+	if data.EndYear > 0 {
+		query.Where("a.start_year <= ?", data.EndYear)
+	}
+
+	switch data.Group {
+	case entity.Yearly:
+		selects = append(selects, "a.start_year as year")
+		query.Group("a.start_year").Order("a.start_year asc")
+	case entity.Monthly:
+		selects = append(selects, "a.start_year as year, a.start_month as month")
+		query.Group("a.start_year, a.start_month").Order("a.start_year asc, a.start_month asc")
+	}
+
+	var histories []studioHistory
+	if err := query.Select(selects).Find(&histories).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	res := make([]entity.History, len(histories))
+	for i, h := range histories {
+		res[i] = entity.History{
+			Year:       h.Year,
+			Month:      h.Month,
+			Mean:       h.Mean,
+			Rank:       h.Rank,
+			Popularity: h.Popularity,
+			Member:     h.Member,
+			Voter:      h.Voter,
+			Count:      h.Count,
+		}
+	}
+
+	return res, http.StatusOK, nil
+}

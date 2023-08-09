@@ -305,12 +305,6 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -507,6 +501,90 @@ const docTemplate = `{
                 }
             }
         },
+        "/genres/{genreID}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Genre"
+                ],
+                "summary": "Get genre stats histories by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "genre id",
+                        "name": "genreID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start year",
+                        "name": "start_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end year",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "MONTHLY",
+                            "YEARLY"
+                        ],
+                        "type": "string",
+                        "default": "MONTHLY",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.GenreHistory"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/studios": {
             "get": {
                 "produces": [
@@ -609,6 +687,90 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/service.Studio"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/studios/{studioID}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Studio"
+                ],
+                "summary": "Get studio stats histories by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "studio id",
+                        "name": "studioID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start year",
+                        "name": "start_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end year",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "MONTHLY",
+                            "YEARLY"
+                        ],
+                        "type": "string",
+                        "default": "MONTHLY",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.StudioHistory"
+                                            }
                                         }
                                     }
                                 }
@@ -988,6 +1150,35 @@ const docTemplate = `{
                 }
             }
         },
+        "service.GenreHistory": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "voter": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
         "service.Pagination": {
             "type": "object",
             "properties": {
@@ -1013,6 +1204,47 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "service.StudioHistory": {
+            "type": "object",
+            "properties": {
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "user_completed": {
+                    "type": "integer"
+                },
+                "user_dropped": {
+                    "type": "integer"
+                },
+                "user_on_hold": {
+                    "type": "integer"
+                },
+                "user_planned": {
+                    "type": "integer"
+                },
+                "user_watching": {
+                    "type": "integer"
+                },
+                "voter": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
                 }
             }
         },

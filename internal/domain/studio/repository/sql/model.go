@@ -41,3 +41,14 @@ func (sql *SQL) toEntities(data []Studio) []*entity.Studio {
 	}
 	return s
 }
+
+type studioHistory struct {
+	Year       int
+	Month      int
+	Mean       float64
+	Rank       int
+	Popularity int
+	Member     int
+	Voter      int
+	Count      int
+}

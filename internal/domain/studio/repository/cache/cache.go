@@ -41,3 +41,8 @@ func (c *Cache) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Stud
 func (c *Cache) GetByID(ctx context.Context, id int64) (*entity.Studio, int, error) {
 	return c.repo.GetByID(ctx, id)
 }
+
+// GetHistories to get histories.
+func (c *Cache) GetHistories(ctx context.Context, data entity.GetHistoriesRequest) ([]entity.History, int, error) {
+	return c.repo.GetHistories(ctx, data)
+}

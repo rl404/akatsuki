@@ -207,15 +207,20 @@ type AnimeHistory struct {
 
 // GetAnimeHistoriesRequest is get anime history request model.
 type GetAnimeHistoriesRequest struct {
+	ID        int64               `validate:"gt=0"`
 	StartDate string              `validate:"omitempty,datetime=2006-01-02" mod:"trim"`
 	EndDate   string              `validate:"omitempty,datetime=2006-01-02" mod:"trim"`
 	Group     entity.HistoryGroup `validate:"oneof=WEEKLY MONTHLY YEARLY" mod:"trim,ucase,default=MONTHLY"`
 }
 
 // GetAnimeHistoriesByID to get anime history by id.
-func (s *service) GetAnimeHistoriesByID(ctx context.Context, id int64, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error) {
-	if code, err := s.validateID(ctx, id); err != nil {
+func (s *service) GetAnimeHistoriesByID(ctx context.Context, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error) {
+	if code, err := s.validateID(ctx, data.ID); err != nil {
 		return nil, code, errors.Wrap(ctx, err)
+	}
+
+	if err := utils.Validate(&data); err != nil {
+		return nil, http.StatusBadRequest, errors.Wrap(ctx, err)
 	}
 
 	if data.StartDate == "" {
@@ -230,7 +235,7 @@ func (s *service) GetAnimeHistoriesByID(ctx context.Context, id int64, data GetA
 	}
 
 	histories, code, err := s.anime.GetHistories(ctx, entity.GetHistoriesRequest{
-		AnimeID:   id,
+		AnimeID:   data.ID,
 		StartDate: utils.ParseToTimePtr("2006-01-02", data.StartDate),
 		EndDate:   utils.ParseToTimePtr("2006-01-02", data.EndDate),
 		Group:     data.Group,

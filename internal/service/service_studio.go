@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/rl404/akatsuki/internal/domain/studio/entity"
 	"github.com/rl404/akatsuki/internal/errors"
@@ -66,4 +67,70 @@ func (s *service) GetStudioByID(ctx context.Context, id int64) (*Studio, int, er
 		Name:  studio.Name,
 		Count: studio.Count,
 	}, http.StatusOK, nil
+}
+
+// StudioHistory is studio stats history.
+type StudioHistory struct {
+	Year       int     `json:"year"`
+	Month      int     `json:"month"`
+	Mean       float64 `json:"mean"`
+	Rank       int     `json:"rank"`
+	Popularity int     `json:"popularity"`
+	Member     int     `json:"member"`
+	Voter      int     `json:"voter"`
+	Count      int     `json:"count"`
+}
+
+// GetStudioHistoriesRequest is get studio history request model.
+type GetStudioHistoriesRequest struct {
+	ID        int64               `validate:"gt=0"`
+	StartYear int                 `validate:"gte=0"`
+	EndYear   int                 `validate:"gte=0"`
+	Group     entity.HistoryGroup `validate:"oneof=MONTHLY YEARLY" mod:"trim,ucase,default=MONTHLY"`
+}
+
+// GetStudioHistoriesByID to get anime history by id.
+func (s *service) GetStudioHistoriesByID(ctx context.Context, data GetStudioHistoriesRequest) ([]StudioHistory, int, error) {
+	if err := utils.Validate(&data); err != nil {
+		return nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+	}
+
+	if data.StartYear == 0 {
+		switch data.Group {
+		case entity.Yearly:
+			data.StartYear = time.Now().AddDate(-20, 0, 0).Year()
+		case entity.Monthly:
+			data.StartYear = time.Now().AddDate(-3, 0, 0).Year()
+		}
+	}
+
+	if data.EndYear == 0 {
+		data.EndYear = time.Now().Year()
+	}
+
+	histories, code, err := s.studio.GetHistories(ctx, entity.GetHistoriesRequest{
+		StudioID:  data.ID,
+		StartYear: data.StartYear,
+		EndYear:   data.EndYear,
+		Group:     data.Group,
+	})
+	if err != nil {
+		return nil, code, errors.Wrap(ctx, err)
+	}
+
+	res := make([]StudioHistory, len(histories))
+	for i, h := range histories {
+		res[i] = StudioHistory{
+			Year:       h.Year,
+			Month:      h.Month,
+			Mean:       h.Mean,
+			Rank:       h.Rank,
+			Popularity: h.Popularity,
+			Member:     h.Member,
+			Voter:      h.Voter,
+			Count:      h.Count,
+		}
+	}
+
+	return res, http.StatusOK, nil
 }

@@ -17,14 +17,16 @@ import (
 type Service interface {
 	GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, *Pagination, int, error)
 	GetAnimeByID(ctx context.Context, id int64) (*Anime, int, error)
-	GetAnimeHistoriesByID(ctx context.Context, id int64, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error)
+	GetAnimeHistoriesByID(ctx context.Context, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error)
 	UpdateAnimeByID(ctx context.Context, id int64) (int, error)
 
 	GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre, *Pagination, int, error)
 	GetGenreByID(ctx context.Context, id int64) (*Genre, int, error)
+	GetGenreHistoriesByID(ctx context.Context, data GetGenreHistoriesRequest) ([]GenreHistory, int, error)
 
 	GetStudios(ctx context.Context, data GetStudiosRequest) ([]Studio, *Pagination, int, error)
 	GetStudioByID(ctx context.Context, id int64) (*Studio, int, error)
+	GetStudioHistoriesByID(ctx context.Context, data GetStudioHistoriesRequest) ([]StudioHistory, int, error)
 
 	GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error)
 	GetUserAnimeRelations(ctx context.Context, username string) (*UserAnimeRelation, int, error)
