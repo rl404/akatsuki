@@ -62,7 +62,7 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Stud
 	}
 
 	var studios []studio
-	if err := query.WithContext(ctx).Order("g.name asc").Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&studios).Error; err != nil {
+	if err := query.WithContext(ctx).Order("lower(g.name) asc").Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&studios).Error; err != nil {
 		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
