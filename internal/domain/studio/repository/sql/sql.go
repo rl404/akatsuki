@@ -92,5 +92,15 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Studio, int, err
 		}
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
-	return g.toEntity(), http.StatusOK, nil
+
+	var cnt int64
+	if err := sql.db.WithContext(ctx).Table("anime_studio").Where("studio_id = ?", id).Count(&cnt).Error; err != nil {
+		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+	}
+
+	return &entity.Studio{
+		ID:    g.ID,
+		Name:  g.Name,
+		Count: int(cnt),
+	}, http.StatusOK, nil
 }
