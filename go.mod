@@ -7,7 +7,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/newrelic/go-agent/v3 v3.24.0
+	github.com/newrelic/go-agent/v3 v3.24.1
 	github.com/rl404/fairy v0.23.0
 	github.com/rl404/nagato v0.3.2
 	github.com/spf13/cobra v1.7.0
