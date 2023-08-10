@@ -65,6 +65,16 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anim
 		query = query.Where("mean <= ?", data.EndMean)
 	}
 
+	if data.GenreID != 0 {
+		subQuery := sql.db.Select("anime_id").Model(&AnimeGenre{}).Where("genre_id = ?", data.GenreID)
+		query = query.Joins("join (?) ag on ag.anime_id = id", subQuery)
+	}
+
+	if data.StudioID != 0 {
+		subQuery := sql.db.Select("anime_id").Model(&AnimeStudio{}).Where("studio_id = ?", data.StudioID)
+		query = query.Joins("join (?) ast on ast.anime_id = id", subQuery)
+	}
+
 	var a []Anime
 	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&a).Error; err != nil {
 		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)

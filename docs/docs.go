@@ -98,6 +98,18 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "description": "genre id",
+                        "name": "genre_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "studio id",
+                        "name": "studio_id",
+                        "in": "query"
+                    },
+                    {
                         "enum": [
                             "ID",
                             "-ID",
@@ -1210,6 +1222,9 @@ const docTemplate = `{
         "service.StudioHistory": {
             "type": "object",
             "properties": {
+                "count": {
+                    "type": "integer"
+                },
                 "mean": {
                     "type": "number"
                 },
@@ -1223,21 +1238,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "rank": {
-                    "type": "integer"
-                },
-                "user_completed": {
-                    "type": "integer"
-                },
-                "user_dropped": {
-                    "type": "integer"
-                },
-                "user_on_hold": {
-                    "type": "integer"
-                },
-                "user_planned": {
-                    "type": "integer"
-                },
-                "user_watching": {
                     "type": "integer"
                 },
                 "voter": {

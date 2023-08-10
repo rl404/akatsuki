@@ -52,6 +52,8 @@ type GetAnimeRequest struct {
 	SeasonYear int           `validate:"gte=0"`
 	StartMean  float64       `validate:"gte=0,lte=10"`
 	EndMean    float64       `validate:"gte=0,lte=10"`
+	GenreID    int64         `validate:"gte=0"`
+	StudioID   int64         `validate:"gte=0"`
 	Sort       entity.Sort   `validate:"oneof=ID -ID TITLE -TITLE START_DATE -START_DATE MEAN -MEAN RANK -RANK POPULARITY -POPULARITY MEMBER -MEMBER VOTER -VOTER" mod:"no_space,ucase,default=RANK"`
 	Page       int           `validate:"required,gte=1" mod:"default=1"`
 	Limit      int           `validate:"required,gte=-1" mod:"default=20"`
@@ -72,6 +74,8 @@ func (s *service) GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, 
 		SeasonYear: data.SeasonYear,
 		StartMean:  data.StartMean,
 		EndMean:    data.EndMean,
+		GenreID:    data.GenreID,
+		StudioID:   data.StudioID,
 		Sort:       data.Sort,
 		Page:       data.Page,
 		Limit:      data.Limit,

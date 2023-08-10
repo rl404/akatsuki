@@ -22,6 +22,8 @@ import (
 // @param season_year query integer false "season year"
 // @param start_mean query number false "start mean"
 // @param end_mean query number false "end mean"
+// @param genre_id query integer false "genre id"
+// @param studio_id query integer false "studio id"
 // @param sort query string false "sort" enums(ID,-ID,TITLE,-TITLE,START_DATE,-START_DATE,MEAN,-MEAN,RANK,-RANK,POPULARITY,-POPULARITY,MEMBER,-MEMBER,VOTER,-VOTER) default(RANK)
 // @param page query integer false "page" default(1)
 // @param limit query integer false "limit" default(20)
@@ -36,6 +38,8 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
 	season := r.URL.Query().Get("season")
 	seasonYear, _ := strconv.Atoi(r.URL.Query().Get("season_year"))
+	genreID, _ := strconv.ParseInt(r.URL.Query().Get("genre_id"), 10, 64)
+	studioID, _ := strconv.ParseInt(r.URL.Query().Get("studio_id"), 10, 64)
 	sort := r.URL.Query().Get("sort")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -67,6 +71,8 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 		SeasonYear: seasonYear,
 		StartMean:  startMean,
 		EndMean:    endMean,
+		GenreID:    genreID,
+		StudioID:   studioID,
 		Sort:       entity.Sort(sort),
 		Page:       page,
 		Limit:      limit,

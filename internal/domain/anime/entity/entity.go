@@ -131,6 +131,8 @@ type GetRequest struct {
 	SeasonYear int
 	StartMean  float64
 	EndMean    float64
+	GenreID    int64
+	StudioID   int64
 	Sort       Sort
 	Page       int
 	Limit      int

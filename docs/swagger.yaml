@@ -142,6 +142,8 @@ definitions:
     type: object
   service.StudioHistory:
     properties:
+      count:
+        type: integer
       mean:
         type: number
       member:
@@ -151,16 +153,6 @@ definitions:
       popularity:
         type: integer
       rank:
-        type: integer
-      user_completed:
-        type: integer
-      user_dropped:
-        type: integer
-      user_on_hold:
-        type: integer
-      user_planned:
-        type: integer
-      user_watching:
         type: integer
       voter:
         type: integer
@@ -391,6 +383,14 @@ paths:
         in: query
         name: end_mean
         type: number
+      - description: genre id
+        in: query
+        name: genre_id
+        type: integer
+      - description: studio id
+        in: query
+        name: studio_id
+        type: integer
       - default: RANK
         description: sort
         enum:
