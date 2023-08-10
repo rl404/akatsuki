@@ -135,6 +135,7 @@ func (sql *SQL) GetHistories(ctx context.Context, data entity.GetHistoriesReques
 		query.Group("a.start_year").Order("a.start_year asc")
 	case entity.Monthly:
 		selects = append(selects, "a.start_year as year, a.start_month as month")
+		query.Where("a.start_month != 0")
 		query.Group("a.start_year, a.start_month").Order("a.start_year asc, a.start_month asc")
 	}
 

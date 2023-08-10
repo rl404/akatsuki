@@ -228,7 +228,7 @@ func (s *service) GetAnimeHistoriesByID(ctx context.Context, data GetAnimeHistor
 		case entity.Yearly:
 			data.StartDate = time.Now().AddDate(-5, 0, 0).Format("2006-01-02")
 		case entity.Monthly:
-			data.StartDate = time.Now().AddDate(0, -6, 0).Format("2006-01-02")
+			data.StartDate = time.Now().AddDate(-1, 0, 0).Format("2006-01-02")
 		case entity.Weekly:
 			data.StartDate = time.Now().AddDate(0, -3, 0).Format("2006-01-02")
 		}
