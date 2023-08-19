@@ -2,14 +2,17 @@ package entity
 
 // Studio is entity for studio.
 type Studio struct {
-	ID    int64
-	Name  string
-	Count int
+	ID     int64
+	Name   string
+	Count  int
+	Mean   float64
+	Member int
 }
 
 // GetRequest is get studio list request model.
 type GetRequest struct {
 	Name  string
+	Sort  Sort
 	Page  int
 	Limit int
 }

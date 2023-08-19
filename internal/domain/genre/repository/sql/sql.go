@@ -40,29 +40,28 @@ func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Genre, int
 }
 
 type genre struct {
-	ID    int64
-	Name  string
-	Count int
+	ID     int64
+	Name   string
+	Count  int
+	Mean   float64
+	Member int
 }
 
 // Get to get list.
 func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Genre, int, int, error) {
-	subQuery := sql.db.
-		Select("genre_id, count(*) as count").
-		Table("anime_genre").
-		Group("genre_id")
-
 	query := sql.db.
-		Select("g.id, g.name, ag.count").
+		Select("g.id, g.name, count(*) as count, avg(nullif(a.mean, 0)) as mean, sum(a.member) as member").
 		Table("genre as g").
-		Joins("left join (?) ag on ag.genre_id = g.id", subQuery)
+		Joins("left join anime_genre ag on ag.genre_id = g.id").
+		Joins("left join anime a on a.id = ag.anime_id").
+		Group("g.id, g.name")
 
 	if data.Name != "" {
 		query = query.Where("g.name ilike ?", "%"+data.Name+"%")
 	}
 
 	var genres []genre
-	if err := query.WithContext(ctx).Order("lower(g.name) asc").Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&genres).Error; err != nil {
+	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&genres).Error; err != nil {
 		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
@@ -74,9 +73,11 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Genr
 	res := make([]*entity.Genre, len(genres))
 	for i, g := range genres {
 		res[i] = &entity.Genre{
-			ID:    g.ID,
-			Name:  g.Name,
-			Count: g.Count,
+			ID:     g.ID,
+			Name:   g.Name,
+			Count:  g.Count,
+			Mean:   g.Mean,
+			Member: g.Member,
 		}
 	}
 
@@ -85,23 +86,28 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Genr
 
 // GetByID to get by id.
 func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Genre, int, error) {
-	var g Genre
-	if err := sql.db.WithContext(ctx).Where("id = ?", id).First(&g).Error; err != nil {
+	var genre genre
+	if err := sql.db.
+		Select("g.id, g.name, count(*) as count, avg(nullif(a.mean, 0)) as mean, sum(a.member) as member").
+		Table("genre as g").
+		Joins("left join anime_genre ag on ag.genre_id = g.id").
+		Joins("left join anime a on a.id = ag.anime_id").
+		Where("g.id = ?", id).
+		Group("g.id, g.name").
+		First(&genre).
+		Error; err != nil {
 		if _errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, http.StatusNotFound, errors.Wrap(ctx, errors.ErrInvalidGenreID, err)
 		}
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
-	var cnt int64
-	if err := sql.db.WithContext(ctx).Table("anime_genre").Where("genre_id = ?", id).Count(&cnt).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
-	}
-
 	return &entity.Genre{
-		ID:    g.ID,
-		Name:  g.Name,
-		Count: int(cnt),
+		ID:     genre.ID,
+		Name:   genre.Name,
+		Count:  genre.Count,
+		Mean:   genre.Mean,
+		Member: genre.Member,
 	}, http.StatusOK, nil
 }
 

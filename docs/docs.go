@@ -413,6 +413,23 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "NAME",
+                            "-NAME",
+                            "COUNT",
+                            "-COUNT",
+                            "MEAN",
+                            "-MEAN",
+                            "MEMBER",
+                            "-MEMBER"
+                        ],
+                        "type": "string",
+                        "default": "NAME",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "default": 1,
                         "description": "page",
@@ -623,6 +640,23 @@ const docTemplate = `{
                         "type": "string",
                         "description": "name",
                         "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "NAME",
+                            "-NAME",
+                            "COUNT",
+                            "-COUNT",
+                            "MEAN",
+                            "-MEAN",
+                            "MEMBER",
+                            "-MEMBER"
+                        ],
+                        "type": "string",
+                        "default": "NAME",
+                        "description": "sort",
+                        "name": "sort",
                         "in": "query"
                     },
                     {
@@ -1169,6 +1203,12 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -1224,6 +1264,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
                     "type": "integer"
                 },
                 "name": {

@@ -15,6 +15,7 @@ import (
 // @tags Genre
 // @produce json
 // @param name query string false "name"
+// @param sort query string false "sort" enums(NAME,-NAME,COUNT,-COUNT,MEAN,-MEAN,MEMBER,-MEMBER) default(NAME)
 // @param page query integer false "page" default(1)
 // @param limit query integer false "limit" default(20)
 // @success 200 {object} utils.Response{data=[]service.Genre,meta=service.Pagination}
@@ -23,11 +24,13 @@ import (
 // @router /genres [get]
 func (api *API) handleGetGenres(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
+	sort := r.URL.Query().Get("sort")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 
 	genres, pagination, code, err := api.service.GetGenres(r.Context(), service.GetGenresRequest{
 		Name:  name,
+		Sort:  entity.Sort(sort),
 		Page:  page,
 		Limit: limit,
 	})

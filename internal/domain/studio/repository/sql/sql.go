@@ -40,29 +40,28 @@ func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Studio, in
 }
 
 type studio struct {
-	ID    int64
-	Name  string
-	Count int
+	ID     int64
+	Name   string
+	Count  int
+	Mean   float64
+	Member int
 }
 
 // Get to get list.
 func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Studio, int, int, error) {
-	subQuery := sql.db.
-		Select("studio_id, count(*) as count").
-		Table("anime_studio").
-		Group("studio_id")
-
 	query := sql.db.
-		Select("g.id, g.name, ag.count").
+		Select("g.id, g.name, count(*) as count, avg(nullif(a.mean, 0)) as mean, sum(a.member) as member").
 		Table("studio as g").
-		Joins("left join (?) ag on ag.studio_id = g.id", subQuery)
+		Joins("left join anime_studio ag on ag.studio_id = g.id").
+		Joins("left join anime a on a.id = ag.anime_id").
+		Group("g.id, g.name")
 
 	if data.Name != "" {
 		query = query.Where("g.name ilike ?", "%"+data.Name+"%")
 	}
 
 	var studios []studio
-	if err := query.WithContext(ctx).Order("lower(g.name) asc").Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&studios).Error; err != nil {
+	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&studios).Error; err != nil {
 		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
@@ -74,9 +73,11 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Stud
 	res := make([]*entity.Studio, len(studios))
 	for i, g := range studios {
 		res[i] = &entity.Studio{
-			ID:    g.ID,
-			Name:  g.Name,
-			Count: g.Count,
+			ID:     g.ID,
+			Name:   g.Name,
+			Count:  g.Count,
+			Mean:   g.Mean,
+			Member: g.Member,
 		}
 	}
 
@@ -85,23 +86,28 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Stud
 
 // GetByID to get by id.
 func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Studio, int, error) {
-	var g Studio
-	if err := sql.db.WithContext(ctx).Where("id = ?", id).First(&g).Error; err != nil {
+	var studio studio
+	if err := sql.db.
+		Select("g.id, g.name, count(*) as count, avg(nullif(a.mean, 0)) as mean, sum(a.member) as member").
+		Table("studio as g").
+		Joins("left join anime_studio ag on ag.studio_id = g.id").
+		Joins("left join anime a on a.id = ag.anime_id").
+		Where("g.id = ?", id).
+		Group("g.id, g.name").
+		First(&studio).
+		Error; err != nil {
 		if _errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, http.StatusNotFound, errors.Wrap(ctx, errors.ErrInvalidStudioID, err)
 		}
 		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
-	var cnt int64
-	if err := sql.db.WithContext(ctx).Table("anime_studio").Where("studio_id = ?", id).Count(&cnt).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
-	}
-
 	return &entity.Studio{
-		ID:    g.ID,
-		Name:  g.Name,
-		Count: int(cnt),
+		ID:     studio.ID,
+		Name:   studio.Name,
+		Count:  studio.Count,
+		Mean:   studio.Mean,
+		Member: studio.Member,
 	}, http.StatusOK, nil
 }
 

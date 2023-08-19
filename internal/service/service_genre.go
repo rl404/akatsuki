@@ -12,16 +12,19 @@ import (
 
 // Genre is genre model.
 type Genre struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Count int    `json:"count"`
+	ID     int64   `json:"id"`
+	Name   string  `json:"name"`
+	Count  int     `json:"count"`
+	Mean   float64 `json:"mean"`
+	Member int     `json:"member"`
 }
 
 // GetGenresRequest is get genre list request model.
 type GetGenresRequest struct {
-	Name  string `mod:"lcase,trim"`
-	Page  int    `validate:"required,gte=1" mod:"default=1"`
-	Limit int    `validate:"required,gte=-1" mod:"default=20"`
+	Name  string      `mod:"lcase,trim"`
+	Sort  entity.Sort `validate:"oneof=NAME -NAME COUNT -COUNT MEAN -MEAN MEMBER -MEMBER" mod:"no_space,ucase,default=NAME"`
+	Page  int         `validate:"required,gte=1" mod:"default=1"`
+	Limit int         `validate:"required,gte=-1" mod:"default=20"`
 }
 
 // GetGenres to get genre list.
@@ -32,6 +35,7 @@ func (s *service) GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre
 
 	genres, total, code, err := s.genre.Get(ctx, entity.GetRequest{
 		Name:  data.Name,
+		Sort:  data.Sort,
 		Page:  data.Page,
 		Limit: data.Limit,
 	})
@@ -42,9 +46,11 @@ func (s *service) GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre
 	res := make([]Genre, len(genres))
 	for i, g := range genres {
 		res[i] = Genre{
-			ID:    g.ID,
-			Name:  g.Name,
-			Count: g.Count,
+			ID:     g.ID,
+			Name:   g.Name,
+			Count:  g.Count,
+			Mean:   g.Mean,
+			Member: g.Member,
 		}
 	}
 
@@ -63,9 +69,11 @@ func (s *service) GetGenreByID(ctx context.Context, id int64) (*Genre, int, erro
 	}
 
 	return &Genre{
-		ID:    genre.ID,
-		Name:  genre.Name,
-		Count: genre.Count,
+		ID:     genre.ID,
+		Name:   genre.Name,
+		Count:  genre.Count,
+		Mean:   genre.Mean,
+		Member: genre.Member,
 	}, http.StatusOK, nil
 }
 

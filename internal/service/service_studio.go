@@ -12,16 +12,19 @@ import (
 
 // Studio is studio model.
 type Studio struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Count int    `json:"count"`
+	ID     int64   `json:"id"`
+	Name   string  `json:"name"`
+	Count  int     `json:"count"`
+	Mean   float64 `json:"mean"`
+	Member int     `json:"member"`
 }
 
 // GetStudiosRequest is get studio list request model.
 type GetStudiosRequest struct {
-	Name  string `mod:"lcase,trim"`
-	Page  int    `validate:"required,gte=1" mod:"default=1"`
-	Limit int    `validate:"required,gte=-1" mod:"default=20"`
+	Name  string      `mod:"lcase,trim"`
+	Sort  entity.Sort `validate:"oneof=NAME -NAME COUNT -COUNT MEAN -MEAN MEMBER -MEMBER" mod:"no_space,ucase,default=NAME"`
+	Page  int         `validate:"required,gte=1" mod:"default=1"`
+	Limit int         `validate:"required,gte=-1" mod:"default=20"`
 }
 
 // GetStudios to get studio list.
@@ -32,6 +35,7 @@ func (s *service) GetStudios(ctx context.Context, data GetStudiosRequest) ([]Stu
 
 	studios, total, code, err := s.studio.Get(ctx, entity.GetRequest{
 		Name:  data.Name,
+		Sort:  data.Sort,
 		Page:  data.Page,
 		Limit: data.Limit,
 	})
@@ -42,9 +46,11 @@ func (s *service) GetStudios(ctx context.Context, data GetStudiosRequest) ([]Stu
 	res := make([]Studio, len(studios))
 	for i, g := range studios {
 		res[i] = Studio{
-			ID:    g.ID,
-			Name:  g.Name,
-			Count: g.Count,
+			ID:     g.ID,
+			Name:   g.Name,
+			Count:  g.Count,
+			Mean:   g.Mean,
+			Member: g.Member,
 		}
 	}
 
@@ -63,9 +69,11 @@ func (s *service) GetStudioByID(ctx context.Context, id int64) (*Studio, int, er
 	}
 
 	return &Studio{
-		ID:    studio.ID,
-		Name:  studio.Name,
-		Count: studio.Count,
+		ID:     studio.ID,
+		Name:   studio.Name,
+		Count:  studio.Count,
+		Mean:   studio.Mean,
+		Member: studio.Member,
 	}, http.StatusOK, nil
 }
 

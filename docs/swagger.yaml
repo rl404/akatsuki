@@ -100,6 +100,10 @@ definitions:
         type: integer
       id:
         type: integer
+      mean:
+        type: number
+      member:
+        type: integer
       name:
         type: string
     type: object
@@ -136,6 +140,10 @@ definitions:
       count:
         type: integer
       id:
+        type: integer
+      mean:
+        type: number
+      member:
         type: integer
       name:
         type: string
@@ -588,6 +596,20 @@ paths:
         in: query
         name: name
         type: string
+      - default: NAME
+        description: sort
+        enum:
+        - NAME
+        - -NAME
+        - COUNT
+        - -COUNT
+        - MEAN
+        - -MEAN
+        - MEMBER
+        - -MEMBER
+        in: query
+        name: sort
+        type: string
       - default: 1
         description: page
         in: query
@@ -719,6 +741,20 @@ paths:
       - description: name
         in: query
         name: name
+        type: string
+      - default: NAME
+        description: sort
+        enum:
+        - NAME
+        - -NAME
+        - COUNT
+        - -COUNT
+        - MEAN
+        - -MEAN
+        - MEMBER
+        - -MEMBER
+        in: query
+        name: sort
         type: string
       - default: 1
         description: page

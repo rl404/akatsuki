@@ -15,6 +15,7 @@ import (
 // @tags Studio
 // @produce json
 // @param name query string false "name"
+// @param sort query string false "sort" enums(NAME,-NAME,COUNT,-COUNT,MEAN,-MEAN,MEMBER,-MEMBER) default(NAME)
 // @param page query integer false "page" default(1)
 // @param limit query integer false "limit" default(20)
 // @success 200 {object} utils.Response{data=[]service.Studio,meta=service.Pagination}
@@ -23,11 +24,13 @@ import (
 // @router /studios [get]
 func (api *API) handleGetStudios(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
+	sort := r.URL.Query().Get("sort")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 
 	studios, pagination, code, err := api.service.GetStudios(r.Context(), service.GetStudiosRequest{
 		Name:  name,
+		Sort:  entity.Sort(sort),
 		Page:  page,
 		Limit: limit,
 	})

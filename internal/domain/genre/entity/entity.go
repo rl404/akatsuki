@@ -2,14 +2,17 @@ package entity
 
 // Genre is entity for genre.
 type Genre struct {
-	ID    int64
-	Name  string
-	Count int
+	ID     int64
+	Name   string
+	Count  int
+	Mean   float64
+	Member int
 }
 
 // GetRequest is get genre list request model.
 type GetRequest struct {
 	Name  string
+	Sort  Sort
 	Page  int
 	Limit int
 }
