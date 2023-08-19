@@ -383,6 +383,14 @@ paths:
         in: query
         name: end_mean
         type: number
+      - description: start airing year
+        in: query
+        name: start_airing_year
+        type: number
+      - description: end airing year
+        in: query
+        name: end_airing_year
+        type: number
       - description: genre id
         in: query
         name: genre_id

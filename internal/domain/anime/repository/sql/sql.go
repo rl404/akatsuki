@@ -65,6 +65,14 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anim
 		query = query.Where("mean <= ?", data.EndMean)
 	}
 
+	if data.StartAiringYear > 0 {
+		query = query.Where("start_year >= ?", data.StartAiringYear)
+	}
+
+	if data.EndAiringYear > 0 {
+		query = query.Where("start_year <= ?", data.EndAiringYear)
+	}
+
 	if data.GenreID != 0 {
 		subQuery := sql.db.Select("anime_id").Model(&AnimeGenre{}).Where("genre_id = ?", data.GenreID)
 		query = query.Joins("join (?) ag on ag.anime_id = id", subQuery)

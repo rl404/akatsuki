@@ -123,17 +123,19 @@ type GetHistoriesRequest struct {
 
 // GetRequest is get request model.
 type GetRequest struct {
-	Title      string
-	NSFW       *bool
-	Type       Type
-	Status     Status
-	Season     Season
-	SeasonYear int
-	StartMean  float64
-	EndMean    float64
-	GenreID    int64
-	StudioID   int64
-	Sort       Sort
-	Page       int
-	Limit      int
+	Title           string
+	NSFW            *bool
+	Type            Type
+	Status          Status
+	Season          Season
+	SeasonYear      int
+	StartMean       float64
+	EndMean         float64
+	StartAiringYear int
+	EndAiringYear   int
+	GenreID         int64
+	StudioID        int64
+	Sort            Sort
+	Page            int
+	Limit           int
 }

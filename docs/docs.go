@@ -98,6 +98,18 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "number",
+                        "description": "start airing year",
+                        "name": "start_airing_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "end airing year",
+                        "name": "end_airing_year",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "genre id",
                         "name": "genre_id",
