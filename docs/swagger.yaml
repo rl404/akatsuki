@@ -94,6 +94,38 @@ definitions:
       year:
         type: integer
     type: object
+  service.Genre:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      mean:
+        type: number
+      member:
+        type: integer
+      name:
+        type: string
+    type: object
+  service.GenreHistory:
+    properties:
+      count:
+        type: integer
+      mean:
+        type: number
+      member:
+        type: integer
+      month:
+        type: integer
+      popularity:
+        type: integer
+      rank:
+        type: integer
+      voter:
+        type: integer
+      year:
+        type: integer
+    type: object
   service.Pagination:
     properties:
       limit:
@@ -101,6 +133,38 @@ definitions:
       page:
         type: integer
       total:
+        type: integer
+    type: object
+  service.Studio:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      mean:
+        type: number
+      member:
+        type: integer
+      name:
+        type: string
+    type: object
+  service.StudioHistory:
+    properties:
+      count:
+        type: integer
+      mean:
+        type: number
+      member:
+        type: integer
+      month:
+        type: integer
+      popularity:
+        type: integer
+      rank:
+        type: integer
+      voter:
+        type: integer
+      year:
         type: integer
     type: object
   service.UserAnime:
@@ -327,6 +391,22 @@ paths:
         in: query
         name: end_mean
         type: number
+      - description: start airing year
+        in: query
+        name: start_airing_year
+        type: number
+      - description: end airing year
+        in: query
+        name: end_airing_year
+        type: number
+      - description: genre id
+        in: query
+        name: genre_id
+        type: integer
+      - description: studio id
+        in: query
+        name: studio_id
+        type: integer
       - default: RANK
         description: sort
         enum:
@@ -464,10 +544,6 @@ paths:
                     $ref: '#/definitions/service.AnimeHistory'
                   type: array
               type: object
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/utils.Response'
         "400":
           description: Bad Request
           schema:
@@ -513,6 +589,298 @@ paths:
       summary: Update anime by id.
       tags:
       - Anime
+  /genres:
+    get:
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - default: NAME
+        description: sort
+        enum:
+        - NAME
+        - -NAME
+        - COUNT
+        - -COUNT
+        - MEAN
+        - -MEAN
+        - MEMBER
+        - -MEMBER
+        in: query
+        name: sort
+        type: string
+      - default: 1
+        description: page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.Genre'
+                  type: array
+                meta:
+                  $ref: '#/definitions/service.Pagination'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get genre list.
+      tags:
+      - Genre
+  /genres/{genreID}:
+    get:
+      parameters:
+      - description: genre id
+        in: path
+        name: genreID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.Genre'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get genre by id.
+      tags:
+      - Genre
+  /genres/{genreID}/history:
+    get:
+      parameters:
+      - description: genre id
+        in: path
+        name: genreID
+        required: true
+        type: integer
+      - description: start year
+        in: query
+        name: start_year
+        type: integer
+      - description: end year
+        in: query
+        name: end_date
+        type: integer
+      - default: MONTHLY
+        description: group
+        enum:
+        - MONTHLY
+        - YEARLY
+        in: query
+        name: group
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.GenreHistory'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get genre stats histories by id.
+      tags:
+      - Genre
+  /studios:
+    get:
+      parameters:
+      - description: name
+        in: query
+        name: name
+        type: string
+      - default: NAME
+        description: sort
+        enum:
+        - NAME
+        - -NAME
+        - COUNT
+        - -COUNT
+        - MEAN
+        - -MEAN
+        - MEMBER
+        - -MEMBER
+        in: query
+        name: sort
+        type: string
+      - default: 1
+        description: page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.Studio'
+                  type: array
+                meta:
+                  $ref: '#/definitions/service.Pagination'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get studio list.
+      tags:
+      - Studio
+  /studios/{studioID}:
+    get:
+      parameters:
+      - description: studio id
+        in: path
+        name: studioID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.Studio'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get studio by id.
+      tags:
+      - Studio
+  /studios/{studioID}/history:
+    get:
+      parameters:
+      - description: studio id
+        in: path
+        name: studioID
+        required: true
+        type: integer
+      - description: start year
+        in: query
+        name: start_year
+        type: integer
+      - description: end year
+        in: query
+        name: end_date
+        type: integer
+      - default: MONTHLY
+        description: group
+        enum:
+        - MONTHLY
+        - YEARLY
+        in: query
+        name: group
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.StudioHistory'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get studio stats histories by id.
+      tags:
+      - Studio
   /user/{username}/anime:
     get:
       parameters:

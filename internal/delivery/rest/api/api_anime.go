@@ -22,6 +22,10 @@ import (
 // @param season_year query integer false "season year"
 // @param start_mean query number false "start mean"
 // @param end_mean query number false "end mean"
+// @param start_airing_year query number false "start airing year"
+// @param end_airing_year query number false "end airing year"
+// @param genre_id query integer false "genre id"
+// @param studio_id query integer false "studio id"
 // @param sort query string false "sort" enums(ID,-ID,TITLE,-TITLE,START_DATE,-START_DATE,MEAN,-MEAN,RANK,-RANK,POPULARITY,-POPULARITY,MEMBER,-MEMBER,VOTER,-VOTER) default(RANK)
 // @param page query integer false "page" default(1)
 // @param limit query integer false "limit" default(20)
@@ -36,6 +40,10 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
 	season := r.URL.Query().Get("season")
 	seasonYear, _ := strconv.Atoi(r.URL.Query().Get("season_year"))
+	startAiringYear, _ := strconv.Atoi(r.URL.Query().Get("start_airing_year"))
+	endAiringYear, _ := strconv.Atoi(r.URL.Query().Get("end_airing_year"))
+	genreID, _ := strconv.ParseInt(r.URL.Query().Get("genre_id"), 10, 64)
+	studioID, _ := strconv.ParseInt(r.URL.Query().Get("studio_id"), 10, 64)
 	sort := r.URL.Query().Get("sort")
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -59,17 +67,21 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 	}
 
 	anime, pagination, code, err := api.service.GetAnime(r.Context(), service.GetAnimeRequest{
-		Title:      title,
-		NSFW:       utils.ParseToBoolPtr(nsfw),
-		Type:       entity.Type(_type),
-		Status:     entity.Status(status),
-		Season:     entity.Season(season),
-		SeasonYear: seasonYear,
-		StartMean:  startMean,
-		EndMean:    endMean,
-		Sort:       entity.Sort(sort),
-		Page:       page,
-		Limit:      limit,
+		Title:           title,
+		NSFW:            utils.ParseToBoolPtr(nsfw),
+		Type:            entity.Type(_type),
+		Status:          entity.Status(status),
+		Season:          entity.Season(season),
+		SeasonYear:      seasonYear,
+		StartMean:       startMean,
+		EndMean:         endMean,
+		StartAiringYear: startAiringYear,
+		EndAiringYear:   endAiringYear,
+		GenreID:         genreID,
+		StudioID:        studioID,
+		Sort:            entity.Sort(sort),
+		Page:            page,
+		Limit:           limit,
 	})
 
 	utils.ResponseWithJSON(w, code, anime, errors.Wrap(r.Context(), err), pagination)
@@ -124,7 +136,6 @@ func (api *API) handleUpdateAnimeByID(w http.ResponseWriter, r *http.Request) {
 // @param end_date query string false "end date (yyyy-mm-dd)"
 // @param group query string false "group" enums(WEEKLY,MONTHLY,YEARLY) default(MONTHLY)
 // @success 200 {object} utils.Response{data=[]service.AnimeHistory}
-// @failure 202 {object} utils.Response
 // @failure 400 {object} utils.Response
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response
@@ -140,7 +151,8 @@ func (api *API) handleGetAnimeHistoriesByID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	histories, code, err := api.service.GetAnimeHistoriesByID(r.Context(), id, service.GetAnimeHistoriesRequest{
+	histories, code, err := api.service.GetAnimeHistoriesByID(r.Context(), service.GetAnimeHistoriesRequest{
+		ID:        id,
 		StartDate: startDate,
 		EndDate:   endDate,
 		Group:     entity.HistoryGroup(group),

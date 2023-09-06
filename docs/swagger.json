@@ -93,6 +93,30 @@
                         "in": "query"
                     },
                     {
+                        "type": "number",
+                        "description": "start airing year",
+                        "name": "start_airing_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "end airing year",
+                        "name": "end_airing_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "genre id",
+                        "name": "genre_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "studio id",
+                        "name": "studio_id",
+                        "in": "query"
+                    },
+                    {
                         "enum": [
                             "ID",
                             "-ID",
@@ -300,12 +324,6 @@
                             ]
                         }
                     },
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -350,6 +368,466 @@
                         "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/genres": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Genre"
+                ],
+                "summary": "Get genre list.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "NAME",
+                            "-NAME",
+                            "COUNT",
+                            "-COUNT",
+                            "MEAN",
+                            "-MEAN",
+                            "MEMBER",
+                            "-MEMBER"
+                        ],
+                        "type": "string",
+                        "default": "NAME",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.Genre"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/service.Pagination"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/genres/{genreID}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Genre"
+                ],
+                "summary": "Get genre by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "genre id",
+                        "name": "genreID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.Genre"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/genres/{genreID}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Genre"
+                ],
+                "summary": "Get genre stats histories by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "genre id",
+                        "name": "genreID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start year",
+                        "name": "start_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end year",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "MONTHLY",
+                            "YEARLY"
+                        ],
+                        "type": "string",
+                        "default": "MONTHLY",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.GenreHistory"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/studios": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Studio"
+                ],
+                "summary": "Get studio list.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "NAME",
+                            "-NAME",
+                            "COUNT",
+                            "-COUNT",
+                            "MEAN",
+                            "-MEAN",
+                            "MEMBER",
+                            "-MEMBER"
+                        ],
+                        "type": "string",
+                        "default": "NAME",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.Studio"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/service.Pagination"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/studios/{studioID}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Studio"
+                ],
+                "summary": "Get studio by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "studio id",
+                        "name": "studioID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.Studio"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/studios/{studioID}/history": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Studio"
+                ],
+                "summary": "Get studio stats histories by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "studio id",
+                        "name": "studioID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start year",
+                        "name": "start_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end year",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "MONTHLY",
+                            "YEARLY"
+                        ],
+                        "type": "string",
+                        "default": "MONTHLY",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.StudioHistory"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -711,6 +1189,55 @@
                 }
             }
         },
+        "service.Genre": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.GenreHistory": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "voter": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
         "service.Pagination": {
             "type": "object",
             "properties": {
@@ -721,6 +1248,55 @@
                     "type": "integer"
                 },
                 "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.Studio": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.StudioHistory": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "mean": {
+                    "type": "number"
+                },
+                "member": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "popularity": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "voter": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "integer"
                 }
             }

@@ -311,6 +311,8 @@ func (sql *SQL) convertSort(sort entity.Sort) string {
 	}
 
 	switch sort {
+	case entity.SortTitle:
+		return fmt.Sprintf("lower(title) %s", suffix)
 	case entity.SortStartDate:
 		return fmt.Sprintf("start_year %s, start_month %s, start_day %s", suffix, suffix, suffix)
 	case entity.SortMean, entity.SortRank, entity.SortPopularity, entity.SortMember, entity.SortVoter:
