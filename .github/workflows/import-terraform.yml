@@ -1,73 +1,17 @@
-name: publish & deploy
+name: import terraform
 
-on:
-  push:
-    tags:
-      - "v*"
+on: workflow_dispatch
 
 jobs:
-  publish_image:
-    name: Build and push akatsuki image
-    runs-on: ubuntu-latest
-    outputs:
-      img_tag: ${{ steps.tag.outputs.img_tag }}
-    steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-      - name: Remove 'v' from tag
-        id: tag
-        env:
-          github_ref: ${{ github.ref }}
-        run: |
-          github_ref=${github_ref##*/}
-          github_ref=${github_ref/v/}
-          echo "IMG_TAG=${github_ref}" >> $GITHUB_ENV
-          echo "img_tag=${github_ref}" >> $GITHUB_OUTPUT
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
-      - name: Auth gcloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-      - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v1
-      - name: Setup docker
-        run: |
-          gcloud --quiet auth configure-docker
-      - name: Build and push image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./build/package/Dockerfile
-          push: true
-          tags: |
-            rl404/akatsuki:latest
-            rl404/akatsuki:${{ env.IMG_TAG }}
-            ghcr.io/rl404/akatsuki:latest
-            ghcr.io/rl404/akatsuki:${{ env.IMG_TAG }}
-            ${{ secrets.GCR_HOSTNAME }}/${{ secrets.GCP_PROJECT_ID }}/akatsuki:${{ env.IMG_TAG }}
-  deploy:
-    name: Deploy
-    needs: publish_image
+  import_terraform:
+    name: Import Terraform
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./deployment/terraform
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
       - name: Auth gcloud
         uses: google-github-actions/auth@v1
         with:
@@ -119,13 +63,13 @@ jobs:
         run: terraform init -backend-config "bucket=${{ secrets.GCS_BUCKET }}"
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-      - name: Format Terraform
-        run: terraform fmt -check
-      - name: Plan Terraform
-        run: terraform plan -input=false
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-      - name: Apply Terraform
-        run: terraform apply -auto-approve -input=false
+      - name: Import Terraform
+        run: |
+          terraform import -input=false google_container_cluster.cluster ${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GKE_LOCATION }}/${{ secrets.GKE_CLUSTER_NAME }}
+          terraform import -input=false google_container_node_pool.pool ${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GKE_LOCATION }}/${{ secrets.GKE_CLUSTER_NAME }}/${{ secrets.GKE_POOL_NAME }}
+          terraform import -input=false google_cloud_run_v2_service.server ${{ secrets.GCP_PROJECT_ID }}/${{ secrets.CLOUD_RUN_LOCATION }}/${{ secrets.CLOUD_RUN_NAME }}
+          terraform import -input=false kubernetes_deployment.consumer default/${{ secrets.GKE_DEPLOYMENT_CONSUMER_NAME }}
+          terraform import -input=false kubernetes_cron_job_v1.cron_fill default/${{ secrets.GKE_CRON_FILL_NAME }}
+          terraform import -input=false kubernetes_cron_job_v1.cron_update default/${{ secrets.GKE_CRON_UPDATE_NAME }}
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
