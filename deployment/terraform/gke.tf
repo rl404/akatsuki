@@ -11,7 +11,7 @@ resource "google_container_node_pool" "pool" {
   node_count = 1
 
   node_config {
-    preemptible  = var.gke_node_preemptible
+    spot         = var.gke_node_preemptible
     machine_type = var.gke_node_machine_type
   }
 }
