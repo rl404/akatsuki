@@ -7,7 +7,8 @@ resource "kubernetes_cron_job_v1" "cron_fill" {
   }
 
   spec {
-    schedule = var.gke_cron_fill_schedule
+    schedule           = var.gke_cron_fill_schedule
+    concurrency_policy = "Forbid"
     job_template {
       metadata {
         labels = {
@@ -22,6 +23,7 @@ resource "kubernetes_cron_job_v1" "cron_fill" {
             }
           }
           spec {
+            restart_policy = "Never"
             container {
               name    = var.gke_cron_fill_name
               image   = var.gcr_image_name
@@ -132,7 +134,8 @@ resource "kubernetes_cron_job_v1" "cron_update" {
   }
 
   spec {
-    schedule = var.gke_cron_update_schedule
+    schedule           = var.gke_cron_update_schedule
+    concurrency_policy = "Forbid"
     job_template {
       metadata {
         labels = {
@@ -147,6 +150,7 @@ resource "kubernetes_cron_job_v1" "cron_update" {
             }
           }
           spec {
+            restart_policy = "Never"
             container {
               name    = var.gke_cron_update_name
               image   = var.gcr_image_name
