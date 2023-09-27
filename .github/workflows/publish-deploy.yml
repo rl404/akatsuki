@@ -92,6 +92,7 @@ jobs:
           gke_cron_update_schedule      = "${{ secrets.GKE_CRON_UPDATE_SCHEDULE }}"
           cloud_run_name                = "${{ secrets.CLOUD_RUN_NAME }}"
           cloud_run_location            = "${{ secrets.CLOUD_RUN_LOCATION }}"
+          akatsuki_grpc_port            = "${{ secrets.AKATSUKI_GRPC_PORT }}"
           akatsuki_cache_dialect        = "${{ secrets.AKATSUKI_CACHE_DIALECT }}"
           akatsuki_cache_address        = "${{ secrets.AKATSUKI_CACHE_ADDRESS }}"
           akatsuki_cache_password       = "${{ secrets.AKATSUKI_CACHE_PASSWORD }}"

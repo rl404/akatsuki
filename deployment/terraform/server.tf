@@ -16,6 +16,10 @@ resource "google_cloud_run_v2_service" "server" {
       command = ["./akatsuki"]
       args    = ["server"]
       env {
+        name  = "AKATSUKI_GRPC_PORT"
+        value = var.akatsuki_grpc_port
+      }
+      env {
         name  = "AKATSUKI_CACHE_DIALECT"
         value = var.akatsuki_cache_dialect
       }

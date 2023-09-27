@@ -73,6 +73,11 @@ variable "cloud_run_location" {
   description = "Google cloud run location"
 }
 
+variable "akatsuki_grpc_port" {
+  type        = string
+  description = "GRPC ports"
+}
+
 variable "akatsuki_cache_dialect" {
   type        = string
   description = "Cache dialect"
