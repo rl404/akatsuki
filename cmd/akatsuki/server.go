@@ -178,7 +178,6 @@ func server() error {
 	utils.Info("http server listening at :%s", cfg.HTTP.Port)
 
 	// Init GRPC.
-	grpcAPI := grpcAPI.New(service)
 	grpcServer := grpc.New(grpc.Config{
 		Port:    cfg.GRPC.Port,
 		Timeout: cfg.GRPC.Timeout,
@@ -191,7 +190,7 @@ func server() error {
 	utils.Info("grpc server initialized")
 
 	// Register api route.
-	schema.RegisterAPIServer(grpcServer.Server(), grpcAPI)
+	schema.RegisterAPIServer(grpcServer.Server(), grpcAPI.New(service))
 	utils.Info("grpc route api initialized")
 
 	// Run grpc server.
