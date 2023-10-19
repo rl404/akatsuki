@@ -4,8 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
-	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // QueueOldReleasingAnime to queue old releasing anime data.
@@ -14,12 +13,12 @@ func (s *service) QueueOldReleasingAnime(ctx context.Context, limit int) (int, i
 
 	ids, code, err := s.anime.GetOldReleasingIDs(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	for i := 0; i < len(ids) && cnt < limit; i, cnt = i+1, cnt+1 {
-		if err := s.publisher.PublishParseAnime(ctx, entity.ParseAnimeRequest{ID: ids[i]}); err != nil {
-			return cnt, http.StatusInternalServerError, errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseAnime(ctx, ids[i], false); err != nil {
+			return cnt, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 	}
 
@@ -32,12 +31,12 @@ func (s *service) QueueOldFinishedAnime(ctx context.Context, limit int) (int, in
 
 	ids, code, err := s.anime.GetOldFinishedIDs(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	for i := 0; i < len(ids) && cnt < limit; i, cnt = i+1, cnt+1 {
-		if err := s.publisher.PublishParseAnime(ctx, entity.ParseAnimeRequest{ID: ids[i]}); err != nil {
-			return cnt, http.StatusInternalServerError, errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseAnime(ctx, ids[i], false); err != nil {
+			return cnt, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 	}
 
@@ -50,12 +49,12 @@ func (s *service) QueueOldNotYetAnime(ctx context.Context, limit int) (int, int,
 
 	ids, code, err := s.anime.GetOldFinishedIDs(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	for i := 0; i < len(ids) && cnt < limit; i, cnt = i+1, cnt+1 {
-		if err := s.publisher.PublishParseAnime(ctx, entity.ParseAnimeRequest{ID: ids[i]}); err != nil {
-			return cnt, http.StatusInternalServerError, errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseAnime(ctx, ids[i], false); err != nil {
+			return cnt, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 	}
 
@@ -69,19 +68,19 @@ func (s *service) QueueMissingAnime(ctx context.Context, limit int) (int, int, e
 	// Get max id.
 	maxID, code, err := s.anime.GetMaxID(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	// Get all existing anime id.
 	animeIDs, code, err := s.anime.GetIDs(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	// Get all empty anime id,
 	emptyIDs, code, err := s.emptyID.GetIDs(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	idMap := make(map[int64]bool)
@@ -98,8 +97,8 @@ func (s *service) QueueMissingAnime(ctx context.Context, limit int) (int, int, e
 			continue
 		}
 
-		if err := s.publisher.PublishParseAnime(ctx, entity.ParseAnimeRequest{ID: id}); err != nil {
-			return cnt, http.StatusInternalServerError, errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseAnime(ctx, id, false); err != nil {
+			return cnt, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 
 		cnt++
@@ -114,12 +113,12 @@ func (s *service) QueueOldUserAnime(ctx context.Context, limit int) (int, int, e
 
 	usernames, code, err := s.userAnime.GetOldUsernames(ctx)
 	if err != nil {
-		return cnt, code, errors.Wrap(ctx, err)
+		return cnt, code, stack.Wrap(ctx, err)
 	}
 
 	for i := 0; i < len(usernames) && cnt < limit; i, cnt = i+1, cnt+1 {
-		if err := s.publisher.PublishParseUserAnime(ctx, entity.ParseUserAnimeRequest{Username: usernames[i]}); err != nil {
-			return cnt, http.StatusInternalServerError, errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseUserAnime(ctx, usernames[i], "", false); err != nil {
+			return cnt, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 	}
 

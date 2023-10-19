@@ -2,16 +2,13 @@ package consumer
 
 import (
 	"context"
-	"fmt"
-	"runtime/debug"
-	"strings"
-	"time"
+	"encoding/json"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
-	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 	"github.com/rl404/fairy/log"
 	"github.com/rl404/fairy/pubsub"
 )
@@ -19,80 +16,42 @@ import (
 // Consumer contains functions for consumer.
 type Consumer struct {
 	service service.Service
-	channel pubsub.Channel
+	pubsub  pubsub.PubSub
+	topic   string
 }
 
 // New to create new consumer.
-func New(service service.Service, ps pubsub.PubSub, topic string) (*Consumer, error) {
-	s, err := ps.Subscribe(context.Background(), topic)
-	if err != nil {
-		return nil, err
-	}
+func New(service service.Service, ps pubsub.PubSub, topic string) *Consumer {
+	ps.Use(log.PubSubMiddlewareWithLog(utils.GetLogger(0), log.PubSubMiddlewareConfig{Error: true}))
+	ps.Use(log.PubSubMiddlewareWithLog(utils.GetLogger(1), log.PubSubMiddlewareConfig{
+		Topic:   topic,
+		Payload: true,
+		Error:   true,
+	}))
 
 	return &Consumer{
 		service: service,
-		channel: s.(pubsub.Channel),
-	}, nil
+		pubsub:  ps,
+		topic:   topic,
+	}
 }
 
 // Subscribe to start subscribing to topic.
 func (c *Consumer) Subscribe(nrApp *newrelic.Application) error {
-	var msg entity.Message
-	msgs, errChan := c.channel.Read(context.Background(), &msg)
-
-	go func() {
-		for {
-			func() {
-				select {
-				case <-msgs:
-					var err error
-					ctx, start := errors.Init(context.Background()), time.Now()
-					defer func() {
-						if rvr := recover(); rvr != nil {
-							err = fmt.Errorf("%v", rvr)
-							errors.Wrap(ctx, err, fmt.Errorf("%s", debug.Stack()))
-						}
-
-						c.log(ctx, msg, start, err)
-					}()
-
-					tx := nrApp.StartTransaction("Consumer " + string(msg.Type))
-					defer tx.End()
-
-					ctx = newrelic.NewContext(ctx, tx)
-
-					err = errors.Wrap(ctx, c.service.ConsumeMessage(ctx, msg))
-					tx.NoticeError(err)
-				case err := <-errChan:
-					utils.Error(err.Error())
-				}
-			}()
+	return c.pubsub.Subscribe(context.Background(), c.topic, func(ctx context.Context, message []byte) {
+		var msg entity.Message
+		if err := json.Unmarshal(message, &msg); err != nil {
+			stack.Wrap(ctx, err)
+			return
 		}
-	}()
 
-	return nil
-}
-
-func (c *Consumer) log(ctx context.Context, msg entity.Message, start time.Time, err error) {
-	m := map[string]interface{}{
-		"level":    log.InfoLevel,
-		"type":     msg.Type,
-		"data":     string(msg.Data),
-		"duration": time.Since(start).String(),
-	}
-
-	if err != nil {
-		m["level"] = log.ErrorLevel
-		errStack := errors.Get(ctx)
-		if len(errStack) > 0 {
-			m["error"] = strings.Join(errStack, ",")
+		if err := c.service.ConsumeMessage(ctx, msg); err != nil {
+			stack.Wrap(ctx, err)
 		}
-	}
-
-	utils.Log(m)
+	})
 }
 
 // Close to stop consumer connection.
 func (c *Consumer) Close() error {
-	return c.channel.Close()
+	return c.pubsub.Close()
 }

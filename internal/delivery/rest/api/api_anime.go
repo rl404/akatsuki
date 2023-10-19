@@ -9,6 +9,7 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // @summary Get anime list.
@@ -52,7 +53,7 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 	if tmp := r.URL.Query().Get("start_mean"); tmp != "" {
 		tmp2, err := strconv.ParseFloat(tmp, 64)
 		if err != nil {
-			utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), err, errors.ErrInvalidFormat("start_mean")))
+			utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidFormat("start_mean")))
 			return
 		}
 		startMean = tmp2
@@ -60,7 +61,7 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 	if tmp := r.URL.Query().Get("end_mean"); tmp != "" {
 		tmp2, err := strconv.ParseFloat(tmp, 64)
 		if err != nil {
-			utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), err, errors.ErrInvalidFormat("end_mean")))
+			utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidFormat("end_mean")))
 			return
 		}
 		endMean = tmp2
@@ -84,7 +85,7 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 		Limit:           limit,
 	})
 
-	utils.ResponseWithJSON(w, code, anime, errors.Wrap(r.Context(), err), pagination)
+	utils.ResponseWithJSON(w, code, anime, stack.Wrap(r.Context(), err), pagination)
 }
 
 // @summary Get anime by id.
@@ -100,12 +101,12 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 func (api *API) handleGetAnimeByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "animeID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidAnimeID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidAnimeID))
 		return
 	}
 
 	anime, code, err := api.service.GetAnimeByID(r.Context(), id)
-	utils.ResponseWithJSON(w, code, anime, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, anime, stack.Wrap(r.Context(), err))
 }
 
 // @summary Update anime by id.
@@ -120,12 +121,12 @@ func (api *API) handleGetAnimeByID(w http.ResponseWriter, r *http.Request) {
 func (api *API) handleUpdateAnimeByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "animeID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidAnimeID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidAnimeID))
 		return
 	}
 
 	code, err := api.service.UpdateAnimeByID(r.Context(), id)
-	utils.ResponseWithJSON(w, code, nil, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, nil, stack.Wrap(r.Context(), err))
 }
 
 // @summary Get anime stats histories by id.
@@ -147,7 +148,7 @@ func (api *API) handleGetAnimeHistoriesByID(w http.ResponseWriter, r *http.Reque
 
 	id, err := strconv.ParseInt(chi.URLParam(r, "animeID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidAnimeID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidAnimeID))
 		return
 	}
 
@@ -158,5 +159,5 @@ func (api *API) handleGetAnimeHistoriesByID(w http.ResponseWriter, r *http.Reque
 		Group:     entity.HistoryGroup(group),
 	})
 
-	utils.ResponseWithJSON(w, code, histories, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, histories, stack.Wrap(r.Context(), err))
 }

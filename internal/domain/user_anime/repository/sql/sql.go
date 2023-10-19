@@ -8,6 +8,7 @@ import (
 
 	"github.com/rl404/akatsuki/internal/domain/user_anime/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"gorm.io/gorm"
 )
 
@@ -35,12 +36,12 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetUserAnimeRequest) ([]*en
 	}
 
 	if err := query.Limit(data.Limit).Offset((data.Page - 1) * data.Limit).Find(&a).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	var cnt int64
 	if err := query.Limit(-1).Count(&cnt).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	return sql.userAnimeToEntities(a), int(cnt), http.StatusOK, nil
@@ -51,7 +52,7 @@ func (sql *SQL) Update(ctx context.Context, data entity.UserAnime) (int, error) 
 	var ua UserAnime
 	if err := sql.db.WithContext(ctx).Select("id, created_at").Where("username = ? and anime_id = ?", data.Username, data.AnimeID).First(&ua).Error; err != nil {
 		if !_errors.Is(err, gorm.ErrRecordNotFound) {
-			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+			return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 		}
 	}
 
@@ -59,7 +60,7 @@ func (sql *SQL) Update(ctx context.Context, data entity.UserAnime) (int, error) 
 	userAnime.ID = ua.ID
 	userAnime.CreatedAt = ua.CreatedAt
 	if err := sql.db.WithContext(ctx).Save(userAnime).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	return http.StatusOK, nil
@@ -69,7 +70,7 @@ func (sql *SQL) Update(ctx context.Context, data entity.UserAnime) (int, error) 
 func (sql *SQL) IsOld(ctx context.Context, username string) (bool, int, error) {
 	res := sql.db.WithContext(ctx).Where("username = ? and updated_at >= ?", username, time.Now().Add(-sql.age)).Limit(1).Find(&[]UserAnime{})
 	if res.Error != nil {
-		return true, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, res.Error)
+		return true, http.StatusInternalServerError, stack.Wrap(ctx, res.Error, errors.ErrInternalDB)
 	}
 	return res.RowsAffected == 0, http.StatusOK, nil
 }
@@ -78,7 +79,7 @@ func (sql *SQL) IsOld(ctx context.Context, username string) (bool, int, error) {
 func (sql *SQL) GetOldUsernames(ctx context.Context) ([]string, int, error) {
 	var usernames []string
 	if err := sql.db.WithContext(ctx).Model(&UserAnime{}).Where("updated_at <= ?", time.Now().Add(-sql.age)).Pluck("distinct(username)", &usernames).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return usernames, http.StatusOK, nil
 }
@@ -86,7 +87,7 @@ func (sql *SQL) GetOldUsernames(ctx context.Context) ([]string, int, error) {
 // DeleteNotInList to delete anime not in list.
 func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int64, status string) (int, error) {
 	if err := sql.db.WithContext(ctx).Where("username = ? and anime_id not in ? and status = ?", username, ids, status).Delete(&UserAnime{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
 }
@@ -94,7 +95,7 @@ func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int6
 // DeleteByAnimeID to delete by anime id.
 func (sql *SQL) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error) {
 	if err := sql.db.WithContext(ctx).Where("anime_id = ?", animeID).Delete(&UserAnime{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
 }
@@ -102,7 +103,7 @@ func (sql *SQL) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error)
 // DeleteByUsername to delete by username.
 func (sql *SQL) DeleteByUsername(ctx context.Context, username string) (int, error) {
 	if err := sql.db.WithContext(ctx).Where("username = ?", username).Delete(&UserAnime{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
 }

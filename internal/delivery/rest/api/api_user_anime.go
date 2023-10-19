@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // @summary Get user's anime.
@@ -33,7 +33,7 @@ func (api *API) handleGetUserAnime(w http.ResponseWriter, r *http.Request) {
 		Limit:    limit,
 	})
 
-	utils.ResponseWithJSON(w, code, anime, errors.Wrap(r.Context(), err), pagination)
+	utils.ResponseWithJSON(w, code, anime, stack.Wrap(r.Context(), err), pagination)
 }
 
 // @summary Get user's anime relations.
@@ -49,7 +49,7 @@ func (api *API) handleGetUserAnime(w http.ResponseWriter, r *http.Request) {
 func (api *API) handleGetUserAnimeRelations(w http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 	relations, code, err := api.service.GetUserAnimeRelations(r.Context(), username)
-	utils.ResponseWithJSON(w, code, relations, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, relations, stack.Wrap(r.Context(), err))
 }
 
 // @summary Update user's anime.
@@ -64,5 +64,5 @@ func (api *API) handleGetUserAnimeRelations(w http.ResponseWriter, r *http.Reque
 func (api *API) handleUpdateUserAnime(w http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
 	code, err := api.service.UpdateUserAnime(r.Context(), username)
-	utils.ResponseWithJSON(w, code, nil, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, nil, stack.Wrap(r.Context(), err))
 }

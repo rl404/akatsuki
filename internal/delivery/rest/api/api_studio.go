@@ -9,6 +9,7 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // @summary Get studio list.
@@ -35,7 +36,7 @@ func (api *API) handleGetStudios(w http.ResponseWriter, r *http.Request) {
 		Limit: limit,
 	})
 
-	utils.ResponseWithJSON(w, code, studios, errors.Wrap(r.Context(), err), pagination)
+	utils.ResponseWithJSON(w, code, studios, stack.Wrap(r.Context(), err), pagination)
 }
 
 // @summary Get studio by id.
@@ -50,12 +51,12 @@ func (api *API) handleGetStudios(w http.ResponseWriter, r *http.Request) {
 func (api *API) handleGetStudioByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "studioID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidStudioID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidStudioID))
 		return
 	}
 
 	studio, code, err := api.service.GetStudioByID(r.Context(), id)
-	utils.ResponseWithJSON(w, code, studio, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, studio, stack.Wrap(r.Context(), err))
 }
 
 // @summary Get studio stats histories by id.
@@ -77,7 +78,7 @@ func (api *API) handleGetStudioHistoriesByID(w http.ResponseWriter, r *http.Requ
 
 	id, err := strconv.ParseInt(chi.URLParam(r, "studioID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidStudioID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidStudioID))
 		return
 	}
 
@@ -88,5 +89,5 @@ func (api *API) handleGetStudioHistoriesByID(w http.ResponseWriter, r *http.Requ
 		Group:     entity.HistoryGroup(group),
 	})
 
-	utils.ResponseWithJSON(w, code, histories, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, histories, stack.Wrap(r.Context(), err))
 }

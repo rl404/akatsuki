@@ -6,18 +6,14 @@ import (
 
 	animeEntity "github.com/rl404/akatsuki/internal/domain/anime/entity"
 	genreEntity "github.com/rl404/akatsuki/internal/domain/genre/entity"
-	publisherEntity "github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	studioEntity "github.com/rl404/akatsuki/internal/domain/studio/entity"
-	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // UpdateAnimeByID to update anime by id.
 func (s *service) UpdateAnimeByID(ctx context.Context, id int64) (int, error) {
-	if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{
-		ID:     id,
-		Forced: true,
-	}); err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, err)
+	if err := s.publisher.PublishParseAnime(ctx, id, true); err != nil {
+		return http.StatusInternalServerError, stack.Wrap(ctx, err)
 	}
 	return http.StatusAccepted, nil
 }
@@ -29,19 +25,19 @@ func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 		if code == http.StatusNotFound {
 			// Insert empty id.
 			if code, err := s.emptyID.Create(ctx, id); err != nil {
-				return code, errors.Wrap(ctx, err)
+				return code, stack.Wrap(ctx, err)
 			}
 
 			// Delete existing data.
 			if code, err := s.anime.DeleteByID(ctx, id); err != nil {
-				return code, errors.Wrap(ctx, err)
+				return code, stack.Wrap(ctx, err)
 			}
 
 			if code, err := s.userAnime.DeleteByAnimeID(ctx, id); err != nil {
-				return code, errors.Wrap(ctx, err)
+				return code, stack.Wrap(ctx, err)
 			}
 		}
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
 	// Update genre data.
@@ -55,7 +51,7 @@ func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 		}
 
 		if code, err := s.genre.BatchUpdate(ctx, genres); err != nil {
-			return code, errors.Wrap(ctx, err)
+			return code, stack.Wrap(ctx, err)
 		}
 	}
 
@@ -70,19 +66,19 @@ func (s *service) updateAnime(ctx context.Context, id int64) (int, error) {
 		}
 
 		if code, err := s.studio.BatchUpdate(ctx, studios); err != nil {
-			return code, errors.Wrap(ctx, err)
+			return code, stack.Wrap(ctx, err)
 		}
 	}
 
 	// Update anime data.
 	if code, err := s.anime.Update(ctx, animeEntity.AnimeFromMal(ctx, anime)); err != nil {
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
 	// Queue related anime.
 	for _, r := range anime.RelatedAnime {
-		if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{ID: int64(r.Anime.ID)}); err != nil {
-			return http.StatusInternalServerError, errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseAnime(ctx, int64(r.Anime.ID), false); err != nil {
+			return http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 	}
 

@@ -29,11 +29,11 @@ import (
 	userAnimeSQL "github.com/rl404/akatsuki/internal/domain/user_anime/repository/sql"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
-	"github.com/rl404/fairy/cache"
+	"github.com/rl404/akatsuki/pkg/cache"
+	"github.com/rl404/akatsuki/pkg/pubsub"
 	_nr "github.com/rl404/fairy/log/newrelic"
 	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
 	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
-	"github.com/rl404/fairy/pubsub"
 )
 
 func consumer() error {
@@ -82,7 +82,7 @@ func consumer() error {
 	if err != nil {
 		return err
 	}
-	ps = nrPS.New(cfg.PubSub.Dialect, ps)
+	ps = nrPS.New(cfg.PubSub.Dialect, ps, nrApp)
 	utils.Info("pubsub initialized")
 	defer ps.Close()
 
@@ -129,10 +129,7 @@ func consumer() error {
 	utils.Info("service initialized")
 
 	// Init consumer.
-	consumer, err := _consumer.New(service, ps, pubsubTopic)
-	if err != nil {
-		return err
-	}
+	consumer := _consumer.New(service, ps, pubsubTopic)
 	utils.Info("consumer initialized")
 	defer consumer.Close()
 

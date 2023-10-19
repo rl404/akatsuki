@@ -9,6 +9,7 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // @summary Get genre list.
@@ -35,7 +36,7 @@ func (api *API) handleGetGenres(w http.ResponseWriter, r *http.Request) {
 		Limit: limit,
 	})
 
-	utils.ResponseWithJSON(w, code, genres, errors.Wrap(r.Context(), err), pagination)
+	utils.ResponseWithJSON(w, code, genres, stack.Wrap(r.Context(), err), pagination)
 }
 
 // @summary Get genre by id.
@@ -50,12 +51,12 @@ func (api *API) handleGetGenres(w http.ResponseWriter, r *http.Request) {
 func (api *API) handleGetGenreByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "genreID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidGenreID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidGenreID))
 		return
 	}
 
 	genre, code, err := api.service.GetGenreByID(r.Context(), id)
-	utils.ResponseWithJSON(w, code, genre, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, genre, stack.Wrap(r.Context(), err))
 }
 
 // @summary Get genre stats histories by id.
@@ -77,7 +78,7 @@ func (api *API) handleGetGenreHistoriesByID(w http.ResponseWriter, r *http.Reque
 
 	id, err := strconv.ParseInt(chi.URLParam(r, "genreID"), 10, 64)
 	if err != nil {
-		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, errors.Wrap(r.Context(), errors.ErrInvalidGenreID, err))
+		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidGenreID))
 		return
 	}
 
@@ -88,5 +89,5 @@ func (api *API) handleGetGenreHistoriesByID(w http.ResponseWriter, r *http.Reque
 		Group:     entity.HistoryGroup(group),
 	})
 
-	utils.ResponseWithJSON(w, code, histories, errors.Wrap(r.Context(), err))
+	utils.ResponseWithJSON(w, code, histories, stack.Wrap(r.Context(), err))
 }

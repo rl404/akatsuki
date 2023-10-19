@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -11,15 +10,12 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
-	"github.com/rl404/fairy/cache"
-	"github.com/rl404/fairy/log"
+	"github.com/rl404/akatsuki/pkg/cache"
+	"github.com/rl404/akatsuki/pkg/log"
+	"github.com/rl404/akatsuki/pkg/pubsub"
 	"github.com/rl404/fairy/monitoring/newrelic/database"
-	"github.com/rl404/fairy/pubsub"
-	"gorm.io/driver/clickhouse"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
-	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
@@ -55,14 +51,14 @@ type grpcConfig struct {
 }
 
 type cacheConfig struct {
-	Dialect  string        `envconfig:"DIALECT" validate:"required,oneof=nocache redis inmemory memcache" mod:"default=inmemory,no_space,lcase"`
+	Dialect  string        `envconfig:"DIALECT" validate:"required,oneof=nocache redis inmemory" mod:"default=inmemory,no_space,lcase"`
 	Address  string        `envconfig:"ADDRESS"`
 	Password string        `envconfig:"PASSWORD"`
 	Time     time.Duration `envconfig:"TIME" default:"24h" validate:"required,gt=0"`
 }
 
 type dbConfig struct {
-	Dialect         string        `envconfig:"DIALECT" validate:"required,oneof=mysql postgresql sqlite sqlserver clickhouse" mod:"default=mysql,no_space,lcase"`
+	Dialect         string        `envconfig:"DIALECT" validate:"required,oneof=mysql postgresql" mod:"default=mysql,no_space,lcase"`
 	Address         string        `envconfig:"ADDRESS" validate:"required" mod:"default=localhost:3306,no_space"`
 	Name            string        `envconfig:"NAME" validate:"required" mod:"default=akatsuki"`
 	User            string        `envconfig:"USER" validate:"required" mod:"default=root"`
@@ -73,7 +69,7 @@ type dbConfig struct {
 }
 
 type pubsubConfig struct {
-	Dialect  string `envconfig:"DIALECT" validate:"required,oneof=nsq rabbitmq redis google" mod:"default=rabbitmq,no_space,lcase"`
+	Dialect  string `envconfig:"DIALECT" validate:"required,oneof=rabbitmq redis google" mod:"default=rabbitmq,no_space,lcase"`
 	Address  string `envconfig:"ADDRESS" validate:"required"`
 	Password string `envconfig:"PASSWORD"`
 }
@@ -92,7 +88,6 @@ type cronConfig struct {
 }
 
 type logConfig struct {
-	Type  log.LogType  `envconfig:"TYPE" default:"2"`
 	Level log.LogLevel `envconfig:"LEVEL" default:"-1"`
 	JSON  bool         `envconfig:"JSON" default:"false"`
 	Color bool         `envconfig:"COLOR" default:"true"`
@@ -108,14 +103,12 @@ const envPrefix = "AKATSUKI"
 const pubsubTopic = "akatsuki-pubsub"
 
 var cacheType = map[string]cache.CacheType{
-	"nocache":  cache.NoCache,
+	"nocache":  cache.NOP,
 	"redis":    cache.Redis,
 	"inmemory": cache.InMemory,
-	"memcache": cache.Memcache,
 }
 
 var pubsubType = map[string]pubsub.PubsubType{
-	"nsq":      pubsub.NSQ,
 	"rabbitmq": pubsub.RabbitMQ,
 	"redis":    pubsub.Redis,
 	"google":   pubsub.Google,
@@ -152,7 +145,7 @@ func getConfig() (*config, error) {
 	}
 
 	// Init global log.
-	if err := utils.InitLog(cfg.Log.Type, cfg.Log.Level, cfg.Log.JSON, cfg.Log.Color); err != nil {
+	if err := utils.InitLog(cfg.Log.Level, cfg.Log.JSON, cfg.Log.Color); err != nil {
 		return nil, err
 	}
 
@@ -172,12 +165,6 @@ func newDB(cfg dbConfig) (*gorm.DB, error) {
 		dialector = mysql.Open(fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true&loc=Local", cfg.User, cfg.Password, cfg.Address, cfg.Name))
 	case "postgresql":
 		dialector = postgres.Open(fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", split[0], split[1], cfg.User, cfg.Password, cfg.Name))
-	case "sqlite":
-		dialector = sqlite.Open(fmt.Sprintf("%s.db", cfg.Name))
-	case "sqlserver":
-		dialector = sqlserver.Open(fmt.Sprintf("sqlserver://%s:%s@%s?database=%s", cfg.User, cfg.Password, cfg.Address, cfg.Name))
-	case "clickhouse":
-		dialector = clickhouse.Open(fmt.Sprintf("tcp://%s?database=%s&username=%s&password=%s&read_timeout=10&write_timeout=20", cfg.Address, cfg.Name, cfg.User, cfg.Password))
 	default:
 		return nil, errors.ErrOneOfField("dialect", "mysql postgresql sqlite sqlserver clickhouse")
 	}
@@ -208,7 +195,7 @@ func newDB(cfg dbConfig) (*gorm.DB, error) {
 }
 
 func generateGoogleServiceAccountJSON(filename, value string) (string, error) {
-	if err := ioutil.WriteFile(filename, []byte(value), 0644); err != nil {
+	if err := os.WriteFile(filename, []byte(value), 0644); err != nil {
 		return "", err
 	}
 	return filename, nil

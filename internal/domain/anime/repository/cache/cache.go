@@ -9,6 +9,7 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/cache"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // Cache contains functions for anime cache.
@@ -39,11 +40,11 @@ func (c *Cache) GetByID(ctx context.Context, id int64) (data *entity.Anime, code
 
 	data, code, err = c.repo.GetByID(ctx, id)
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	if err := c.cacher.Set(ctx, key, data); err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalCache)
 	}
 
 	return data, code, nil
@@ -57,12 +58,12 @@ func (c *Cache) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int
 // Update to update data.
 func (c *Cache) Update(ctx context.Context, data entity.Anime) (int, error) {
 	if code, err := c.repo.Update(ctx, data); err != nil {
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
 	key := utils.GetKey("anime", data.ID)
 	if err := c.cacher.Delete(ctx, key); err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalCache)
 	}
 
 	return http.StatusOK, nil

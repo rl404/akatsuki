@@ -7,10 +7,9 @@ import (
 	"time"
 
 	animeEntity "github.com/rl404/akatsuki/internal/domain/anime/entity"
-	publisherEntity "github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/domain/user_anime/entity"
-	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // UserAnime is user anime model.
@@ -34,7 +33,7 @@ type GetUserAnimeRequest struct {
 // GetUserAnime to get user anime.
 func (s *service) GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([]UserAnime, *Pagination, int, error) {
 	if err := utils.Validate(&data); err != nil {
-		return nil, nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	userAnime, cnt, code, err := s.userAnime.Get(ctx, entity.GetUserAnimeRequest{
@@ -43,13 +42,13 @@ func (s *service) GetUserAnime(ctx context.Context, data GetUserAnimeRequest) ([
 		Limit:    data.Limit,
 	})
 	if err != nil {
-		return nil, nil, code, errors.Wrap(ctx, err)
+		return nil, nil, code, stack.Wrap(ctx, err)
 	}
 
 	if cnt == 0 {
 		// Queue to parse.
-		if err := s.publisher.PublishParseUserAnime(ctx, publisherEntity.ParseUserAnimeRequest{Username: data.Username}); err != nil {
-			return nil, nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalServer, err)
+		if err := s.publisher.PublishParseUserAnime(ctx, data.Username, "", false); err != nil {
+			return nil, nil, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 		return nil, nil, http.StatusAccepted, nil
 	}
@@ -113,13 +112,13 @@ func (s *service) GetUserAnimeRelations(ctx context.Context, username string) (*
 		Limit:    -1,
 	})
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	if len(userAnime) == 0 {
 		// Queue to parse.
-		if err := s.publisher.PublishParseUserAnime(ctx, publisherEntity.ParseUserAnimeRequest{Username: username}); err != nil {
-			return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalServer, err)
+		if err := s.publisher.PublishParseUserAnime(ctx, username, "", false); err != nil {
+			return nil, http.StatusInternalServerError, stack.Wrap(ctx, err)
 		}
 		return nil, http.StatusAccepted, nil
 	}
@@ -136,12 +135,12 @@ func (s *service) GetUserAnimeRelations(ctx context.Context, username string) (*
 	}
 
 	if code, err := s.getUserAnimeRelations(ctx, &animeIDs, nodeMap, &links); err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	anime, code, err := s.anime.GetByIDs(ctx, animeIDs)
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	for _, a := range anime {
@@ -193,7 +192,7 @@ func (s *service) getUserAnimeRelations(ctx context.Context, animeIDs *[]int64, 
 
 	related, code, err := s.anime.GetRelatedByIDs(ctx, ids)
 	if err != nil {
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
 	for _, r := range related {

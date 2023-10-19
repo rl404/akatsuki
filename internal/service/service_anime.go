@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/rl404/akatsuki/internal/domain/anime/entity"
-	publisherEntity "github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // Anime is anime model.
@@ -64,7 +64,7 @@ type GetAnimeRequest struct {
 // GetAnime to get anime list.
 func (s *service) GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, *Pagination, int, error) {
 	if err := utils.Validate(&data); err != nil {
-		return nil, nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	anime, total, code, err := s.anime.Get(ctx, entity.GetRequest{
@@ -85,7 +85,7 @@ func (s *service) GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, 
 		Limit:           data.Limit,
 	})
 	if err != nil {
-		return nil, nil, code, errors.Wrap(ctx, err)
+		return nil, nil, code, stack.Wrap(ctx, err)
 	}
 
 	res := make([]Anime, len(anime))
@@ -103,7 +103,7 @@ func (s *service) GetAnime(ctx context.Context, data GetAnimeRequest) ([]Anime, 
 // GetAnimeByID to get anime by id.
 func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, error) {
 	if code, err := s.validateID(ctx, id); err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	// Get anime from db.
@@ -111,12 +111,12 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 	if err != nil {
 		if code == http.StatusNotFound {
 			// Queue to parse.
-			if err := s.publisher.PublishParseAnime(ctx, publisherEntity.ParseAnimeRequest{ID: id}); err != nil {
-				return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalServer, err)
+			if err := s.publisher.PublishParseAnime(ctx, id, false); err != nil {
+				return nil, http.StatusInternalServerError, stack.Wrap(ctx, err)
 			}
 			return nil, http.StatusAccepted, nil
 		}
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	anime := s.animeFromEntity(animeDB)
@@ -125,7 +125,7 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 	if len(animeDB.GenreIDs) > 0 {
 		genres, code, err := s.genre.GetByIDs(ctx, animeDB.GenreIDs)
 		if err != nil {
-			return nil, code, errors.Wrap(ctx, err)
+			return nil, code, stack.Wrap(ctx, err)
 		}
 
 		anime.Genres = make([]genre, len(genres))
@@ -148,7 +148,7 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 
 		relates, code, err := s.anime.GetByIDs(ctx, relatedIDs)
 		if err != nil {
-			return nil, code, errors.Wrap(ctx, err)
+			return nil, code, stack.Wrap(ctx, err)
 		}
 
 		anime.Related = make([]related, len(relates))
@@ -166,7 +166,7 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 	if len(animeDB.StudioIDs) > 0 {
 		studios, code, err := s.studio.GetByIDs(ctx, animeDB.StudioIDs)
 		if err != nil {
-			return nil, code, errors.Wrap(ctx, err)
+			return nil, code, stack.Wrap(ctx, err)
 		}
 
 		anime.Studios = make([]studio, len(studios))
@@ -183,17 +183,17 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 
 func (s *service) validateID(ctx context.Context, id int64) (int, error) {
 	if id <= 0 {
-		return http.StatusBadRequest, errors.Wrap(ctx, errors.ErrInvalidAnimeID)
+		return http.StatusBadRequest, stack.Wrap(ctx, errors.ErrInvalidAnimeID)
 	}
 
 	if _, code, err := s.emptyID.Get(ctx, id); err != nil {
 		if code == http.StatusNotFound {
 			return http.StatusOK, nil
 		}
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
-	return http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound)
+	return http.StatusNotFound, stack.Wrap(ctx, errors.ErrAnimeNotFound)
 }
 
 // AnimeHistory is anime stats history.
@@ -224,11 +224,11 @@ type GetAnimeHistoriesRequest struct {
 // GetAnimeHistoriesByID to get anime history by id.
 func (s *service) GetAnimeHistoriesByID(ctx context.Context, data GetAnimeHistoriesRequest) ([]AnimeHistory, int, error) {
 	if code, err := s.validateID(ctx, data.ID); err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	if err := utils.Validate(&data); err != nil {
-		return nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	if data.StartDate == "" {
@@ -249,7 +249,7 @@ func (s *service) GetAnimeHistoriesByID(ctx context.Context, data GetAnimeHistor
 		Group:     data.Group,
 	})
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	res := make([]AnimeHistory, len(histories))

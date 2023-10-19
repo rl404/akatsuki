@@ -1,25 +1,18 @@
 // Package redis is a wrapper of the original "github.com/redis/go-redis" library.
-//
-// Only contains basic publish, subscribe, and close methods.
-// Data will be encoded to JSON before publishing the message.
 package redis
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/rl404/fairy/pubsub"
 )
 
 // Client is redis pubsub client.
 type Client struct {
-	client *redis.Client
-}
-
-// Channel is redis pubsub channel.
-type Channel struct {
-	channel *redis.PubSub
+	client      *redis.Client
+	middlewares []func(pubsub.HandlerFunc) pubsub.HandlerFunc
 }
 
 // New to create new redis pubsub client.
@@ -52,45 +45,39 @@ func NewFromGoRedis(client *redis.Client) *Client {
 	}
 }
 
-// Publish to publish message.
-func (c *Client) Publish(ctx context.Context, channel string, data interface{}) error {
-	j, err := json.Marshal(data)
-	if err != nil {
-		return err
+// Use to add pubsub middlewares.
+func (c *Client) Use(middlewares ...func(pubsub.HandlerFunc) pubsub.HandlerFunc) {
+	c.middlewares = append(c.middlewares, middlewares...)
+}
+
+func (c *Client) applyMiddlewares(handlerFunc pubsub.HandlerFunc) pubsub.HandlerFunc {
+	for i := len(c.middlewares) - 1; i >= 0; i-- {
+		handlerFunc = c.middlewares[i](handlerFunc)
 	}
-	return c.client.Publish(ctx, channel, j).Err()
+	return handlerFunc
+}
+
+// Publish to publish message.
+func (c *Client) Publish(ctx context.Context, channel string, data []byte) error {
+	return c.client.Publish(ctx, channel, data).Err()
 }
 
 // Subscribe to subscribe channel.
-//
-// Need to convert the return type to pubsub.Channel.
-func (c *Client) Subscribe(ctx context.Context, channel string) (interface{}, error) {
-	return &Channel{
-		channel: c.client.Subscribe(ctx, channel),
-	}, nil
+func (c *Client) Subscribe(ctx context.Context, channel string, handlerFunc pubsub.HandlerFunc) error {
+	ch := c.client.Subscribe(ctx, channel)
+
+	go func(cl *redis.PubSub, h pubsub.HandlerFunc) {
+		h = c.applyMiddlewares(h)
+
+		for msg := range cl.Channel() {
+			h(ctx, []byte(msg.Payload))
+		}
+	}(ch, handlerFunc)
+
+	return nil
 }
 
 // Close to close redis pubsub client.
 func (c *Client) Close() error {
 	return c.client.Close()
-}
-
-// Read to read incoming message.
-func (c *Channel) Read(ctx context.Context, model interface{}) (<-chan interface{}, <-chan error) {
-	msgChan, errChan := make(chan interface{}), make(chan error)
-	go func() {
-		for msg := range c.channel.Channel() {
-			if err := json.Unmarshal([]byte(msg.Payload), &model); err != nil {
-				errChan <- err
-			} else {
-				msgChan <- model
-			}
-		}
-	}()
-	return (<-chan interface{})(msgChan), (<-chan error)(errChan)
-}
-
-// Close to close subscription.
-func (c *Channel) Close() error {
-	return c.channel.Close()
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/rl404/akatsuki/internal/domain/genre/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +26,7 @@ func New(db *gorm.DB) *SQL {
 // BatchUpdate to batch update genre.
 func (sql *SQL) BatchUpdate(ctx context.Context, data []entity.Genre) (int, error) {
 	if err := sql.db.WithContext(ctx).Save(sql.fromEntities(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
 }
@@ -34,7 +35,7 @@ func (sql *SQL) BatchUpdate(ctx context.Context, data []entity.Genre) (int, erro
 func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Genre, int, error) {
 	var g []Genre
 	if err := sql.db.WithContext(ctx).Where("id in ?", ids).Find(&g).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return sql.toEntities(g), http.StatusOK, nil
 }
@@ -62,12 +63,12 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Genr
 
 	var genres []genre
 	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&genres).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	var total int64
 	if err := query.WithContext(ctx).Count(&total).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	res := make([]*entity.Genre, len(genres))
@@ -97,9 +98,9 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Genre, int, erro
 		First(&genre).
 		Error; err != nil {
 		if _errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, http.StatusNotFound, errors.Wrap(ctx, errors.ErrInvalidGenreID, err)
+			return nil, http.StatusNotFound, stack.Wrap(ctx, err, errors.ErrInvalidGenreID)
 		}
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	return &entity.Genre{
@@ -147,7 +148,7 @@ func (sql *SQL) GetHistories(ctx context.Context, data entity.GetHistoriesReques
 
 	var histories []genreHistory
 	if err := query.Select(selects).Find(&histories).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	res := make([]entity.History, len(histories))

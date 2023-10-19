@@ -8,6 +8,7 @@ import (
 
 	"github.com/rl404/akatsuki/internal/domain/anime/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"gorm.io/gorm"
 )
 
@@ -85,12 +86,12 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Anim
 
 	var a []Anime
 	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&a).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	var total int64
 	if err := query.WithContext(ctx).Model(&Anime{}).Count(&total).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	return sql.animeToEntities(a), int(total), http.StatusOK, nil
@@ -101,9 +102,9 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 	var a Anime
 	if err := sql.db.WithContext(ctx).Where("id = ?", id).First(&a).Error; err != nil {
 		if _errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound, err)
+			return nil, http.StatusNotFound, stack.Wrap(ctx, err, errors.ErrAnimeNotFound)
 		}
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	anime := a.toEntity()
@@ -111,7 +112,7 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 	// Get genres.
 	var animeGenres []AnimeGenre
 	if err := sql.db.WithContext(ctx).Where("anime_id = ?", id).Find(&animeGenres).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	anime.GenreIDs = make([]int64, len(animeGenres))
@@ -122,7 +123,7 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 	// Get pictures.
 	var animePictures []AnimePicture
 	if err := sql.db.WithContext(ctx).Where("anime_id = ?", id).Find(&animePictures).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	anime.Pictures = make([]string, len(animePictures))
@@ -133,7 +134,7 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 	// Get related.
 	var animeRelated []AnimeRelated
 	if err := sql.db.WithContext(ctx).Where("anime_id1 = ?", id).Find(&animeRelated).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	anime.Related = make([]entity.Related, len(animeRelated))
@@ -147,7 +148,7 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 	// Get studios.
 	var animeStudios []AnimeStudio
 	if err := sql.db.WithContext(ctx).Where("anime_id = ?", id).Find(&animeStudios).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	anime.StudioIDs = make([]int64, len(animeStudios))
@@ -162,7 +163,7 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Anime, int, erro
 func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int, error) {
 	var a []Anime
 	if err := sql.db.WithContext(ctx).Where("id in ?", ids).Find(&a).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return sql.animeToEntities(a), http.StatusOK, nil
 }
@@ -171,7 +172,7 @@ func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Anime, int
 func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	tx := sql.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, tx.Error)
+		return http.StatusInternalServerError, stack.Wrap(ctx, tx.Error, errors.ErrInternalDB)
 	}
 	defer tx.Rollback()
 
@@ -179,7 +180,7 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	var a Anime
 	if err := tx.WithContext(ctx).Select("created_at").Where("id = ?", data.ID).First(&a).Error; err != nil {
 		if !_errors.Is(err, gorm.ErrRecordNotFound) {
-			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+			return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 		}
 	}
 
@@ -187,64 +188,64 @@ func (sql *SQL) Update(ctx context.Context, data entity.Anime) (int, error) {
 	anime := sql.animeFromEntity(data)
 	anime.CreatedAt = a.CreatedAt
 	if err := tx.WithContext(ctx).Save(anime).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	// Delete existing anime genre.
 	if err := tx.WithContext(ctx).Where("anime_id = ?", data.ID).Delete(&AnimeGenre{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	// Create new anime genre.
 	if len(data.GenreIDs) > 0 {
 		if err := tx.WithContext(ctx).Create(sql.animeGenreFromEntity(data)).Error; err != nil {
-			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+			return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 		}
 	}
 
 	// Delete existing anime picture.
 	if err := tx.WithContext(ctx).Where("anime_id = ?", data.ID).Delete(&AnimePicture{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	// Create new anime picture.
 	if len(data.Pictures) > 0 {
 		if err := tx.WithContext(ctx).Create(sql.animePictureFromEntity(data)).Error; err != nil {
-			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+			return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 		}
 	}
 
 	// Delete existing anime related.
 	if err := tx.WithContext(ctx).Where("anime_id1 = ?", data.ID).Delete(&AnimeRelated{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	// Create new anime related.
 	if len(data.Related) > 0 {
 		if err := tx.WithContext(ctx).Create(sql.animeRelatedFromEntity(data)).Error; err != nil {
-			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+			return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 		}
 	}
 
 	// Delete existing anime studio.
 	if err := tx.WithContext(ctx).Where("anime_id = ?", data.ID).Delete(&AnimeStudio{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	// Create new anime studio.
 	if len(data.StudioIDs) > 0 {
 		if err := tx.WithContext(ctx).Create(sql.animeStudioFromEntity(data)).Error; err != nil {
-			return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+			return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 		}
 	}
 
 	// Create new anime stats history.
 	if err := tx.WithContext(ctx).Create(sql.animeStatsFromEntity(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	return http.StatusOK, nil
@@ -261,7 +262,7 @@ func (sql *SQL) IsOld(ctx context.Context, id int64) (bool, int, error) {
 		Find(&[]Anime{})
 
 	if res.Error != nil {
-		return true, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, res.Error)
+		return true, http.StatusInternalServerError, stack.Wrap(ctx, res.Error, errors.ErrInternalDB)
 	}
 
 	return res.RowsAffected == 0, http.StatusOK, nil
@@ -270,7 +271,7 @@ func (sql *SQL) IsOld(ctx context.Context, id int64) (bool, int, error) {
 func (sql *SQL) getOldIDs(ctx context.Context, status entity.Status, age time.Duration) ([]int64, int, error) {
 	var ids []int64
 	if err := sql.db.WithContext(ctx).Model(&Anime{}).Where("status = ? and updated_at <= ?", status, time.Now().Add(-age)).Pluck("id", &ids).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return ids, http.StatusOK, nil
 }
@@ -294,7 +295,7 @@ func (sql *SQL) GetOldNotYetIDs(ctx context.Context) ([]int64, int, error) {
 func (sql *SQL) GetMaxID(ctx context.Context) (int64, int, error) {
 	var id int64
 	if err := sql.db.WithContext(ctx).Model(&Anime{}).Select("COALESCE(MAX(id), 1)").Row().Scan(&id); err != nil {
-		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return id, http.StatusOK, nil
 }
@@ -303,7 +304,7 @@ func (sql *SQL) GetMaxID(ctx context.Context) (int64, int, error) {
 func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
 	var ids []int64
 	if err := sql.db.WithContext(ctx).Model(&Anime{}).Pluck("id", &ids).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return ids, http.StatusOK, nil
 }
@@ -312,7 +313,7 @@ func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
 func (sql *SQL) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.AnimeRelated, int, error) {
 	var ar []AnimeRelated
 	if err := sql.db.WithContext(ctx).Where("anime_id1 in ?", ids).Find(&ar).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return sql.animeRelatedToEntities(ar), http.StatusOK, nil
 }
@@ -321,36 +322,36 @@ func (sql *SQL) GetRelatedByIDs(ctx context.Context, ids []int64) ([]*entity.Ani
 func (sql *SQL) DeleteByID(ctx context.Context, id int64) (int, error) {
 	tx := sql.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, tx.Error)
+		return http.StatusInternalServerError, stack.Wrap(ctx, tx.Error, errors.ErrInternalDB)
 	}
 	defer tx.Rollback()
 
 	if err := tx.WithContext(ctx).Where("id = ?", id).Delete(&Anime{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimeGenre{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimePicture{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.WithContext(ctx).Where("anime_id1 = ? or anime_id2 = ?", id, id).Delete(&AnimeRelated{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimeStudio{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.WithContext(ctx).Where("anime_id = ?", id).Delete(&AnimeStatsHistory{}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	return http.StatusOK, nil
@@ -395,7 +396,7 @@ func (sql *SQL) GetHistories(ctx context.Context, data entity.GetHistoriesReques
 
 	var histories []animeStatsHistory
 	if err := query.Select(selects).Find(&histories).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 
 	res := make([]entity.History, len(histories))

@@ -8,6 +8,7 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/fairy/cache"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // Cache contains functions for empty_id cache.
@@ -34,11 +35,11 @@ func (c *Cache) Get(ctx context.Context, id int64) (int64, int, error) {
 
 	emptyID, code, err := c.repo.Get(ctx, id)
 	if err != nil {
-		return 0, code, errors.Wrap(ctx, err)
+		return 0, code, stack.Wrap(ctx, err)
 	}
 
 	if err := c.cacher.Set(ctx, key, emptyID); err != nil {
-		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+		return 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalCache)
 	}
 
 	return emptyID, code, nil
@@ -48,11 +49,11 @@ func (c *Cache) Get(ctx context.Context, id int64) (int64, int, error) {
 func (c *Cache) Create(ctx context.Context, id int64) (int, error) {
 	key := utils.GetKey("empty-id", id)
 	if code, err := c.repo.Create(ctx, id); err != nil {
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
 	if err := c.cacher.Set(ctx, key, true); err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalCache)
 	}
 
 	return http.StatusCreated, nil
@@ -62,11 +63,11 @@ func (c *Cache) Create(ctx context.Context, id int64) (int, error) {
 func (c *Cache) Delete(ctx context.Context, id int64) (int, error) {
 	key := utils.GetKey("empty-id", id)
 	if code, err := c.repo.Delete(ctx, id); err != nil {
-		return code, errors.Wrap(ctx, err)
+		return code, stack.Wrap(ctx, err)
 	}
 
 	if err := c.cacher.Delete(ctx, key); err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalCache, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalCache)
 	}
 
 	return http.StatusOK, nil

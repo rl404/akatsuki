@@ -25,8 +25,8 @@ func New(service service.Service) *API {
 func (api *API) Register(r chi.Router, nrApp *newrelic.Application) {
 	r.Route("/", func(r chi.Router) {
 		r.Use(middleware.NewHTTP(nrApp))
-		r.Use(log.MiddlewareWithLog(utils.GetLogger(0), log.MiddlewareConfig{Error: true}))
-		r.Use(log.MiddlewareWithLog(utils.GetLogger(1), log.MiddlewareConfig{
+		r.Use(log.HTTPMiddlewareWithLog(utils.GetLogger(0), log.APIMiddlewareConfig{Error: true}))
+		r.Use(log.HTTPMiddlewareWithLog(utils.GetLogger(1), log.APIMiddlewareConfig{
 			RequestHeader:  true,
 			RequestBody:    true,
 			ResponseHeader: true,

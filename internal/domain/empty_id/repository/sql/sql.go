@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"gorm.io/gorm"
 )
 
@@ -26,9 +27,9 @@ func (sql *SQL) Get(ctx context.Context, id int64) (int64, int, error) {
 	var emptyID EmptyID
 	if err := sql.db.WithContext(ctx).Where("anime_id = ?", id).First(&emptyID).Error; err != nil {
 		if _errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound, err)
+			return 0, http.StatusNotFound, stack.Wrap(ctx, err, errors.ErrAnimeNotFound)
 		}
-		return 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return 0, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return emptyID.AnimeID, http.StatusOK, nil
 }
@@ -36,7 +37,7 @@ func (sql *SQL) Get(ctx context.Context, id int64) (int64, int, error) {
 // Create to create empty id.
 func (sql *SQL) Create(ctx context.Context, id int64) (int, error) {
 	if err := sql.db.WithContext(ctx).Create(&EmptyID{AnimeID: id}).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusCreated, nil
 }
@@ -46,11 +47,11 @@ func (sql *SQL) Delete(ctx context.Context, id int64) (int, error) {
 	res := sql.db.WithContext(ctx).Where("anime_id = ?", id).Delete(&EmptyID{})
 
 	if res.Error != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, res.Error)
+		return http.StatusInternalServerError, stack.Wrap(ctx, res.Error, errors.ErrInternalDB)
 	}
 
 	if res.RowsAffected == 0 {
-		return http.StatusNotFound, errors.Wrap(ctx, errors.ErrAnimeNotFound)
+		return http.StatusNotFound, stack.Wrap(ctx, errors.ErrAnimeNotFound)
 	}
 
 	return http.StatusOK, nil
@@ -60,7 +61,7 @@ func (sql *SQL) Delete(ctx context.Context, id int64) (int, error) {
 func (sql *SQL) GetIDs(ctx context.Context) ([]int64, int, error) {
 	var ids []int64
 	if err := sql.db.WithContext(ctx).Model(&EmptyID{}).Pluck("anime_id", &ids).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return ids, http.StatusOK, nil
 }

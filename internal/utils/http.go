@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // Response is standard api response model.
@@ -55,11 +56,10 @@ func Recoverer(next http.Handler) http.Handler {
 					w,
 					http.StatusInternalServerError,
 					nil,
-					errors.Wrap(
-						r.Context(),
-						errors.ErrInternalServer,
+					stack.Wrap(r.Context(),
+						fmt.Errorf("%s", debug.Stack()),
 						fmt.Errorf("%v", rvr),
-						fmt.Errorf("%s", debug.Stack())))
+						errors.ErrInternalServer))
 			}
 		}()
 

@@ -1,29 +1,22 @@
 // Package google is a wrapper of the original "cloud.google.com/go/pubsub" library.
-//
-// Only contains basic publish, subscribe, and close methods.
-// Data will be encoded to JSON before publishing the message.
 package google
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"sync"
 
 	"cloud.google.com/go/pubsub"
+	_pubsub "github.com/rl404/fairy/pubsub"
 )
 
 // Client is google pubsub client.
 type Client struct {
 	sync.Mutex
 	client            *pubsub.Client
+	middlewares       []func(_pubsub.HandlerFunc) _pubsub.HandlerFunc
 	topicExist        map[string]bool
 	subscriptionExist map[string]string
-}
-
-// Channel is google pubsub channel.
-type Channel struct {
-	subscription *pubsub.Subscription
 }
 
 // New to create new google pubsub client.
@@ -31,7 +24,7 @@ type Channel struct {
 // Required google service account credential.
 // https://cloud.google.com/pubsub/docs/publish-receive-messages-client-library.
 //
-// If haven't set env "GOOGLE_APPLICATION_CREDENTIALS", you can provide the
+// If you haven't set env "GOOGLE_APPLICATION_CREDENTIALS", you can provide the
 // credential json file path in the param.
 func New(projectID, serviceAccountCredentialPath string) (*Client, error) {
 	if serviceAccountCredentialPath != "" {
@@ -52,36 +45,39 @@ func New(projectID, serviceAccountCredentialPath string) (*Client, error) {
 	}, nil
 }
 
-// Publish to publish message.
-func (c *Client) Publish(ctx context.Context, topic string, data interface{}) error {
-	j, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
+// Use to add pubsub middlewares.
+func (c *Client) Use(middlewares ...func(_pubsub.HandlerFunc) _pubsub.HandlerFunc) {
+	c.middlewares = append(c.middlewares, middlewares...)
+}
 
+func (c *Client) applyMiddlewares(handlerFunc _pubsub.HandlerFunc) _pubsub.HandlerFunc {
+	for i := len(c.middlewares) - 1; i >= 0; i-- {
+		handlerFunc = c.middlewares[i](handlerFunc)
+	}
+	return handlerFunc
+}
+
+// Publish to publish message.
+func (c *Client) Publish(ctx context.Context, topic string, data []byte) error {
 	t, err := c.getTopic(topic)
 	if err != nil {
 		return err
 	}
 
-	res := t.Publish(ctx, &pubsub.Message{
-		Data: j,
-	})
-
-	if _, err := res.Get(ctx); err != nil {
+	if _, err := t.Publish(ctx, &pubsub.Message{
+		Data: data,
+	}).Get(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Subscribe to subscribe to a topic.
-//
-// Need to convert the return type to pubsub.Channel.
-func (c *Client) Subscribe(ctx context.Context, topic string) (interface{}, error) {
+// Subscribe to subscribe topic.
+func (c *Client) Subscribe(ctx context.Context, topic string, handlerFunc _pubsub.HandlerFunc) error {
 	subscription, err := c.getSubscription(topic)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Limit to 1 so you can have multiple consumer
@@ -89,35 +85,21 @@ func (c *Client) Subscribe(ctx context.Context, topic string) (interface{}, erro
 	subscription.ReceiveSettings.NumGoroutines = 1
 	subscription.ReceiveSettings.MaxOutstandingMessages = 1
 
-	return &Channel{
-		subscription: subscription,
-	}, nil
-}
+	go func(s *pubsub.Subscription, h _pubsub.HandlerFunc) {
+		h = c.applyMiddlewares(h)
 
-// Close to close pubsub connection.
-func (c *Client) Close() error {
-	return c.client.Close()
-}
-
-// Read to read incoming message.
-func (c *Channel) Read(ctx context.Context, model interface{}) (<-chan interface{}, <-chan error) {
-	msgChan, errChan := make(chan interface{}), make(chan error)
-	go func() {
-		if err := c.subscription.Receive(ctx, func(_ context.Context, msg *pubsub.Message) {
-			if err := json.Unmarshal(msg.Data, &model); err != nil {
-				errChan <- err
-			} else {
-				msgChan <- model
-			}
+		if err := s.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 			msg.Ack()
+			h(ctx, msg.Data)
 		}); err != nil {
-			errChan <- err
+			panic(err)
 		}
-	}()
-	return (<-chan interface{})(msgChan), (<-chan error)(errChan)
+	}(subscription, handlerFunc)
+
+	return nil
 }
 
 // Close to close subscription.
-func (c *Channel) Close() error {
-	return nil
+func (c *Client) Close() error {
+	return c.client.Close()
 }

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/rl404/akatsuki/internal/domain/studio/entity"
-	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // Studio is studio model.
@@ -30,7 +30,7 @@ type GetStudiosRequest struct {
 // GetStudios to get studio list.
 func (s *service) GetStudios(ctx context.Context, data GetStudiosRequest) ([]Studio, *Pagination, int, error) {
 	if err := utils.Validate(&data); err != nil {
-		return nil, nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	studios, total, code, err := s.studio.Get(ctx, entity.GetRequest{
@@ -40,7 +40,7 @@ func (s *service) GetStudios(ctx context.Context, data GetStudiosRequest) ([]Stu
 		Limit: data.Limit,
 	})
 	if err != nil {
-		return nil, nil, code, errors.Wrap(ctx, err)
+		return nil, nil, code, stack.Wrap(ctx, err)
 	}
 
 	res := make([]Studio, len(studios))
@@ -65,7 +65,7 @@ func (s *service) GetStudios(ctx context.Context, data GetStudiosRequest) ([]Stu
 func (s *service) GetStudioByID(ctx context.Context, id int64) (*Studio, int, error) {
 	studio, code, err := s.studio.GetByID(ctx, id)
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	return &Studio{
@@ -100,7 +100,7 @@ type GetStudioHistoriesRequest struct {
 // GetStudioHistoriesByID to get anime history by id.
 func (s *service) GetStudioHistoriesByID(ctx context.Context, data GetStudioHistoriesRequest) ([]StudioHistory, int, error) {
 	if err := utils.Validate(&data); err != nil {
-		return nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	if data.StartYear == 0 {
@@ -123,7 +123,7 @@ func (s *service) GetStudioHistoriesByID(ctx context.Context, data GetStudioHist
 		Group:     data.Group,
 	})
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	res := make([]StudioHistory, len(histories))

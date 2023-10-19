@@ -46,6 +46,7 @@ key value NoSQL database that uses RocksDB as storage engine and is compatible w
 - [Redis Cluster](https://redis.uptrace.dev/guide/go-redis-cluster.html).
 - [Redis Ring](https://redis.uptrace.dev/guide/ring.html).
 - [Redis Performance Monitoring](https://redis.uptrace.dev/guide/redis-performance-monitoring.html).
+- [Redis Probabilistic [RedisStack]](https://redis.io/docs/data-types/probabilistic/)
 
 ## Installation
 
@@ -68,8 +69,9 @@ go get github.com/redis/go-redis/v9
 ```go
 import (
     "context"
-    "github.com/redis/go-redis/v9"
     "fmt"
+
+    "github.com/redis/go-redis/v9"
 )
 
 var ctx = context.Background()
@@ -104,6 +106,45 @@ func ExampleClient() {
     // key2 does not exist
 }
 ```
+
+The above can be modified to specify the version of the RESP protocol by adding the `protocol` option to the `Options` struct:
+
+```go
+    rdb := redis.NewClient(&redis.Options{
+        Addr:     "localhost:6379",
+        Password: "", // no password set
+        DB:       0,  // use default DB
+        Protocol: 3, // specify 2 for RESP 2 or 3 for RESP 3
+    })
+
+```
+
+### Connecting via a redis url
+
+go-redis also supports connecting via the [redis uri specification](https://github.com/redis/redis-specifications/tree/master/uri/redis.txt). The example below demonstrates how the connection can easily be configured using a string, adhering to this specification.
+
+```go
+import (
+    "context"
+    "fmt"
+
+    "github.com/redis/go-redis/v9"
+)
+
+var ctx = context.Background()
+
+func ExampleClient() {
+    url := "redis://localhost:6379?password=hello&protocol=3"
+    opts, err := redis.ParseURL(url)
+    if err != nil {
+        panic(err)
+    }
+    rdb := redis.NewClient(opts)
+```
+
+## Contributing
+
+Please see [out contributing guidelines](CONTRIBUTING.md) to help us improve this library!
 
 ## Look and feel
 
