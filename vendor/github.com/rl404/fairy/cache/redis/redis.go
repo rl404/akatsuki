@@ -1,6 +1,7 @@
 // Package redis is a wrapper of the original "github.com/redis/go-redis" library.
 //
 // Only contains basic get, set, delete, and close methods.
+//
 // Data will be encoded to JSON before saving to cache.
 package redis
 

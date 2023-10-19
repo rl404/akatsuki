@@ -26,16 +26,11 @@ Powered by my [nagato](https://github.com/rl404/nagato) library and [MyAnimeList
 - Interchangeable database
   - [MySQL](https://www.mysql.com/)
   - [PostgreSQL](https://www.postgresql.org/)
-  - [SQLite](https://www.sqlite.org/)
-  - [SQL server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
-  - [ClickHouse](https://clickhouse.com/)
 - Interchangeable cache
   - no cache
   - inmemory
   - [Redis](https://redis.io/)
-  - [Memcache](https://memcached.org/)
 - Interchangeable pubsub
-  - [NSQ](https://nsq.io/)
   - [RabbitMQ](https://www.rabbitmq.com/)
   - [Redis](https://redis.io/)
   - [Google PubSub](https://cloud.google.com/pubsub)
@@ -55,9 +50,9 @@ _More will be coming soon..._
 
 - [Go](https://go.dev/)
 - [MyAnimeList](https://myanimelist.net/) [client id](https://myanimelist.net/apiconfig)
-- Database ([MySQL](https://www.mysql.com/)/[PostgreSQL](https://www.postgresql.org/)/[SQLite](https://www.sqlite.org/)/[SQL server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)/[ClickHouse](https://clickhouse.com/))
-- PubSub ([NSQ](https://nsq.io/)/[RabbitMQ](https://www.rabbitmq.com/)/[Redis](https://redis.io/)/[Google PubSub](https://cloud.google.com/pubsub))
-- (optional) Cache ([Redis](https://redis.io/)/[Memcache](https://memcached.org/))
+- Database ([MySQL](https://www.mysql.com/)/[PostgreSQL](https://www.postgresql.org/))
+- PubSub ([RabbitMQ](https://www.rabbitmq.com/)/[Redis](https://redis.io/)/[Google PubSub](https://cloud.google.com/pubsub))
+- (optional) Cache ([Redis](https://redis.io/))
 - (optional) [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
 - (optional) [Newrelic](https://newrelic.com/) license key
 
@@ -163,11 +158,11 @@ make docker-stop
 | `AKATSUKI_HTTP_GRACEFUL_TIMEOUT` |      `10s`       | HTTP gracefull timeout.                                                                                    |
 | `AKATSUKI_GRPC_PORT`             |     `46001`      | GRPC server port.                                                                                          |
 | `AKATSUKI_GRPC_TIMEOUT`          |      `10s`       | GRPC timeout.                                                                                              |
-| `AKATSUKI_CACHE_DIALECT`         |    `inmemory`    | Cache type (`nocache`/`redis`/`inmemory`/`memcache`)                                                       |
+| `AKATSUKI_CACHE_DIALECT`         |    `inmemory`    | Cache type (`nocache`/`redis`/`inmemory`)                                                                  |
 | `AKATSUKI_CACHE_ADDRESS`         |                  | Cache address.                                                                                             |
 | `AKATSUKI_CACHE_PASSWORD`        |                  | Cache password.                                                                                            |
 | `AKATSUKI_CACHE_TIME`            |      `24h`       | Cache time.                                                                                                |
-| `AKATSUKI_DB_DIALECT`            |     `mysql`      | Database type (`mysql`/`postgresql`/`sqlite`/`sqlserver`/`clickhouse`)                                     |
+| `AKATSUKI_DB_DIALECT`            |     `mysql`      | Database type (`mysql`/`postgresql`)                                                                       |
 | `AKATSUKI_DB_ADDRESS`            | `localhost:3306` | Database address with port.                                                                                |
 | `AKATSUKI_DB_NAME`               |    `akatsuki`    | Database name.                                                                                             |
 | `AKATSUKI_DB_USER`               |                  | Database username.                                                                                         |
@@ -175,7 +170,7 @@ make docker-stop
 | `AKATSUKI_DB_MAX_CONN_OPEN`      |       `10`       | Max open database connection.                                                                              |
 | `AKATSUKI_DB_MAX_CONN_IDLE`      |       `10`       | Max idle database connection.                                                                              |
 | `AKATSUKI_DB_MAX_CONN_LIFETIME`  |       `1m`       | Max database connection lifetime.                                                                          |
-| `AKATSUKI_PUBSUB_DIALECT`        |    `rabbitmq`    | Pubsub type (`nsq`/`rabbitmq`/`redis`/`google`)                                                            |
+| `AKATSUKI_PUBSUB_DIALECT`        |    `rabbitmq`    | Pubsub type (`rabbitmq`/`redis`/`google`)                                                                  |
 | `AKATSUKI_PUBSUB_ADDRESS`        |                  | Pubsub address (if you are using `google`, this will be your google project id).                           |
 | `AKATSUKI_PUBSUB_PASSWORD`       |                  | Pubsub password (if you are using `google`, this will be the content of your google service account json). |
 | `AKATSUKI_MAL_CLIENT_ID`         |                  | MyAnimeList client id.                                                                                     |

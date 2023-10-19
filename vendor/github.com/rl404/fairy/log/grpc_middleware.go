@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rl404/fairy/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -15,8 +15,8 @@ import (
 )
 
 // UnaryMiddlewareWithLog is unary grpc middleware that will log the request and response.
-func UnaryMiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig) grpc.UnaryServerInterceptor {
-	var cfg MiddlewareConfig
+func UnaryMiddlewareWithLog(logger Logger, middlewareConfig ...APIMiddlewareConfig) grpc.UnaryServerInterceptor {
+	var cfg APIMiddlewareConfig
 	if len(middlewareConfig) > 0 {
 		cfg = middlewareConfig[0]
 	}
@@ -27,8 +27,7 @@ func UnaryMiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig)
 		}
 
 		// Prepare error stack tracing.
-		s := errors.New()
-		ctx = s.Init(ctx)
+		ctx = stack.Init(ctx)
 		start := time.Now()
 
 		// Call handler.
@@ -46,8 +45,7 @@ func UnaryMiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig)
 
 		if cfg.RequestHeader {
 			meta, _ := metadata.FromIncomingContext(ctx)
-			header, _ := json.Marshal(meta)
-			m["request_header"] = string(header)
+			m["request_header"] = meta
 		}
 
 		if cfg.RequestBody {
@@ -61,16 +59,22 @@ func UnaryMiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig)
 		}
 
 		if cfg.ResponseHeader {
-			// todo: how?
+			meta, _ := metadata.FromOutgoingContext(ctx)
+			m["response_header"] = meta
 		}
 
 		// Include the error stack if you use it.
-		errStack := s.Get(ctx).([]string)
+		errStack := stack.Get(ctx)
 		if len(errStack) > 0 {
+			// Copy slice to prevent reversed multiple times
+			// if using multiple middleware.
+			errTmp := cpSlice(errStack)
+
 			// Reverse the stack order.
 			for i, j := 0, len(errStack)-1; i < j; i, j = i+1, j-1 {
-				errStack[i], errStack[j] = errStack[j], errStack[i]
+				errTmp[i], errTmp[j] = errTmp[j], errTmp[i]
 			}
+
 			m["error"] = errStack
 		}
 
@@ -82,7 +86,7 @@ func UnaryMiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig)
 
 // StreamMiddlewareWithLog is stream grpc middleware that will log the request and response.
 // Todo: implement logger here.
-func StreamMiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig) grpc.StreamServerInterceptor {
+func StreamMiddlewareWithLog(logger Logger, middlewareConfig ...APIMiddlewareConfig) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		return handler(srv, ss)
 	}
@@ -99,9 +103,9 @@ func getCodeFromErr(err error) codes.Code {
 	return c.Code()
 }
 
-func getLevelFromError(err error) LogLevel {
+func getLevelFromError(err error) logLevel {
 	if err == nil {
-		return InfoLevel
+		return infoLevel
 	}
 	e, _ := status.FromError(err)
 	switch e.Code() {
@@ -112,9 +116,9 @@ func getLevelFromError(err error) LogLevel {
 		codes.AlreadyExists,
 		codes.PermissionDenied,
 		codes.Aborted:
-		return WarnLevel
+		return warnLevel
 	default:
-		return ErrorLevel
+		return errorLevel
 	}
 }
 

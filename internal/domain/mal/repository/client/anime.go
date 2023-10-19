@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"github.com/rl404/nagato"
 )
 
@@ -41,7 +41,7 @@ func (c *Client) GetAnimeByID(ctx context.Context, id int) (*nagato.Anime, int, 
 		nagato.AnimeFieldRelatedAnime(),
 	)
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	return anime, http.StatusOK, nil

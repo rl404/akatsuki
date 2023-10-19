@@ -7,6 +7,7 @@ import (
 
 	"github.com/rl404/akatsuki/internal/domain/studio/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +26,7 @@ func New(db *gorm.DB) *SQL {
 // BatchUpdate to batch update studio.
 func (sql *SQL) BatchUpdate(ctx context.Context, data []entity.Studio) (int, error) {
 	if err := sql.db.WithContext(ctx).Save(sql.fromEntities(data)).Error; err != nil {
-		return http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
 }
@@ -34,7 +35,7 @@ func (sql *SQL) BatchUpdate(ctx context.Context, data []entity.Studio) (int, err
 func (sql *SQL) GetByIDs(ctx context.Context, ids []int64) ([]*entity.Studio, int, error) {
 	var s []Studio
 	if err := sql.db.WithContext(ctx).Where("id in ?", ids).Find(&s).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 	return sql.toEntities(s), http.StatusOK, nil
 }
@@ -62,12 +63,12 @@ func (sql *SQL) Get(ctx context.Context, data entity.GetRequest) ([]*entity.Stud
 
 	var studios []studio
 	if err := query.WithContext(ctx).Order(sql.convertSort(data.Sort)).Offset((data.Page - 1) * data.Limit).Limit(data.Limit).Find(&studios).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
 	var total int64
 	if err := query.WithContext(ctx).Count(&total).Error; err != nil {
-		return nil, 0, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, 0, http.StatusInternalServerError, stack.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
 	res := make([]*entity.Studio, len(studios))
@@ -97,9 +98,9 @@ func (sql *SQL) GetByID(ctx context.Context, id int64) (*entity.Studio, int, err
 		First(&studio).
 		Error; err != nil {
 		if _errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, http.StatusNotFound, errors.Wrap(ctx, errors.ErrInvalidStudioID, err)
+			return nil, http.StatusNotFound, stack.Wrap(ctx, err, errors.ErrInvalidStudioID)
 		}
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
 	return &entity.Studio{
@@ -147,7 +148,7 @@ func (sql *SQL) GetHistories(ctx context.Context, data entity.GetHistoriesReques
 
 	var histories []studioHistory
 	if err := query.Select(selects).Find(&histories).Error; err != nil {
-		return nil, http.StatusInternalServerError, errors.Wrap(ctx, errors.ErrInternalDB, err)
+		return nil, http.StatusInternalServerError, stack.Wrap(ctx, errors.ErrInternalDB, err)
 	}
 
 	res := make([]entity.History, len(histories))

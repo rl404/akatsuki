@@ -2,18 +2,18 @@ package log
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rl404/fairy/errors"
+	"github.com/rl404/fairy/errors/stack"
 )
 
-// MiddlewareConfig is log config for middleware.
-type MiddlewareConfig struct {
+// APIMiddlewareConfig is log config for middleware.
+type APIMiddlewareConfig struct {
 	// Show request header.
 	RequestHeader bool
 	// Show request body.
@@ -28,23 +28,23 @@ type MiddlewareConfig struct {
 	Error bool
 }
 
-// MiddlewareWithLog is http middleware that will log the request and response.
-func MiddlewareWithLog(logger Logger, middlewareConfig ...MiddlewareConfig) func(http.Handler) http.Handler {
+// HTTPMiddlewareWithLog is http middleware that will log the request and response.
+func HTTPMiddlewareWithLog(logger Logger, middlewareConfig ...APIMiddlewareConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return HandlerWithLog(logger, next, middlewareConfig...)
+		return HTTPHandlerWithLog(logger, next, middlewareConfig...)
 	}
 }
 
-// HandlerFuncWithLog is http handler func with log.
-func HandlerFuncWithLog(logger Logger, next http.HandlerFunc, middlewareConfig ...MiddlewareConfig) http.HandlerFunc {
-	return HandlerWithLog(logger, next, middlewareConfig...).(http.HandlerFunc)
+// HTTPHandlerFuncWithLog is http handler func with log.
+func HTTPHandlerFuncWithLog(logger Logger, next http.HandlerFunc, middlewareConfig ...APIMiddlewareConfig) http.HandlerFunc {
+	return HTTPHandlerWithLog(logger, next, middlewareConfig...).(http.HandlerFunc)
 }
 
-// HandlerWithLog is http handler with log.
+// HTTPHandlerWithLog is http handler with log.
 // Also includes error stack tracing feature
 // if you use it.
-func HandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...MiddlewareConfig) http.Handler {
-	var cfg MiddlewareConfig
+func HTTPHandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...APIMiddlewareConfig) http.Handler {
+	var cfg APIMiddlewareConfig
 	if len(middlewareConfig) > 0 {
 		cfg = middlewareConfig[0]
 	}
@@ -56,8 +56,7 @@ func HandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...Middle
 		}
 
 		// Prepare error stack tracing.
-		s := errors.New()
-		ctx := s.Init(r.Context())
+		ctx := stack.Init(r.Context())
 		start := time.Now()
 
 		var bw bodyWriter
@@ -67,11 +66,11 @@ func HandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...Middle
 		// Get request body.
 		var body []byte
 		if r.Body != nil {
-			b, err := ioutil.ReadAll(r.Body)
+			b, err := io.ReadAll(r.Body)
 			if err != nil {
-				s.Wrap(ctx, err)
+				_ = stack.Wrap(ctx, err)
 			}
-			body, r.Body = b, ioutil.NopCloser(bytes.NewBuffer(b))
+			body, r.Body = b, io.NopCloser(bytes.NewBuffer(b))
 		}
 
 		// Call next handler.
@@ -112,7 +111,7 @@ func HandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...Middle
 		}
 
 		// Include the error stack if you use it.
-		errStack := s.Get(ctx).([]string)
+		errStack := stack.Get(ctx)
 		if cfg.Error && len(errStack) > 0 {
 			// Copy slice to prevent reversed multiple times
 			// if using multiple middleware.
@@ -122,6 +121,7 @@ func HandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...Middle
 			for i, j := 0, len(errTmp)-1; i < j; i, j = i+1, j-1 {
 				errTmp[i], errTmp[j] = errTmp[j], errTmp[i]
 			}
+
 			m["error"] = errTmp
 		}
 
@@ -129,8 +129,8 @@ func HandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...Middle
 	})
 }
 
-func cpSlice(arr []string) []string {
-	a := make([]string, len(arr))
+func cpSlice(arr []stack.ErrStack) []stack.ErrStack {
+	a := make([]stack.ErrStack, len(arr))
 	copy(a, arr)
 	return a
 }
@@ -150,7 +150,7 @@ func getRoutePattern(r *http.Request) (string, bool) {
 	return "", false
 }
 
-func getLevelFromStatus(status int) LogLevel {
+func getLevelFromStatus(status int) logLevel {
 	switch status {
 	case
 		http.StatusOK,
@@ -163,7 +163,7 @@ func getLevelFromStatus(status int) LogLevel {
 		http.StatusNotModified,
 		http.StatusTemporaryRedirect,
 		http.StatusPermanentRedirect:
-		return InfoLevel
+		return infoLevel
 	case
 		http.StatusBadRequest,
 		http.StatusUnauthorized,
@@ -180,9 +180,9 @@ func getLevelFromStatus(status int) LogLevel {
 		http.StatusUnprocessableEntity,
 		http.StatusFailedDependency,
 		http.StatusTooManyRequests:
-		return WarnLevel
+		return warnLevel
 	default:
-		return ErrorLevel
+		return errorLevel
 	}
 }
 

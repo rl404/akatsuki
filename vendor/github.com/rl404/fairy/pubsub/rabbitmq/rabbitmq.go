@@ -1,31 +1,20 @@
 // Package rabbitmq is a wrapper of the original "github.com/streadway/amqp" library.
 //
-// Only contains basic publish, subscribe, and close methods.
-// Data will be encoded to JSON before publishing the message.
+// todo: add reconnect feature.
 package rabbitmq
 
 import (
 	"context"
-	"encoding/json"
-	"sync/atomic"
-	"time"
 
+	"github.com/rl404/fairy/pubsub"
 	"github.com/streadway/amqp"
 )
 
 // Client is rabbitmq pubsub client.
 type Client struct {
-	client *amqp.Connection
+	client      *amqp.Connection
+	middlewares []func(pubsub.HandlerFunc) pubsub.HandlerFunc
 }
-
-// Channel is rabbitmq subscription channel.
-type Channel struct {
-	channel  *amqp.Channel
-	messages <-chan amqp.Delivery
-	closed   int32
-}
-
-const delay = 1
 
 // New to create new rabbitmq pubsub client.
 func New(url string) (*Client, error) {
@@ -33,40 +22,23 @@ func New(url string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	return &Client{client: c}, nil
+}
 
-	cl := &Client{client: c}
+// Use to add pubsub middlewares.
+func (c *Client) Use(middlewares ...func(pubsub.HandlerFunc) pubsub.HandlerFunc) {
+	c.middlewares = append(c.middlewares, middlewares...)
+}
 
-	// Auto reconnect.
-	go func() {
-		for {
-			if _, ok := <-cl.client.NotifyClose(make(chan *amqp.Error)); !ok {
-				// Closed by function.
-				break
-			}
-			for {
-				time.Sleep(delay * time.Second)
-				if cl.client, err = amqp.Dial(url); err == nil {
-					// Reconnected.
-					break
-				}
-			}
-		}
-	}()
-
-	return cl, nil
+func (c *Client) applyMiddlewares(handlerFunc pubsub.HandlerFunc) pubsub.HandlerFunc {
+	for i := len(c.middlewares) - 1; i >= 0; i-- {
+		handlerFunc = c.middlewares[i](handlerFunc)
+	}
+	return handlerFunc
 }
 
 // Publish to publish message.
-func (c *Client) Publish(ctx context.Context, queue string, data interface{}) error {
-	j, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	if c.client == nil {
-		return amqp.ErrClosed
-	}
-
+func (c *Client) Publish(ctx context.Context, queue string, data []byte) error {
 	ch, err := c.client.Channel()
 	if err != nil {
 		return err
@@ -79,107 +51,43 @@ func (c *Client) Publish(ctx context.Context, queue string, data interface{}) er
 
 	if err := ch.Publish("", q.Name, false, false, amqp.Publishing{
 		ContentType: "text/plain",
-		Body:        j,
+		Body:        data,
 	}); err != nil {
 		return err
 	}
 
-	return ch.Close()
+	return nil
 }
 
 // Subscribe to subscribe queue.
-//
-// Need to convert the return type to pubsub.Channel.
-func (c *Client) Subscribe(ctx context.Context, queue string) (interface{}, error) {
-	ch, err := c.subscribe(queue)
-	if err != nil {
-		return nil, err
-	}
-
-	// Auto reconnect.
-	go func() {
-		for {
-			if _, ok := <-c.client.NotifyClose(make(chan *amqp.Error)); !ok || ch.isClosed() {
-				// Closed by function.
-				break
-			}
-			for {
-				time.Sleep(delay * time.Second)
-				if c.client == nil {
-					// Wait until connection established.
-					continue
-				}
-				tmp, err := c.subscribe(queue)
-				if err == nil {
-					// Reconnected.
-					ch.messages = tmp.messages
-					break
-				}
-			}
-		}
-	}()
-
-	return ch, nil
-}
-
-func (c *Client) subscribe(queue string) (*Channel, error) {
+func (c *Client) Subscribe(ctx context.Context, queue string, handlerFunc pubsub.HandlerFunc) error {
 	ch, err := c.client.Channel()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	q, err := ch.QueueDeclare(queue, true, false, false, false, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &Channel{
-		channel:  ch,
-		messages: msgs,
-	}, nil
+	go func(msgs <-chan amqp.Delivery, h pubsub.HandlerFunc) {
+		h = c.applyMiddlewares(h)
+
+		for msg := range msgs {
+			h(ctx, msg.Body)
+		}
+	}(msgs, handlerFunc)
+
+	return nil
 }
 
 // Close to close pubsub connection.
 func (c *Client) Close() error {
 	return c.client.Close()
-}
-
-// Read to read incoming message.
-func (c *Channel) Read(ctx context.Context, model interface{}) (<-chan interface{}, <-chan error) {
-	msgChan, errChan := make(chan interface{}), make(chan error)
-	go func() {
-		for {
-			for msg := range c.messages {
-				if err := json.Unmarshal(msg.Body, &model); err != nil {
-					errChan <- err
-				} else {
-					msgChan <- model
-				}
-			}
-
-			time.Sleep(delay * time.Second)
-			if c.isClosed() {
-				break
-			}
-		}
-	}()
-	return (<-chan interface{})(msgChan), (<-chan error)(errChan)
-}
-
-// Close to close subscription.
-func (c *Channel) Close() error {
-	if c.isClosed() {
-		return amqp.ErrClosed
-	}
-	atomic.StoreInt32(&c.closed, 1)
-	return c.channel.Close()
-}
-
-func (c *Channel) isClosed() bool {
-	return atomic.LoadInt32(&c.closed) == 1
 }

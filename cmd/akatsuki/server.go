@@ -34,15 +34,15 @@ import (
 	userAnimeSQL "github.com/rl404/akatsuki/internal/domain/user_anime/repository/sql"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/akatsuki/pkg/cache"
 	"github.com/rl404/akatsuki/pkg/grpc"
 	"github.com/rl404/akatsuki/pkg/http"
-	"github.com/rl404/fairy/cache"
-	"github.com/rl404/fairy/log"
+	"github.com/rl404/akatsuki/pkg/pubsub"
+	_log "github.com/rl404/fairy/log"
 	_nr "github.com/rl404/fairy/log/newrelic"
 	nrCache "github.com/rl404/fairy/monitoring/newrelic/cache"
 	nrMW "github.com/rl404/fairy/monitoring/newrelic/middleware"
 	nrPS "github.com/rl404/fairy/monitoring/newrelic/pubsub"
-	"github.com/rl404/fairy/pubsub"
 	_grpc "google.golang.org/grpc"
 )
 
@@ -101,7 +101,7 @@ func server() error {
 	if err != nil {
 		return err
 	}
-	ps = nrPS.New(cfg.PubSub.Dialect, ps)
+	ps = nrPS.New(cfg.PubSub.Dialect, ps, nrApp)
 	utils.Info("pubsub initialized")
 	defer ps.Close()
 
@@ -184,7 +184,7 @@ func server() error {
 		UnaryInterceptors: []_grpc.UnaryServerInterceptor{
 			utils.RecovererGRPC,
 			nrMW.NewUnaryGRPC(nrApp),
-			log.UnaryMiddlewareWithLog(utils.GetLogger()),
+			_log.UnaryMiddlewareWithLog(utils.GetLogger()),
 		},
 	})
 	utils.Info("grpc server initialized")

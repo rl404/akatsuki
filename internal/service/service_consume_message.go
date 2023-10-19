@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
+	"github.com/rl404/fairy/errors/stack"
 	"github.com/rl404/nagato"
 )
 
@@ -15,31 +15,26 @@ import (
 func (s *service) ConsumeMessage(ctx context.Context, data entity.Message) error {
 	switch data.Type {
 	case entity.TypeParseAnime:
-		return errors.Wrap(ctx, s.consumeParseAnime(ctx, data.Data))
+		return stack.Wrap(ctx, s.consumeParseAnime(ctx, data))
 	case entity.TypeParseUserAnime:
-		return errors.Wrap(ctx, s.consumeParseUserAnime(ctx, data.Data))
+		return stack.Wrap(ctx, s.consumeParseUserAnime(ctx, data))
 	default:
-		return errors.Wrap(ctx, errors.ErrInvalidMessageType)
+		return stack.Wrap(ctx, errors.ErrInvalidMessageType)
 	}
 }
 
-func (s *service) consumeParseAnime(ctx context.Context, data []byte) error {
-	var req entity.ParseAnimeRequest
-	if err := json.Unmarshal(data, &req); err != nil {
-		return errors.Wrap(ctx, errors.ErrInvalidRequestFormat)
-	}
-
-	if !req.Forced {
-		if code, err := s.validateID(ctx, req.ID); err != nil {
+func (s *service) consumeParseAnime(ctx context.Context, data entity.Message) error {
+	if !data.Forced {
+		if code, err := s.validateID(ctx, data.ID); err != nil {
 			if code == http.StatusNotFound {
 				return nil
 			}
-			return errors.Wrap(ctx, err)
+			return stack.Wrap(ctx, err)
 		}
 
-		isOld, _, err := s.anime.IsOld(ctx, req.ID)
+		isOld, _, err := s.anime.IsOld(ctx, data.ID)
 		if err != nil {
-			return errors.Wrap(ctx, err)
+			return stack.Wrap(ctx, err)
 		}
 
 		if !isOld {
@@ -47,37 +42,32 @@ func (s *service) consumeParseAnime(ctx context.Context, data []byte) error {
 		}
 	} else {
 		// Delete existing empty id.
-		if _, err := s.emptyID.Delete(ctx, req.ID); err != nil {
-			return errors.Wrap(ctx, err)
+		if _, err := s.emptyID.Delete(ctx, data.ID); err != nil {
+			return stack.Wrap(ctx, err)
 		}
 	}
 
-	if _, err := s.updateAnime(ctx, req.ID); err != nil {
-		return errors.Wrap(ctx, err)
+	if _, err := s.updateAnime(ctx, data.ID); err != nil {
+		return stack.Wrap(ctx, err)
 	}
 
 	return nil
 }
 
-func (s *service) consumeParseUserAnime(ctx context.Context, data []byte) error {
-	var req entity.ParseUserAnimeRequest
-	if err := json.Unmarshal(data, &req); err != nil {
-		return errors.Wrap(ctx, errors.ErrInvalidRequestFormat)
-	}
-
-	if !req.Forced {
-		isOld, _, err := s.userAnime.IsOld(ctx, req.Username)
+func (s *service) consumeParseUserAnime(ctx context.Context, data entity.Message) error {
+	if !data.Forced {
+		isOld, _, err := s.userAnime.IsOld(ctx, data.Username)
 		if err != nil {
-			return errors.Wrap(ctx, err)
+			return stack.Wrap(ctx, err)
 		}
 		if !isOld {
 			return nil
 		}
 	}
 
-	if req.Status != "" {
-		if _, err := s.updateUserAnime(ctx, req.Username, req.Status); err != nil {
-			return errors.Wrap(ctx, err)
+	if data.Status != "" {
+		if _, err := s.updateUserAnime(ctx, data.Username, data.Status); err != nil {
+			return stack.Wrap(ctx, err)
 		}
 		return nil
 	}
@@ -91,12 +81,8 @@ func (s *service) consumeParseUserAnime(ctx context.Context, data []byte) error 
 	}
 
 	for _, status := range statuses {
-		if err := s.publisher.PublishParseUserAnime(ctx, entity.ParseUserAnimeRequest{
-			Username: req.Username,
-			Status:   string(status),
-			Forced:   true,
-		}); err != nil {
-			return errors.Wrap(ctx, err)
+		if err := s.publisher.PublishParseUserAnime(ctx, data.Username, string(status), true); err != nil {
+			return stack.Wrap(ctx, err)
 		}
 	}
 

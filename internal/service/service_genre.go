@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/rl404/akatsuki/internal/domain/genre/entity"
-	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
+	"github.com/rl404/fairy/errors/stack"
 )
 
 // Genre is genre model.
@@ -30,7 +30,7 @@ type GetGenresRequest struct {
 // GetGenres to get genre list.
 func (s *service) GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre, *Pagination, int, error) {
 	if err := utils.Validate(&data); err != nil {
-		return nil, nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	genres, total, code, err := s.genre.Get(ctx, entity.GetRequest{
@@ -40,7 +40,7 @@ func (s *service) GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre
 		Limit: data.Limit,
 	})
 	if err != nil {
-		return nil, nil, code, errors.Wrap(ctx, err)
+		return nil, nil, code, stack.Wrap(ctx, err)
 	}
 
 	res := make([]Genre, len(genres))
@@ -65,7 +65,7 @@ func (s *service) GetGenres(ctx context.Context, data GetGenresRequest) ([]Genre
 func (s *service) GetGenreByID(ctx context.Context, id int64) (*Genre, int, error) {
 	genre, code, err := s.genre.GetByID(ctx, id)
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	return &Genre{
@@ -100,7 +100,7 @@ type GetGenreHistoriesRequest struct {
 // GetGenreHistoriesByID to get anime history by id.
 func (s *service) GetGenreHistoriesByID(ctx context.Context, data GetGenreHistoriesRequest) ([]GenreHistory, int, error) {
 	if err := utils.Validate(&data); err != nil {
-		return nil, http.StatusBadRequest, errors.Wrap(ctx, err)
+		return nil, http.StatusBadRequest, stack.Wrap(ctx, err)
 	}
 
 	if data.StartYear == 0 {
@@ -123,7 +123,7 @@ func (s *service) GetGenreHistoriesByID(ctx context.Context, data GetGenreHistor
 		Group:     data.Group,
 	})
 	if err != nil {
-		return nil, code, errors.Wrap(ctx, err)
+		return nil, code, stack.Wrap(ctx, err)
 	}
 
 	res := make([]GenreHistory, len(histories))

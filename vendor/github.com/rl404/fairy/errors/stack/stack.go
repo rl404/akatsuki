@@ -4,95 +4,75 @@ package stack
 
 import (
 	"context"
-	"path/filepath"
+	"fmt"
 	"runtime"
-	"strconv"
-	"strings"
 )
 
-type errctx struct{}
-type errctxvalue struct {
-	m map[string]struct{}
-	l []string
+type errStackCtx struct{}
+
+type errStackCtxValue struct {
+	stacks []ErrStack
 }
 
-// Stacker is error stack client.
-type Stacker struct{}
-
-// New to create new error stacker.
-func New() *Stacker {
-	return &Stacker{}
+// ErrStack is error stack.
+type ErrStack struct {
+	File     string `json:"file"`
+	Function string `json:"function"`
+	Message  string `json:"message"`
 }
 
-// Init to init context so it can be used
-// as an error stack.
-func (s *Stacker) Init(ctx context.Context) context.Context {
-	if _, ok := ctx.Value(errctx{}).(*errctxvalue); ok {
+// Init to init context so it can be used as error stack.
+func Init(ctx context.Context) context.Context {
+	if _, ok := ctx.Value(errStackCtx{}).(*errStackCtxValue); ok {
 		return ctx
 	}
-	return context.WithValue(ctx, errctx{}, &errctxvalue{})
+	return context.WithValue(ctx, errStackCtx{}, &errStackCtxValue{})
 }
 
-// Wrap to wrap the errors and put them in the stack in the
-// initiated context.
-func (s *Stacker) Wrap(ctx context.Context, err error, errs ...error) error {
-	if err != nil {
-		s.wrap(ctx, err, errs...)
+// Wrap to put the errors in the stack in the initiated context.
+//
+// Will return the last of maskedErrs.
+func Wrap(ctx context.Context, originalErr error, maskedErrs ...error) error {
+	if originalErr == nil && len(maskedErrs) == 0 {
+		return nil
 	}
-	return err
-}
 
-func (s *Stacker) wrap(ctx context.Context, err error, errs ...error) {
-	out, ok := ctx.Value(errctx{}).(*errctxvalue)
+	errs := append([]error{originalErr}, maskedErrs...)
+	lastErr := errs[len(errs)-1]
+
+	ctxValue, ok := ctx.Value(errStackCtx{}).(*errStackCtxValue)
 	if !ok {
-		return
+		// If ctx is not initiated, just return the last error.
+		return lastErr
 	}
 
-	if out.l == nil {
-		out.l = make([]string, 0)
-	}
+	pc, file, line, _ := runtime.Caller(1)
 
-	if out.m == nil {
-		out.m = make(map[string]struct{})
-	}
+	funcName := runtime.FuncForPC(pc).Name()
+	fileLine := fmt.Sprintf("%s:%d", file, line)
 
-	_, f, l, _ := runtime.Caller(3)
-	caller := s.filename(f) + ":" + strconv.Itoa(l)
-
-	if err.Error() == "" {
-		out.l = append(out.l, caller)
-		return
-	}
-
-	errs = s.prependErr(errs, err)
-
-	for i := len(errs) - 1; i >= 0; i-- {
-		eStr := errs[i].Error()
-		if _, ok := out.m[eStr]; !ok {
-			out.m[eStr] = struct{}{}
-			out.l = append(out.l, caller+" "+eStr)
-		} else {
-			out.l = append(out.l, caller)
+	// Add to stack.
+	for _, err := range errs {
+		msg := ""
+		if err != nil {
+			msg = err.Error()
 		}
+
+		ctxValue.stacks = append(ctxValue.stacks, ErrStack{
+			File:     fileLine,
+			Function: funcName,
+			Message:  msg,
+		})
 	}
+
+	return lastErr
 }
 
-func (s *Stacker) filename(fpath string) string {
-	if i := strings.LastIndexByte(fpath, filepath.Separator); i >= 0 {
-		return fpath[i+1:]
+// Get to get error stacks.
+func Get(ctx context.Context) []ErrStack {
+	ctxValue, ok := ctx.Value(errStackCtx{}).(*errStackCtxValue)
+	if !ok {
+		return nil
 	}
-	return fpath
-}
-
-func (s *Stacker) prependErr(errs []error, err error) []error {
-	return append([]error{err}, errs...)
-}
-
-// Get returns the errors stack from context.
-// Will return stack starts from the first/deepest wrapped error.
-func (s *Stacker) Get(ctx context.Context) interface{} {
-	if value, ok := ctx.Value(errctx{}).(*errctxvalue); ok {
-		return value.l
-	}
-	return nil
+	return ctxValue.stacks
 }
