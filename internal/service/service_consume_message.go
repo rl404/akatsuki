@@ -70,6 +70,7 @@ func (s *service) consumeParseUserAnime(ctx context.Context, data entity.Message
 		if err != nil {
 			return stack.Wrap(ctx, err)
 		}
+
 		if !isOld {
 			return nil
 		}

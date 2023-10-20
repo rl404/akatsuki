@@ -19,22 +19,18 @@ func (c *Cron) Update(limit int) error {
 	ctx = newrelic.NewContext(ctx, tx)
 
 	if err := c.queueOldReleasingAnime(ctx, limit); err != nil {
-		tx.NoticeError(err)
 		return stack.Wrap(ctx, err)
 	}
 
 	if err := c.queueOldFinishedAnime(ctx, limit); err != nil {
-		tx.NoticeError(err)
 		return stack.Wrap(ctx, err)
 	}
 
 	if err := c.queueOldNotYetAnime(ctx, limit); err != nil {
-		tx.NoticeError(err)
 		return stack.Wrap(ctx, err)
 	}
 
 	if err := c.queueOldUsername(ctx, limit); err != nil {
-		tx.NoticeError(err)
 		return stack.Wrap(ctx, err)
 	}
 
