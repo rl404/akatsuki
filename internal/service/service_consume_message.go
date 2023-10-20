@@ -26,10 +26,20 @@ func (s *service) ConsumeMessage(ctx context.Context, data entity.Message) error
 func (s *service) consumeParseAnime(ctx context.Context, data entity.Message) error {
 	if !data.Forced {
 		if code, err := s.validateID(ctx, data.ID); err != nil {
-			if code == http.StatusNotFound {
-				return nil
+			if code != http.StatusNotFound {
+				return stack.Wrap(ctx, err)
 			}
-			return stack.Wrap(ctx, err)
+
+			// Delete existing data.
+			if _, err := s.anime.DeleteByID(ctx, data.ID); err != nil {
+				return stack.Wrap(ctx, err)
+			}
+
+			if _, err := s.userAnime.DeleteByAnimeID(ctx, data.ID); err != nil {
+				return stack.Wrap(ctx, err)
+			}
+
+			return nil
 		}
 
 		isOld, _, err := s.anime.IsOld(ctx, data.ID)
