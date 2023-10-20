@@ -19,7 +19,6 @@ func (c *Cron) Fill(limit int) error {
 	ctx = newrelic.NewContext(ctx, tx)
 
 	if err := c.queueMissingAnime(ctx, limit); err != nil {
-		tx.NoticeError(err)
 		return stack.Wrap(ctx, err)
 	}
 
