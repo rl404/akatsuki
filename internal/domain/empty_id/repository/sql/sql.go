@@ -44,16 +44,9 @@ func (sql *SQL) Create(ctx context.Context, id int64) (int, error) {
 
 // Delete to delete id from empty id.
 func (sql *SQL) Delete(ctx context.Context, id int64) (int, error) {
-	res := sql.db.WithContext(ctx).Where("anime_id = ?", id).Delete(&EmptyID{})
-
-	if res.Error != nil {
-		return http.StatusInternalServerError, stack.Wrap(ctx, res.Error, errors.ErrInternalDB)
+	if err := sql.db.WithContext(ctx).Where("anime_id = ?", id).Delete(&EmptyID{}).Error; err != nil {
+		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
-
-	if res.RowsAffected == 0 {
-		return http.StatusNotFound, stack.Wrap(ctx, errors.ErrAnimeNotFound)
-	}
-
 	return http.StatusOK, nil
 }
 
