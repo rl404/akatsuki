@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/rl404/akatsuki/internal/domain/publisher/entity"
 	"github.com/rl404/akatsuki/internal/errors"
@@ -25,23 +24,6 @@ func (s *service) ConsumeMessage(ctx context.Context, data entity.Message) error
 
 func (s *service) consumeParseAnime(ctx context.Context, data entity.Message) error {
 	if !data.Forced {
-		if code, err := s.validateID(ctx, data.ID); err != nil {
-			if code != http.StatusNotFound {
-				return stack.Wrap(ctx, err)
-			}
-
-			// Delete existing data.
-			if _, err := s.anime.DeleteByID(ctx, data.ID); err != nil {
-				return stack.Wrap(ctx, err)
-			}
-
-			if _, err := s.userAnime.DeleteByAnimeID(ctx, data.ID); err != nil {
-				return stack.Wrap(ctx, err)
-			}
-
-			return nil
-		}
-
 		isOld, _, err := s.anime.IsOld(ctx, data.ID)
 		if err != nil {
 			return stack.Wrap(ctx, err)
@@ -50,11 +32,11 @@ func (s *service) consumeParseAnime(ctx context.Context, data entity.Message) er
 		if !isOld {
 			return nil
 		}
-	} else {
-		// Delete existing empty id.
-		if _, err := s.emptyID.Delete(ctx, data.ID); err != nil {
-			return stack.Wrap(ctx, err)
-		}
+	}
+
+	// Delete existing empty id.
+	if _, err := s.emptyID.Delete(ctx, data.ID); err != nil {
+		return stack.Wrap(ctx, err)
 	}
 
 	if _, err := s.updateAnime(ctx, data.ID); err != nil {
