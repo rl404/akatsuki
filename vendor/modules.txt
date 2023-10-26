@@ -215,7 +215,7 @@ github.com/redis/go-redis/v9/internal/pool
 github.com/redis/go-redis/v9/internal/proto
 github.com/redis/go-redis/v9/internal/rand
 github.com/redis/go-redis/v9/internal/util
-# github.com/rl404/fairy v0.24.0
+# github.com/rl404/fairy v0.25.0
 ## explicit; go 1.21
 github.com/rl404/fairy/cache
 github.com/rl404/fairy/cache/inmemory
@@ -369,7 +369,7 @@ golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
 golang.org/x/tools/internal/typeparams
-# google.golang.org/api v0.147.0
+# google.golang.org/api v0.148.0
 ## explicit; go 1.19
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
@@ -405,7 +405,7 @@ google.golang.org/genproto/internal
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20231009173412-8bfb1ae86b6c
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20231012201019-e917dd12ba7a
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
@@ -516,7 +516,7 @@ gopkg.in/yaml.v3
 # gorm.io/driver/mysql v1.5.2
 ## explicit; go 1.14
 gorm.io/driver/mysql
-# gorm.io/driver/postgres v1.5.3
+# gorm.io/driver/postgres v1.5.4
 ## explicit; go 1.18
 gorm.io/driver/postgres
 # gorm.io/gorm v1.25.5
