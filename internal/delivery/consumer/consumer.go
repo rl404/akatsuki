@@ -38,16 +38,17 @@ func New(service service.Service, ps pubsub.PubSub, topic string) *Consumer {
 
 // Subscribe to start subscribing to topic.
 func (c *Consumer) Subscribe(nrApp *newrelic.Application) error {
-	return c.pubsub.Subscribe(context.Background(), c.topic, func(ctx context.Context, message []byte) {
+	return c.pubsub.Subscribe(context.Background(), c.topic, func(ctx context.Context, message []byte) error {
 		var msg entity.Message
 		if err := json.Unmarshal(message, &msg); err != nil {
-			stack.Wrap(ctx, err)
-			return
+			return stack.Wrap(ctx, err)
 		}
 
 		if err := c.service.ConsumeMessage(ctx, msg); err != nil {
-			stack.Wrap(ctx, err)
+			return stack.Wrap(ctx, err)
 		}
+
+		return nil
 	})
 }
 
