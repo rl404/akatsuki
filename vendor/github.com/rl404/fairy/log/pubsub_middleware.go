@@ -34,10 +34,9 @@ func PubSubHandlerFuncWithLog(logger Logger, next pubsub.HandlerFunc, middleware
 		cfg = middlewareConfig[0]
 	}
 
-	return func(ctx context.Context, message []byte) {
+	return func(ctx context.Context, message []byte) error {
 		if logger == nil {
-			next(ctx, message)
-			return
+			return next(ctx, message)
 		}
 
 		// Prepare error stack tracing.
@@ -45,12 +44,16 @@ func PubSubHandlerFuncWithLog(logger Logger, next pubsub.HandlerFunc, middleware
 		start := time.Now()
 
 		// Call next handler.
-		next(ctx, message)
+		err := next(ctx, message)
 
 		// Prepare map for logging.
 		m := map[string]interface{}{
 			"level":    infoLevel,
 			"duration": time.Since(start).String(),
+		}
+
+		if err != nil {
+			m["level"] = errorLevel
 		}
 
 		if cfg.Topic != "" {
@@ -64,7 +67,7 @@ func PubSubHandlerFuncWithLog(logger Logger, next pubsub.HandlerFunc, middleware
 		// Include the error stack if you use it.
 		errStack := stack.Get(ctx)
 		if len(errStack) > 0 {
-			m["level"] = errorLevel
+			m["level"] = warnLevel
 
 			if cfg.Error {
 				// Copy slice to prevent reversed multiple times
@@ -81,5 +84,7 @@ func PubSubHandlerFuncWithLog(logger Logger, next pubsub.HandlerFunc, middleware
 		}
 
 		logger.Log(m)
+
+		return err
 	}
 }

@@ -42,13 +42,17 @@ func (c *client) Publish(ctx context.Context, topic string, data []byte) error {
 
 // Subscribe to subscribe.
 func (c *client) Subscribe(ctx context.Context, topic string, handlerFunc pubsub.HandlerFunc) error {
-	return c.pubsub.Subscribe(ctx, topic, func(ctx context.Context, message []byte) {
+	return c.pubsub.Subscribe(ctx, topic, func(ctx context.Context, message []byte) error {
 		tx := c.nrApp.StartTransaction("Consumer " + topic)
 		defer tx.End()
 
 		ctx = newrelic.NewContext(ctx, tx)
 
-		handlerFunc(ctx, message)
+		if err := handlerFunc(ctx, message); err != nil {
+			tx.NoticeError(err)
+		}
+
+		return nil
 	})
 }
 

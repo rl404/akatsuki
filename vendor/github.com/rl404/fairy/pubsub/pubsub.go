@@ -17,4 +17,4 @@ type PubSub interface {
 }
 
 // HandlerFunc is pubsub subscriber handler function.
-type HandlerFunc func(ctx context.Context, message []byte)
+type HandlerFunc func(ctx context.Context, message []byte) error

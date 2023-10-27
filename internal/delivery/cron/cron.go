@@ -8,7 +8,6 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rl404/akatsuki/internal/service"
 	"github.com/rl404/akatsuki/internal/utils"
-	"github.com/rl404/akatsuki/pkg/log"
 	"github.com/rl404/fairy/errors/stack"
 )
 
@@ -34,7 +33,7 @@ func (c *Cron) log(ctx context.Context) {
 	errStack := stack.Get(ctx)
 	if len(errStack) > 0 {
 		utils.Log(map[string]interface{}{
-			"level": log.ErrorLevel,
+			"level": utils.ErrorLevel,
 			"error": errStack,
 		})
 	}

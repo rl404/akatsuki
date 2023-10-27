@@ -11,7 +11,6 @@ import (
 	"github.com/rl404/akatsuki/internal/errors"
 	"github.com/rl404/akatsuki/internal/utils"
 	"github.com/rl404/akatsuki/pkg/cache"
-	"github.com/rl404/akatsuki/pkg/log"
 	"github.com/rl404/akatsuki/pkg/pubsub"
 	"github.com/rl404/fairy/monitoring/newrelic/database"
 	"gorm.io/driver/mysql"
@@ -88,9 +87,9 @@ type cronConfig struct {
 }
 
 type logConfig struct {
-	Level log.LogLevel `envconfig:"LEVEL" default:"-1"`
-	JSON  bool         `envconfig:"JSON" default:"false"`
-	Color bool         `envconfig:"COLOR" default:"true"`
+	Level utils.LogLevel `envconfig:"LEVEL" default:"-1"`
+	JSON  bool           `envconfig:"JSON" default:"false"`
+	Color bool           `envconfig:"COLOR" default:"true"`
 }
 
 type newrelicConfig struct {
