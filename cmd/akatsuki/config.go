@@ -144,9 +144,7 @@ func getConfig() (*config, error) {
 	}
 
 	// Init global log.
-	if err := utils.InitLog(cfg.Log.Level, cfg.Log.JSON, cfg.Log.Color); err != nil {
-		return nil, err
-	}
+	utils.InitLog(cfg.Log.Level, cfg.Log.JSON, cfg.Log.Color)
 
 	return &cfg, nil
 }
