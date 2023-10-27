@@ -28,10 +28,9 @@ var l _log.Logger = zerolog.New(zerolog.LogLevel(TraceLevel), false, true)
 var ls []_log.Logger = []_log.Logger{l}
 
 // InitLog to init global logger.
-func InitLog(lvl LogLevel, json, color bool) (err error) {
+func InitLog(lvl LogLevel, json, color bool) {
 	l = zerolog.New(zerolog.LogLevel(lvl), json, color)
 	ls = []_log.Logger{l}
-	return nil
 }
 
 // AddLog to add logger chain.
