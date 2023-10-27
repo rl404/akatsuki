@@ -46,7 +46,7 @@ func cronUpdate() error {
 	} else {
 		nrApp.WaitForConnection(10 * time.Second)
 		defer nrApp.Shutdown(10 * time.Second)
-		utils.AddLog(_nr.NewFromNewrelicApp(nrApp, _nr.ErrorLevel))
+		utils.AddLog(_nr.NewFromNewrelicApp(nrApp, _nr.LogLevel(cfg.Log.Level)))
 		utils.Info("newrelic initialized")
 	}
 
