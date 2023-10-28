@@ -171,6 +171,8 @@ github.com/redis/go-redis/v9 v9.2.1 h1:WlYJg71ODF0dVspZZCpYmoF1+U1Jjk9Rwd7pq6Qml
 github.com/redis/go-redis/v9 v9.2.1/go.mod h1:hdY0cQFCN4fnSYT6TkisLufl/4W5UIXyv0b/CLO2V2M=
 github.com/rl404/fairy v0.25.0 h1:BZlt+lB9+y21cPp67B/uKMopZ1NPqG2Z7s4oCxd7wxQ=
 github.com/rl404/fairy v0.25.0/go.mod h1:TcCmMFf7qg9+L8pcvBogVyM3jHr58kSxzxgsO5KzaWM=
+github.com/rl404/fairy v0.25.1 h1:RDD8F+VVyFwpxWGfb/gLA8dCILlQy7lhImIhfcDbuzY=
+github.com/rl404/fairy v0.25.1/go.mod h1:TcCmMFf7qg9+L8pcvBogVyM3jHr58kSxzxgsO5KzaWM=
 github.com/rl404/nagato v0.3.2 h1:KKrJYK5sIKbqJJ9QIcUZCnPJ/k86rnbn5QQTF3w9bHY=
 github.com/rl404/nagato v0.3.2/go.mod h1:Ya6K1xmK/59MCIKHSIrwmBp0D6vTHS7ZG8Ra7AtmbTA=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=

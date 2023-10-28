@@ -52,10 +52,6 @@ func PubSubHandlerFuncWithLog(logger Logger, next pubsub.HandlerFunc, middleware
 			"duration": time.Since(start).String(),
 		}
 
-		if err != nil {
-			m["level"] = errorLevel
-		}
-
 		if cfg.Topic != "" {
 			m["topic"] = cfg.Topic
 		}
@@ -81,6 +77,10 @@ func PubSubHandlerFuncWithLog(logger Logger, next pubsub.HandlerFunc, middleware
 
 				m["error"] = errTmp
 			}
+		}
+
+		if err != nil {
+			m["level"] = errorLevel
 		}
 
 		logger.Log(m)
