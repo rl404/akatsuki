@@ -50,6 +50,7 @@ func (c *client) Subscribe(ctx context.Context, topic string, handlerFunc pubsub
 
 		if err := handlerFunc(ctx, message); err != nil {
 			tx.NoticeError(err)
+			return err
 		}
 
 		return nil
