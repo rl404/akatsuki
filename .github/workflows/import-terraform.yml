@@ -17,7 +17,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
       - name: Setup Terraform Variables
         run: |-
           cat > pipeline.auto.tfvars <<EOF
