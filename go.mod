@@ -10,10 +10,10 @@ require (
 	github.com/newrelic/go-agent/v3 v3.27.0
 	github.com/rl404/fairy v0.25.2
 	github.com/rl404/nagato v0.3.2
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
-	golang.org/x/text v0.13.0
+	golang.org/x/text v0.14.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
 	gorm.io/driver/mysql v1.5.2
