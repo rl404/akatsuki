@@ -17,7 +17,7 @@ type errorResponse struct {
 func (c *Client) handleError(body []byte) error {
 	var e errorResponse
 	if err := json.Unmarshal(body, &e); err != nil {
-		return err
+		return errors.New(string(body))
 	}
 
 	msg := e.Error
