@@ -39,5 +39,6 @@ func (c *clientIDTransport) RoundTrip(req *http.Request) (*http.Response, error)
 		c.transport = http.DefaultTransport
 	}
 	req.Header.Add("X-MAL-CLIENT-ID", c.clientID)
+	req.Header.Add("User-Agent", "Akatsuki/0.12.0-alpha (github.com/rl404/akatsuki)")
 	return c.transport.RoundTrip(req)
 }
