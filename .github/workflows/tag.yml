@@ -9,9 +9,24 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Check tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
         with:
-          fetch-depth: 0
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+      - name: Find and replace version
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: ${{ steps.tag_version.outputs.previous_version }}
+          replace: ${{ steps.tag_version.outputs.new_version }}
+          include: "internal/domain/mal/repository/client/client.go"
+          regex: false
+      - name: Push changes
+        id: push_changes
+        uses: stefanzweifel/git-auto-commit-action@v5
       - name: Create tag
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.CR_PAT }}
+          commit_sha: ${{ steps.push_changes.outputs.commit_hash }}
