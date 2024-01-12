@@ -13,33 +13,33 @@ This libary is built following MyAnimeList's [API reference](https://myanimelist
 
 ## Features
 
-| Feature | **_mal_** | **_nagato_** |
-| --- | :---: | :---: |
-| Oauth2 | :heavy_check_mark: | :heavy_check_mark: |
-| Get anime list | :heavy_check_mark: | :heavy_check_mark: |
-| Get anime details | :heavy_check_mark: | :heavy_check_mark: |
-| Get anime ranking | :heavy_check_mark: | :heavy_check_mark: |
-| Get seasonal anime | :heavy_check_mark: | :heavy_check_mark: |
-| Get suggested anime | :heavy_check_mark: | :heavy_check_mark: |
-| Update my anime list | :heavy_check_mark: | :heavy_check_mark: |
-| Delete my anime list | :heavy_check_mark: | :heavy_check_mark: |
-| Get user anime list | :heavy_check_mark: | :heavy_check_mark: |
-| Get forum boards | :heavy_check_mark: | :heavy_check_mark: |
-| Get forum topic detail |  :heavy_check_mark: | :heavy_check_mark: |
-| Get forum topics | :heavy_check_mark: | :heavy_check_mark: |
-| Get manga list | :heavy_check_mark: | :heavy_check_mark: |
-| Get manga details | :heavy_check_mark: | :heavy_check_mark: |
-| Get manga ranking | :heavy_check_mark: | :heavy_check_mark: |
-| Update my manga list | :heavy_check_mark: | :heavy_check_mark: |
-| Delete my manga list | :heavy_check_mark: | :heavy_check_mark: |
-| Get user manga list | :heavy_check_mark: | :heavy_check_mark: |
-| Get my user info | :heavy_check_mark: | :heavy_check_mark: |
-| **Additional Features** |
-| Return response code | :heavy_check_mark: | :heavy_check_mark: |
-| Rate limit | :heavy_check_mark: | :heavy_check_mark: |
-| Validate request | :x: | :heavy_check_mark: |
-| Custom data type | :x: | :heavy_check_mark: |
-| Prettier returned struct | :x: | :heavy_check_mark: |
+| Feature                  |     **_mal_**      |    **_nagato_**    |
+| ------------------------ | :----------------: | :----------------: |
+| Oauth2                   | :heavy_check_mark: | :heavy_check_mark: |
+| Get anime list           | :heavy_check_mark: | :heavy_check_mark: |
+| Get anime details        | :heavy_check_mark: | :heavy_check_mark: |
+| Get anime ranking        | :heavy_check_mark: | :heavy_check_mark: |
+| Get seasonal anime       | :heavy_check_mark: | :heavy_check_mark: |
+| Get suggested anime      | :heavy_check_mark: | :heavy_check_mark: |
+| Update my anime list     | :heavy_check_mark: | :heavy_check_mark: |
+| Delete my anime list     | :heavy_check_mark: | :heavy_check_mark: |
+| Get user anime list      | :heavy_check_mark: | :heavy_check_mark: |
+| Get forum boards         | :heavy_check_mark: | :heavy_check_mark: |
+| Get forum topic detail   | :heavy_check_mark: | :heavy_check_mark: |
+| Get forum topics         | :heavy_check_mark: | :heavy_check_mark: |
+| Get manga list           | :heavy_check_mark: | :heavy_check_mark: |
+| Get manga details        | :heavy_check_mark: | :heavy_check_mark: |
+| Get manga ranking        | :heavy_check_mark: | :heavy_check_mark: |
+| Update my manga list     | :heavy_check_mark: | :heavy_check_mark: |
+| Delete my manga list     | :heavy_check_mark: | :heavy_check_mark: |
+| Get user manga list      | :heavy_check_mark: | :heavy_check_mark: |
+| Get my user info         | :heavy_check_mark: | :heavy_check_mark: |
+| **Additional Features**  |
+| Return response code     | :heavy_check_mark: | :heavy_check_mark: |
+| Rate limit               | :heavy_check_mark: | :heavy_check_mark: |
+| Validate request         |        :x:         | :heavy_check_mark: |
+| Custom data type         |        :x:         | :heavy_check_mark: |
+| Prettier returned struct |        :x:         | :heavy_check_mark: |
 
 ## Installation
 
