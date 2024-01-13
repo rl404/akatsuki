@@ -2,6 +2,7 @@ package mal
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 )
 
 const host = "https://api.myanimelist.net/v2"
+const version = "0.3.4"
 
 // Client is myanimelist API client.
 //
@@ -69,6 +71,9 @@ type Oauth2Config struct {
 func NewWithOauth2(cfg Oauth2Config) (*Client, error) {
 	httpClient := &http.Client{
 		Timeout: 10 * time.Second,
+		Transport: &publicTransport{
+			clientID: cfg.ClientID,
+		},
 	}
 
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
@@ -108,5 +113,6 @@ func (p *publicTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		p.transport = http.DefaultTransport
 	}
 	req.Header.Add("X-MAL-CLIENT-ID", p.clientID)
+	req.Header.Add("User-Agent", fmt.Sprintf("Nagato/%s (github.com/rl404/nagato)", version))
 	return p.transport.RoundTrip(req)
 }
