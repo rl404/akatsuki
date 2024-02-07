@@ -1,5 +1,5 @@
 # Golang base image
-FROM golang:1.21 as go_builder
+FROM golang:1.22 as go_builder
 LABEL stage="akatsuki_builder"
 WORKDIR /akatsuki
 COPY . .
