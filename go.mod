@@ -72,7 +72,6 @@ require (
 	github.com/segmentio/go-snakecase v1.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/streadway/amqp v1.1.0 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.1 // indirect
