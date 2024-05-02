@@ -167,6 +167,8 @@ github.com/newrelic/csec-go-agent v0.4.0 h1:xvsVNshn0PztJzD2bnQiR1NkUzv+7LdEmvVF
 github.com/newrelic/csec-go-agent v0.4.0/go.mod h1:dM8F4FOZ/CX3h2zMQ5npGqNuND2E0noklLjAx8YUXBU=
 github.com/newrelic/go-agent/v3 v3.32.0 h1:99Et9lXXzeQV1CfYldfeTXv+d9W9KatpMbb50kIscWo=
 github.com/newrelic/go-agent/v3 v3.32.0/go.mod h1:SMdqPzE/ghkWdY0rYGSD7Clw2daK/XH6pUnVd4albg4=
+github.com/newrelic/go-agent/v3 v3.33.0 h1:0Phrvp6KWOcJPsIxskL9ZrVddhrZDl1xokNtTjN4GpQ=
+github.com/newrelic/go-agent/v3 v3.33.0/go.mod h1:SMdqPzE/ghkWdY0rYGSD7Clw2daK/XH6pUnVd4albg4=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1 h1:G9D/jUoEmIT8zCv5PU+1jJbXyzWnygiMoRZrmnEKSAo=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1/go.mod h1:MEK4BX1J5e1JW7KtujvhC5zAybelhIqejPFzy4HxO9M=
 github.com/newrelic/go-agent/v3/integrations/nrsecurityagent v1.1.0 h1:gqkTDYUHWUyiG+u0PJQCRh98rcHLxP/w7GtIbJDVULY=
