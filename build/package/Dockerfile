@@ -7,7 +7,7 @@ WORKDIR /akatsuki/cmd/akatsuki
 RUN CGO_ENABLED=0 go build -a -installsuffix cgo -o akatsuki
 
 # New stage from scratch
-FROM alpine:3.19
+FROM alpine:3.20
 LABEL stage="akatsuki_binary"
 RUN apk add --no-cache ca-certificates && apk add --no-cache tzdata
 COPY --from=go_builder /akatsuki/cmd/akatsuki/akatsuki /cmd/akatsuki/akatsuki
