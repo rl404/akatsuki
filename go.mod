@@ -15,7 +15,7 @@ require (
 	github.com/swaggo/swag v1.16.3
 	golang.org/x/text v0.16.0
 	google.golang.org/grpc v1.64.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.34.2
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.10
