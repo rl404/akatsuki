@@ -48,7 +48,7 @@ jobs:
         run: |
           gcloud --quiet auth configure-docker
       - name: Build and push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./build/package/Dockerfile
