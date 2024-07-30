@@ -28,6 +28,7 @@ jobs:
           gke_pool_name                 = "${{ secrets.GKE_POOL_NAME }}"
           gke_node_preemptible          = "${{ secrets.GKE_NODE_PREEMPTIBLE }}"
           gke_node_machine_type         = "${{ secrets.GKE_NODE_MACHINE_TYPE }}"
+          gke_node_disk_size_gb         = "${{ secrets.GKE_NODE_DISK_SIZE_GB }}"
           gcr_image_name                = "${{ secrets.GCR_HOSTNAME }}/${{ secrets.GCP_PROJECT_ID }}/akatsuki:${{ needs.publish_image.outputs.img_tag }}"
           gke_deployment_consumer_name  = "${{ secrets.GKE_DEPLOYMENT_CONSUMER_NAME }}"
           gke_cron_fill_name            = "${{ secrets.GKE_CRON_FILL_NAME }}"

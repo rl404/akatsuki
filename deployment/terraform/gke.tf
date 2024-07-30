@@ -13,5 +13,6 @@ resource "google_container_node_pool" "pool" {
   node_config {
     spot         = var.gke_node_preemptible
     machine_type = var.gke_node_machine_type
+    disk_size_gb = var.gke_node_disk_size_gb
   }
 }

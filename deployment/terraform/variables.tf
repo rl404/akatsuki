@@ -33,6 +33,11 @@ variable "gke_node_machine_type" {
   description = "GKE node machine type"
 }
 
+variable "gke_node_disk_size_gb" {
+  type        = number
+  description = "GKE node disk size in gb"
+}
+
 variable "gcr_image_name" {
   type        = string
   description = "GCR image name"
