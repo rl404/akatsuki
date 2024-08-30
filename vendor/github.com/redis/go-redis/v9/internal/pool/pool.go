@@ -168,9 +168,12 @@ func (p *ConnPool) newConn(ctx context.Context, pooled bool) (*Conn, error) {
 		return nil, ErrClosed
 	}
 
+	p.connsMu.Lock()
 	if p.cfg.MaxActiveConns > 0 && p.poolSize >= p.cfg.MaxActiveConns {
+		p.connsMu.Unlock()
 		return nil, ErrPoolExhausted
 	}
+	p.connsMu.Unlock()
 
 	cn, err := p.dialConn(ctx, pooled)
 	if err != nil {
@@ -179,6 +182,11 @@ func (p *ConnPool) newConn(ctx context.Context, pooled bool) (*Conn, error) {
 
 	p.connsMu.Lock()
 	defer p.connsMu.Unlock()
+
+	if p.cfg.MaxActiveConns > 0 && p.poolSize >= p.cfg.MaxActiveConns {
+		_ = cn.Close()
+		return nil, ErrPoolExhausted
+	}
 
 	p.conns = append(p.conns, cn)
 	if pooled {
@@ -263,6 +271,7 @@ func (p *ConnPool) Get(ctx context.Context) (*Conn, error) {
 		p.connsMu.Unlock()
 
 		if err != nil {
+			p.freeTurn()
 			return nil, err
 		}
 
@@ -490,6 +499,8 @@ func (p *ConnPool) Close() error {
 	return firstErr
 }
 
+var zeroTime = time.Time{}
+
 func (p *ConnPool) isHealthyConn(cn *Conn) bool {
 	now := time.Now()
 
@@ -500,8 +511,12 @@ func (p *ConnPool) isHealthyConn(cn *Conn) bool {
 		return false
 	}
 
-	if connCheck(cn.netConn) != nil {
-		return false
+	if cn.sysConn != nil {
+		// reset previous timeout.
+		_ = cn.netConn.SetDeadline(zeroTime)
+		if connCheck(cn.sysConn) != nil {
+			return false
+		}
 	}
 
 	cn.SetUsedAt(now)
