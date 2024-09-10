@@ -444,7 +444,7 @@ google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.66.0
+# google.golang.org/grpc v1.66.1
 ## explicit; go 1.21
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -565,7 +565,7 @@ gorm.io/driver/mysql
 # gorm.io/driver/postgres v1.5.9
 ## explicit; go 1.19
 gorm.io/driver/postgres
-# gorm.io/gorm v1.25.11
+# gorm.io/gorm v1.25.12
 ## explicit; go 1.18
 gorm.io/gorm
 gorm.io/gorm/callbacks
