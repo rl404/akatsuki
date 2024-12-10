@@ -104,9 +104,9 @@ func malToType(t nagato.MediaType) Type {
 		"":                  TypeUnknown,
 		nagato.MediaTV:      TypeTV,
 		nagato.MediaOVA:     TypeOVA,
-		nagato.MediaMovie:   TypeONA,
-		nagato.MediaSpecial: TypeMovie,
-		nagato.MediaONA:     TypeSpecial,
+		nagato.MediaMovie:   TypeMovie,
+		nagato.MediaSpecial: TypeSpecial,
+		nagato.MediaONA:     TypeONA,
 		nagato.MediaMusic:   TypeMusic,
 	}[t]
 }
