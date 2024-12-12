@@ -32,8 +32,6 @@ type Anime struct {
 	Pictures  []string
 	Related   []Related
 	StudioIDs []int64
-
-	UpdatedAt time.Time
 }
 
 // AlternativeTitle is entity for alternative title.

@@ -15,18 +15,18 @@ import (
 type Anime struct {
 	ID                int64            `json:"id"`
 	Title             string           `json:"title"`
-	AlternativeTitles alternativeTitle `json:"alternative_titles"`
+	AlternativeTitles AlternativeTitle `json:"alternative_titles"`
 	Picture           string           `json:"picture"`
-	StartDate         date             `json:"start_date"`
-	EndDate           date             `json:"end_date"`
+	StartDate         Date             `json:"start_date"`
+	EndDate           Date             `json:"end_date"`
 	Synopsis          string           `json:"synopsis"`
 	Background        string           `json:"background"`
 	NSFW              bool             `json:"nsfw"`
 	Type              entity.Type      `json:"type" swaggertype:"string"`
 	Status            entity.Status    `json:"status" swaggertype:"string"`
-	Episode           episode          `json:"episode"`
-	Season            *season          `json:"season"`
-	Broadcast         *broadcast       `json:"broadcast"`
+	Episode           Episode          `json:"episode"`
+	Season            *Season          `json:"season"`
+	Broadcast         *Broadcast       `json:"broadcast"`
 	Source            entity.Source    `json:"source" swaggertype:"string"`
 	Rating            entity.Rating    `json:"rating" swaggertype:"string"`
 	Mean              float64          `json:"mean"`
@@ -34,12 +34,11 @@ type Anime struct {
 	Popularity        int              `json:"popularity"`
 	Member            int              `json:"member"`
 	Voter             int              `json:"voter"`
-	Stats             stats            `json:"stats"`
-	Genres            []genre          `json:"genres"`
+	Stats             Stats            `json:"stats"`
+	Genres            []AnimeGenre     `json:"genres"`
 	Pictures          []string         `json:"pictures"`
-	Related           []related        `json:"related"`
-	Studios           []studio         `json:"studios"`
-	UpdatedAt         time.Time        `json:"updated_at"`
+	Related           []AnimeRelated   `json:"related"`
+	Studios           []AnimeStudio    `json:"studios"`
 }
 
 // GetAnimeRequest is get anime list request model.
@@ -128,9 +127,9 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 			return nil, code, stack.Wrap(ctx, err)
 		}
 
-		anime.Genres = make([]genre, len(genres))
+		anime.Genres = make([]AnimeGenre, len(genres))
 		for i, g := range genres {
-			anime.Genres[i] = genre{
+			anime.Genres[i] = AnimeGenre{
 				ID:   g.ID,
 				Name: g.Name,
 			}
@@ -151,9 +150,9 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 			return nil, code, stack.Wrap(ctx, err)
 		}
 
-		anime.Related = make([]related, len(relates))
+		anime.Related = make([]AnimeRelated, len(relates))
 		for i, r := range relates {
-			anime.Related[i] = related{
+			anime.Related[i] = AnimeRelated{
 				ID:       r.ID,
 				Title:    r.Title,
 				Picture:  r.Picture,
@@ -169,9 +168,9 @@ func (s *service) GetAnimeByID(ctx context.Context, id int64) (*Anime, int, erro
 			return nil, code, stack.Wrap(ctx, err)
 		}
 
-		anime.Studios = make([]studio, len(studios))
+		anime.Studios = make([]AnimeStudio, len(studios))
 		for i, s := range studios {
-			anime.Studios[i] = studio{
+			anime.Studios[i] = AnimeStudio{
 				ID:   s.ID,
 				Name: s.Name,
 			}

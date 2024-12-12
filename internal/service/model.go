@@ -9,38 +9,45 @@ type Pagination struct {
 	Total int `json:"total"`
 }
 
-type alternativeTitle struct {
+// AlternativeTitle is alternative title model.
+type AlternativeTitle struct {
 	Synonyms []string `json:"synonyms"`
 	English  string   `json:"english"`
 	Japanese string   `json:"japanese"`
 }
 
-type date struct {
+// Date is date model.
+type Date struct {
 	Year  int `json:"year"`
 	Month int `json:"month"`
 	Day   int `json:"day"`
 }
 
-type episode struct {
+// Episode is episode model.
+type Episode struct {
 	Count    int `json:"count"`
 	Duration int `json:"duration"`
 }
 
-type season struct {
+// Season is season model.
+type Season struct {
 	Season entity.Season `json:"season" swaggertype:"string"`
 	Year   int           `json:"year"`
 }
 
-type broadcast struct {
+// Broadcast is broadcast model.
+type Broadcast struct {
 	Day  entity.Day `json:"day" swaggertype:"string"`
 	Time string     `json:"time"`
 }
 
-type stats struct {
-	Status statsStatus `json:"status"`
+// Stats is stats model.
+type Stats struct {
+	Status StatsStatus `json:"status"`
 }
 
-type statsStatus struct {
+// StatsStatus is stats status model.
+type StatsStatus struct {
 	Watching  int `json:"watching"`
 	Completed int `json:"completed"`
 	OnHold    int `json:"on_hold"`
@@ -48,19 +55,22 @@ type statsStatus struct {
 	Planned   int `json:"planned"`
 }
 
-type genre struct {
+// AnimeGenre is anime genre model.
+type AnimeGenre struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
-type related struct {
+// AnimeRelated is anime related model.
+type AnimeRelated struct {
 	ID       int64           `json:"id"`
 	Title    string          `json:"title"`
 	Picture  string          `json:"picture"`
 	Relation entity.Relation `json:"relation" swaggertype:"string"`
 }
 
-type studio struct {
+// AnimeStudio is anime studio model.
+type AnimeStudio struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
@@ -69,18 +79,18 @@ func (s *service) animeFromEntity(animeDB *entity.Anime) Anime {
 	var anime Anime
 	anime.ID = animeDB.ID
 	anime.Title = animeDB.Title
-	anime.AlternativeTitles = alternativeTitle{
+	anime.AlternativeTitles = AlternativeTitle{
 		Synonyms: animeDB.AlternativeTitle.Synonyms,
 		English:  animeDB.AlternativeTitle.English,
 		Japanese: animeDB.AlternativeTitle.Japanese,
 	}
 	anime.Picture = animeDB.Picture
-	anime.StartDate = date{
+	anime.StartDate = Date{
 		Year:  animeDB.StartDate.Year,
 		Month: animeDB.StartDate.Month,
 		Day:   animeDB.StartDate.Day,
 	}
-	anime.EndDate = date{
+	anime.EndDate = Date{
 		Year:  animeDB.EndDate.Year,
 		Month: animeDB.EndDate.Month,
 		Day:   animeDB.EndDate.Day,
@@ -90,18 +100,18 @@ func (s *service) animeFromEntity(animeDB *entity.Anime) Anime {
 	anime.NSFW = animeDB.NSFW
 	anime.Type = animeDB.Type
 	anime.Status = animeDB.Status
-	anime.Episode = episode{
+	anime.Episode = Episode{
 		Count:    animeDB.Episode.Count,
 		Duration: animeDB.Episode.Duration,
 	}
 	if animeDB.Season.Season != "" {
-		anime.Season = &season{
+		anime.Season = &Season{
 			Season: animeDB.Season.Season,
 			Year:   animeDB.Season.Year,
 		}
 	}
 	if animeDB.Broadcast.Day != "" {
-		anime.Broadcast = &broadcast{
+		anime.Broadcast = &Broadcast{
 			Day:  animeDB.Broadcast.Day,
 			Time: animeDB.Broadcast.Time,
 		}
@@ -113,8 +123,8 @@ func (s *service) animeFromEntity(animeDB *entity.Anime) Anime {
 	anime.Popularity = animeDB.Popularity
 	anime.Member = animeDB.Member
 	anime.Voter = animeDB.Voter
-	anime.Stats = stats{
-		Status: statsStatus{
+	anime.Stats = Stats{
+		Status: StatsStatus{
 			Watching:  animeDB.Stats.Status.Watching,
 			Completed: animeDB.Stats.Status.Completed,
 			OnHold:    animeDB.Stats.Status.OnHold,
@@ -123,9 +133,8 @@ func (s *service) animeFromEntity(animeDB *entity.Anime) Anime {
 		},
 	}
 	anime.Pictures = animeDB.Pictures
-	anime.Genres = []genre{}
-	anime.Related = []related{}
-	anime.Studios = []studio{}
-	anime.UpdatedAt = animeDB.UpdatedAt
+	anime.Genres = []AnimeGenre{}
+	anime.Related = []AnimeRelated{}
+	anime.Studios = []AnimeStudio{}
 	return anime
 }

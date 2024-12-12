@@ -1,0 +1,65 @@
+name: test
+
+on: pull_request
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ secrets.AKATSUKI_TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.AKATSUKI_TEST_DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.AKATSUKI_TEST_DB_NAME }}
+        options: >-
+          --health-cmd "pg_isready -U ${POSTGRES_USER}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      rabbitmq:
+        image: rabbitmq:management-alpine
+        ports:
+          - 5672:5672
+          - 15672:15672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: Run Test
+        env:
+          AKATSUKI_TEST_CACHE_DIALECT: ${{ secrets.AKATSUKI_TEST_CACHE_DIALECT }}
+          AKATSUKI_TEST_CACHE_ADDRESS: ${{ secrets.AKATSUKI_TEST_CACHE_ADDRESS }}
+          AKATSUKI_TEST_CACHE_PASSWORD: ${{ secrets.AKATSUKI_TEST_CACHE_PASSWORD }}
+          AKATSUKI_TEST_CACHE_TIME: ${{ secrets.AKATSUKI_TEST_CACHE_TIME }}
+          AKATSUKI_TEST_DB_DIALECT: ${{ secrets.AKATSUKI_TEST_DB_DIALECT }}
+          AKATSUKI_TEST_DB_ADDRESS: ${{ secrets.AKATSUKI_TEST_DB_ADDRESS }}
+          AKATSUKI_TEST_DB_NAME: ${{ secrets.AKATSUKI_TEST_DB_NAME }}
+          AKATSUKI_TEST_DB_USER: ${{ secrets.AKATSUKI_TEST_DB_USER }}
+          AKATSUKI_TEST_DB_PASSWORD: ${{ secrets.AKATSUKI_TEST_DB_PASSWORD }}
+          AKATSUKI_TEST_PUBSUB_DIALECT: ${{ secrets.AKATSUKI_TEST_PUBSUB_DIALECT }}
+          AKATSUKI_TEST_PUBSUB_ADDRESS: ${{ secrets.AKATSUKI_TEST_PUBSUB_ADDRESS }}
+          AKATSUKI_TEST_PUBSUB_PASSWORD: ${{ secrets.AKATSUKI_TEST_PUBSUB_PASSWORD }}
+        run: make test

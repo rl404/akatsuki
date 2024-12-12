@@ -69,7 +69,7 @@ type dbConfig struct {
 
 type pubsubConfig struct {
 	Dialect  string `envconfig:"DIALECT" validate:"required,oneof=rabbitmq redis google" mod:"default=rabbitmq,no_space,lcase"`
-	Address  string `envconfig:"ADDRESS" validate:"required"`
+	Address  string `envconfig:"ADDRESS" validate:"required" mod:"default=amqp://guest:guest@localhost:5672"`
 	Password string `envconfig:"PASSWORD"`
 }
 
@@ -163,7 +163,7 @@ func newDB(cfg dbConfig) (*gorm.DB, error) {
 	case "postgresql":
 		dialector = postgres.Open(fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", split[0], split[1], cfg.User, cfg.Password, cfg.Name))
 	default:
-		return nil, errors.ErrOneOfField("dialect", "mysql postgresql sqlite sqlserver clickhouse")
+		return nil, errors.ErrOneOfField("dialect", "mysql postgresql")
 	}
 
 	db, err := gorm.Open(dialector, &gorm.Config{
