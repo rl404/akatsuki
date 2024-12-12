@@ -34,7 +34,7 @@ import (
 // @failure 400 {object} utils.Response
 // @failure 500 {object} utils.Response
 // @router /anime [get]
-func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
+func (api *API) HandleGetAnime(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Query().Get("title")
 	nsfw := r.URL.Query().Get("nsfw")
 	_type := r.URL.Query().Get("type")
@@ -98,7 +98,7 @@ func (api *API) handleGetAnime(w http.ResponseWriter, r *http.Request) {
 // @failure 404 {object} utils.Response
 // @failure 500 {object} utils.Response
 // @router /anime/{animeID} [get]
-func (api *API) handleGetAnimeByID(w http.ResponseWriter, r *http.Request) {
+func (api *API) HandleGetAnimeByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "animeID"), 10, 64)
 	if err != nil {
 		utils.ResponseWithJSON(w, http.StatusBadRequest, nil, stack.Wrap(r.Context(), err, errors.ErrInvalidAnimeID))

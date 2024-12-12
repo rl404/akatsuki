@@ -4,6 +4,8 @@ GO_FMT     := $(GO_CMD) fmt
 GO_INSTALL := $(GO_CMD) install
 GO_CLEAN   := $(GO_CMD) clean
 GO_BUILD   := $(GO_CMD) build
+GO_TEST    := $(GO_CMD) test
+GO_TOOL    := $(GO_CMD) tool
 
 # Coverage output.
 COVER_OUT := cover.out
@@ -95,6 +97,13 @@ cron-fill: build
 	@cd $(CMD_PATH); \
 	./$(BINARY_NAME) cron fill
 
+# Run test.
+.PHONY: test
+test:
+	@$(GO_TEST) -v -cover -coverprofile=$(COVER_OUT) -race -timeout=1m ./...
+	@$(GO_TOOL) cover -func=$(COVER_OUT)
+	@unlink $(COVER_OUT)
+
 # Docker base command.
 DOCKER_CMD   := docker
 DOCKER_IMAGE := $(DOCKER_CMD) image
@@ -108,6 +117,7 @@ COMPOSE_CRON_UPDATE := deployment/cron-update.yml
 COMPOSE_CRON_FILL   := deployment/cron-fill.yml
 COMPOSE_MIGRATE     := deployment/migrate.yml
 COMPOSE_LINT        := deployment/lint.yml
+COMPOSE_TEST        := deployment/test.yml
 
 # Build docker images and container for the project
 # then delete builder image.
@@ -146,7 +156,12 @@ docker-migrate:
 # Start docker to run lint check.
 .PHONY: docker-lint
 docker-lint:
-	@$(COMPOSE_CMD) -f $(COMPOSE_LINT) -p akatsuki-lint run --rm akatsuki-lint $(GCL_RUN) -D errcheck --timeout 5m
+	@$(COMPOSE_CMD) -f $(COMPOSE_LINT) -p akatsuki-lint run --rm akatsuki-lint make lint
+
+# Start docker to run test.
+.PHONY: docker-test
+docker-test:
+	@$(COMPOSE_CMD) -f $(COMPOSE_TEST) -p akatsuki-test run --rm akatsuki-test make test
 
 # Update docker containers.
 .PHONY: docker-update

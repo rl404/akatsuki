@@ -1,0 +1,10 @@
+version: "2.4"
+
+services:
+  akatsuki-test:
+    container_name: akatsuki-test
+    image: golang:1.23
+    working_dir: /akatsuki
+    network_mode: host
+    volumes:
+      - ../:/akatsuki

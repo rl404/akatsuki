@@ -153,7 +153,6 @@ func (a *Anime) toEntity() *entity.Anime {
 				Planned:   a.UserPlanned,
 			},
 		},
-		UpdatedAt: a.UpdatedAt,
 	}
 }
 
