@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/rl404/akatsuki/internal/domain/anime/entity"
@@ -425,6 +426,783 @@ func (suite *testSuite) TestGetByID() {
 
 			data, code, err := sql.GetByID(ctx, test.param)
 			suite.Equal(test.expectedData, data)
+			suite.Equal(test.expectedCode, code)
+			suite.ErrorIs(test.expectedError, err)
+			suite.Nil(suite.dbMock.ExpectationsWereMet())
+		})
+	}
+}
+
+func (suite *testSuite) TestGetByIDs() {
+	ctx := context.Background()
+	errDummy := _errors.New("dummy error")
+
+	tests := []struct {
+		name          string
+		param         []int64
+		query         string
+		queryArgs     []driver.Value
+		queryReturn   []*sqlmock.Rows
+		queryError    error
+		expectedData  []*entity.Anime
+		expectedCode  int
+		expectedError error
+	}{
+		{
+			name:          "error",
+			param:         []int64{1},
+			query:         `SELECT * FROM "anime" WHERE id in ($1) AND "anime"."deleted_at" IS NULL`,
+			queryArgs:     []driver.Value{1},
+			queryReturn:   []*sqlmock.Rows{},
+			queryError:    errDummy,
+			expectedData:  nil,
+			expectedCode:  http.StatusInternalServerError,
+			expectedError: errors.ErrInternalDB,
+		},
+		{
+			name:          "ok",
+			param:         []int64{1},
+			query:         `SELECT * FROM "anime" WHERE id in ($1) AND "anime"."deleted_at" IS NULL`,
+			queryArgs:     []driver.Value{1},
+			queryReturn:   []*sqlmock.Rows{sqlmock.NewRows([]string{"id"}).AddRow(1)},
+			queryError:    nil,
+			expectedData:  []*entity.Anime{{ID: 1}},
+			expectedCode:  http.StatusOK,
+			expectedError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		suite.Run(test.name, func() {
+			suite.dbMock.ExpectQuery(regexp.QuoteMeta(test.query)).
+				WithArgs(test.queryArgs...).
+				WillReturnRows(test.queryReturn...).
+				WillReturnError(test.queryError)
+
+			sql := sql.New(suite.db, 0, 0, 0)
+
+			data, code, err := sql.GetByIDs(ctx, test.param)
+			suite.Equal(test.expectedData, data)
+			suite.Equal(test.expectedCode, code)
+			suite.ErrorIs(test.expectedError, err)
+			suite.Nil(suite.dbMock.ExpectationsWereMet())
+		})
+	}
+}
+
+func (suite *testSuite) TestUpdate() {
+	ctx := context.Background()
+	errDummy := _errors.New("dummy error")
+	now := time.Now()
+
+	anime := entity.Anime{
+		ID:    1,
+		Title: "title",
+		AlternativeTitle: entity.AlternativeTitle{
+			Synonyms: []string{},
+		},
+		GenreIDs:  []int64{2},
+		Pictures:  []string{"www"},
+		Related:   []entity.Related{{ID: 3, Relation: entity.RelationFullStory}},
+		StudioIDs: []int64{4},
+	}
+
+	tests := []struct {
+		name                     string
+		param                    entity.Anime
+		beginError               error
+		selectCalled             bool
+		selectQuery              string
+		selectQueryArgs          []driver.Value
+		selectQueryReturn        []*sqlmock.Rows
+		selectQueryError         error
+		saveCalled               bool
+		saveQuery                string
+		saveQueryArgs            []driver.Value
+		saveQueryResult          driver.Result
+		saveQueryError           error
+		deleteGenreCalled        bool
+		deleteGenreQuery         string
+		deleteGenreQueryArgs     []driver.Value
+		deleteGenreQueryResult   driver.Result
+		deleteGenreQueryError    error
+		createGenreCalled        bool
+		createGenreQuery         string
+		createGenreQueryArgs     []driver.Value
+		createGenreQueryResult   driver.Result
+		createGenreQueryError    error
+		deletePictureCalled      bool
+		deletePictureQuery       string
+		deletePictureQueryArgs   []driver.Value
+		deletePictureQueryResult driver.Result
+		deletePictureQueryError  error
+		createPictureCalled      bool
+		createPictureQuery       string
+		createPictureQueryArgs   []driver.Value
+		createPictureQueryResult driver.Result
+		createPictureQueryError  error
+		deleteRelatedCalled      bool
+		deleteRelatedQuery       string
+		deleteRelatedQueryArgs   []driver.Value
+		deleteRelatedQueryResult driver.Result
+		deleteRelatedQueryError  error
+		createRelatedCalled      bool
+		createRelatedQuery       string
+		createRelatedQueryArgs   []driver.Value
+		createRelatedQueryResult driver.Result
+		createRelatedQueryError  error
+		deleteStudioCalled       bool
+		deleteStudioQuery        string
+		deleteStudioQueryArgs    []driver.Value
+		deleteStudioQueryResult  driver.Result
+		deleteStudioQueryError   error
+		createStudioCalled       bool
+		createStudioQuery        string
+		createStudioQueryArgs    []driver.Value
+		createStudioQueryResult  driver.Result
+		createStudioQueryError   error
+		createHistoryCalled      bool
+		createHistoryQuery       string
+		createHistoryQueryArgs   []driver.Value
+		createHistoryQueryReturn []*sqlmock.Rows
+		createHistoryQueryError  error
+		rollbackCalled           bool
+		commitCalled             bool
+		commitError              error
+		expectedCode             int
+		expectedError            error
+	}{
+		{
+			name:          "error-begin",
+			param:         anime,
+			beginError:    errDummy,
+			expectedCode:  http.StatusInternalServerError,
+			expectedError: errors.ErrInternalDB,
+		},
+		{
+			name:              "error-select",
+			param:             anime,
+			selectCalled:      true,
+			selectQuery:       `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:   []driver.Value{1, 1},
+			selectQueryReturn: []*sqlmock.Rows{},
+			selectQueryError:  errDummy,
+			rollbackCalled:    true,
+			expectedCode:      http.StatusInternalServerError,
+			expectedError:     errors.ErrInternalDB,
+		},
+		{
+			name:              "error-save",
+			param:             anime,
+			selectCalled:      true,
+			selectQuery:       `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:   []driver.Value{1, 1},
+			selectQueryReturn: []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:  nil,
+			saveCalled:        true,
+			saveQuery:         `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:     []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryError:    errDummy,
+			rollbackCalled:    true,
+			expectedCode:      http.StatusInternalServerError,
+			expectedError:     errors.ErrInternalDB,
+		},
+		{
+			name:                  "error-delete-genre",
+			param:                 anime,
+			selectCalled:          true,
+			selectQuery:           `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:       []driver.Value{1, 1},
+			selectQueryReturn:     []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:      nil,
+			saveCalled:            true,
+			saveQuery:             `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:         []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:       sqlmock.NewResult(0, 1),
+			saveQueryError:        nil,
+			deleteGenreCalled:     true,
+			deleteGenreQuery:      `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:  []driver.Value{1},
+			deleteGenreQueryError: errDummy,
+			rollbackCalled:        true,
+			expectedCode:          http.StatusInternalServerError,
+			expectedError:         errors.ErrInternalDB,
+		},
+		{
+			name:                   "error-create-genre",
+			param:                  anime,
+			selectCalled:           true,
+			selectQuery:            `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:        []driver.Value{1, 1},
+			selectQueryReturn:      []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:       nil,
+			saveCalled:             true,
+			saveQuery:              `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:          []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:        sqlmock.NewResult(0, 1),
+			saveQueryError:         nil,
+			deleteGenreCalled:      true,
+			deleteGenreQuery:       `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:   []driver.Value{1},
+			deleteGenreQueryResult: sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:  nil,
+			createGenreCalled:      true,
+			createGenreQuery:       `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:   []driver.Value{1, 2},
+			createGenreQueryError:  errDummy,
+			rollbackCalled:         true,
+			expectedCode:           http.StatusInternalServerError,
+			expectedError:          errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-delete-picture",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-create-picture",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-delete-related",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-create-related",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  nil,
+			createRelatedCalled:      true,
+			createRelatedQuery:       `INSERT INTO "anime_related" ("anime_id1","anime_id2","relation") VALUES ($1,$2,$3)`,
+			createRelatedQueryArgs:   []driver.Value{1, 3, "FULL_STORY"},
+			createRelatedQueryResult: sqlmock.NewResult(0, 1),
+			createRelatedQueryError:  errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-delete-studio",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  nil,
+			createRelatedCalled:      true,
+			createRelatedQuery:       `INSERT INTO "anime_related" ("anime_id1","anime_id2","relation") VALUES ($1,$2,$3)`,
+			createRelatedQueryArgs:   []driver.Value{1, 3, "FULL_STORY"},
+			createRelatedQueryResult: sqlmock.NewResult(0, 1),
+			createRelatedQueryError:  nil,
+			deleteStudioCalled:       true,
+			deleteStudioQuery:        `DELETE FROM "anime_studio" WHERE anime_id = $1`,
+			deleteStudioQueryArgs:    []driver.Value{1},
+			deleteStudioQueryResult:  sqlmock.NewResult(0, 1),
+			deleteStudioQueryError:   errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-create-studio",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  nil,
+			createRelatedCalled:      true,
+			createRelatedQuery:       `INSERT INTO "anime_related" ("anime_id1","anime_id2","relation") VALUES ($1,$2,$3)`,
+			createRelatedQueryArgs:   []driver.Value{1, 3, "FULL_STORY"},
+			createRelatedQueryResult: sqlmock.NewResult(0, 1),
+			createRelatedQueryError:  nil,
+			deleteStudioCalled:       true,
+			deleteStudioQuery:        `DELETE FROM "anime_studio" WHERE anime_id = $1`,
+			deleteStudioQueryArgs:    []driver.Value{1},
+			deleteStudioQueryResult:  sqlmock.NewResult(0, 1),
+			deleteStudioQueryError:   nil,
+			createStudioCalled:       true,
+			createStudioQuery:        `INSERT INTO "anime_studio" ("anime_id","studio_id") VALUES ($1,$2)`,
+			createStudioQueryArgs:    []driver.Value{1, 4},
+			createStudioQueryResult:  sqlmock.NewResult(0, 1),
+			createStudioQueryError:   errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-create-history",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  nil,
+			createRelatedCalled:      true,
+			createRelatedQuery:       `INSERT INTO "anime_related" ("anime_id1","anime_id2","relation") VALUES ($1,$2,$3)`,
+			createRelatedQueryArgs:   []driver.Value{1, 3, "FULL_STORY"},
+			createRelatedQueryResult: sqlmock.NewResult(0, 1),
+			createRelatedQueryError:  nil,
+			deleteStudioCalled:       true,
+			deleteStudioQuery:        `DELETE FROM "anime_studio" WHERE anime_id = $1`,
+			deleteStudioQueryArgs:    []driver.Value{1},
+			deleteStudioQueryResult:  sqlmock.NewResult(0, 1),
+			deleteStudioQueryError:   nil,
+			createStudioCalled:       true,
+			createStudioQuery:        `INSERT INTO "anime_studio" ("anime_id","studio_id") VALUES ($1,$2)`,
+			createStudioQueryArgs:    []driver.Value{1, 4},
+			createStudioQueryResult:  sqlmock.NewResult(0, 1),
+			createStudioQueryError:   nil,
+			createHistoryCalled:      true,
+			createHistoryQuery:       `INSERT INTO "anime_stats_history" ("anime_id","mean","rank","popularity","member","voter","user_watching","user_completed","user_on_hold","user_dropped","user_planned","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id`,
+			createHistoryQueryArgs:   []driver.Value{1, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, sqlmock.AnyArg()},
+			createHistoryQueryReturn: []*sqlmock.Rows{},
+			createHistoryQueryError:  errDummy,
+			rollbackCalled:           true,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "error-commit",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  nil,
+			createRelatedCalled:      true,
+			createRelatedQuery:       `INSERT INTO "anime_related" ("anime_id1","anime_id2","relation") VALUES ($1,$2,$3)`,
+			createRelatedQueryArgs:   []driver.Value{1, 3, "FULL_STORY"},
+			createRelatedQueryResult: sqlmock.NewResult(0, 1),
+			createRelatedQueryError:  nil,
+			deleteStudioCalled:       true,
+			deleteStudioQuery:        `DELETE FROM "anime_studio" WHERE anime_id = $1`,
+			deleteStudioQueryArgs:    []driver.Value{1},
+			deleteStudioQueryResult:  sqlmock.NewResult(0, 1),
+			deleteStudioQueryError:   nil,
+			createStudioCalled:       true,
+			createStudioQuery:        `INSERT INTO "anime_studio" ("anime_id","studio_id") VALUES ($1,$2)`,
+			createStudioQueryArgs:    []driver.Value{1, 4},
+			createStudioQueryResult:  sqlmock.NewResult(0, 1),
+			createStudioQueryError:   nil,
+			createHistoryCalled:      true,
+			createHistoryQuery:       `INSERT INTO "anime_stats_history" ("anime_id","mean","rank","popularity","member","voter","user_watching","user_completed","user_on_hold","user_dropped","user_planned","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id`,
+			createHistoryQueryArgs:   []driver.Value{1, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, sqlmock.AnyArg()},
+			createHistoryQueryReturn: []*sqlmock.Rows{sqlmock.NewRows([]string{"id"}).AddRow(1)},
+			createHistoryQueryError:  nil,
+			commitCalled:             true,
+			commitError:              errDummy,
+			expectedCode:             http.StatusInternalServerError,
+			expectedError:            errors.ErrInternalDB,
+		},
+		{
+			name:                     "ok",
+			param:                    anime,
+			selectCalled:             true,
+			selectQuery:              `SELECT "created_at" FROM "anime" WHERE id = $1 AND "anime"."deleted_at" IS NULL ORDER BY "anime"."id" LIMIT $2`,
+			selectQueryArgs:          []driver.Value{1, 1},
+			selectQueryReturn:        []*sqlmock.Rows{sqlmock.NewRows([]string{"created_at"}).AddRow(&now)},
+			selectQueryError:         nil,
+			saveCalled:               true,
+			saveQuery:                `UPDATE "anime" SET "title"=$1,"title_synonym"=$2,"title_english"=$3,"title_japanese"=$4,"picture"=$5,"start_day"=$6,"start_month"=$7,"start_year"=$8,"end_day"=$9,"end_month"=$10,"end_year"=$11,"synopsis"=$12,"nsfw"=$13,"type"=$14,"status"=$15,"episode"=$16,"episode_duration"=$17,"season"=$18,"season_year"=$19,"broadcast_day"=$20,"broadcast_time"=$21,"source"=$22,"rating"=$23,"background"=$24,"mean"=$25,"rank"=$26,"popularity"=$27,"member"=$28,"voter"=$29,"user_watching"=$30,"user_completed"=$31,"user_on_hold"=$32,"user_dropped"=$33,"user_planned"=$34,"created_at"=$35,"updated_at"=$36,"deleted_at"=$37 WHERE "anime"."deleted_at" IS NULL AND "id" = $38`,
+			saveQueryArgs:            []driver.Value{anime.Title, "[]", "", "", "", 0, 0, 0, 0, 0, 0, "", false, "", "", 0, 0, "", 0, "", "", "", "", "", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, now, sqlmock.AnyArg(), nil, 1},
+			saveQueryResult:          sqlmock.NewResult(0, 1),
+			saveQueryError:           nil,
+			deleteGenreCalled:        true,
+			deleteGenreQuery:         `DELETE FROM "anime_genre" WHERE anime_id = $1`,
+			deleteGenreQueryArgs:     []driver.Value{1},
+			deleteGenreQueryResult:   sqlmock.NewResult(0, 1),
+			deleteGenreQueryError:    nil,
+			createGenreCalled:        true,
+			createGenreQuery:         `INSERT INTO "anime_genre" ("anime_id","genre_id") VALUES ($1,$2)`,
+			createGenreQueryArgs:     []driver.Value{1, 2},
+			createGenreQueryResult:   sqlmock.NewResult(0, 1),
+			createGenreQueryError:    nil,
+			deletePictureCalled:      true,
+			deletePictureQuery:       `DELETE FROM "anime_picture" WHERE anime_id = $1`,
+			deletePictureQueryArgs:   []driver.Value{1},
+			deletePictureQueryResult: sqlmock.NewResult(0, 1),
+			deletePictureQueryError:  nil,
+			createPictureCalled:      true,
+			createPictureQuery:       `INSERT INTO "anime_picture" ("anime_id","url") VALUES ($1,$2)`,
+			createPictureQueryArgs:   []driver.Value{1, "www"},
+			createPictureQueryResult: sqlmock.NewResult(0, 1),
+			createPictureQueryError:  nil,
+			deleteRelatedCalled:      true,
+			deleteRelatedQuery:       `DELETE FROM "anime_related" WHERE anime_id1 = $1`,
+			deleteRelatedQueryArgs:   []driver.Value{1},
+			deleteRelatedQueryResult: sqlmock.NewResult(0, 1),
+			deleteRelatedQueryError:  nil,
+			createRelatedCalled:      true,
+			createRelatedQuery:       `INSERT INTO "anime_related" ("anime_id1","anime_id2","relation") VALUES ($1,$2,$3)`,
+			createRelatedQueryArgs:   []driver.Value{1, 3, "FULL_STORY"},
+			createRelatedQueryResult: sqlmock.NewResult(0, 1),
+			createRelatedQueryError:  nil,
+			deleteStudioCalled:       true,
+			deleteStudioQuery:        `DELETE FROM "anime_studio" WHERE anime_id = $1`,
+			deleteStudioQueryArgs:    []driver.Value{1},
+			deleteStudioQueryResult:  sqlmock.NewResult(0, 1),
+			deleteStudioQueryError:   nil,
+			createStudioCalled:       true,
+			createStudioQuery:        `INSERT INTO "anime_studio" ("anime_id","studio_id") VALUES ($1,$2)`,
+			createStudioQueryArgs:    []driver.Value{1, 4},
+			createStudioQueryResult:  sqlmock.NewResult(0, 1),
+			createStudioQueryError:   nil,
+			createHistoryCalled:      true,
+			createHistoryQuery:       `INSERT INTO "anime_stats_history" ("anime_id","mean","rank","popularity","member","voter","user_watching","user_completed","user_on_hold","user_dropped","user_planned","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "id`,
+			createHistoryQueryArgs:   []driver.Value{1, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, sqlmock.AnyArg()},
+			createHistoryQueryReturn: []*sqlmock.Rows{sqlmock.NewRows([]string{"id"}).AddRow(1)},
+			createHistoryQueryError:  nil,
+			commitCalled:             true,
+			commitError:              nil,
+			expectedCode:             http.StatusOK,
+			expectedError:            nil,
+		},
+	}
+
+	for _, test := range tests {
+		suite.Run(test.name, func() {
+			suite.dbMock.ExpectBegin().WillReturnError(test.beginError)
+
+			if test.selectCalled {
+				suite.dbMock.ExpectQuery(regexp.QuoteMeta(test.selectQuery)).
+					WithArgs(test.selectQueryArgs...).
+					WillReturnRows(test.selectQueryReturn...).
+					WillReturnError(test.selectQueryError)
+			}
+
+			if test.saveCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.saveQuery)).
+					WithArgs(test.saveQueryArgs...).
+					WillReturnResult(test.saveQueryResult).
+					WillReturnError(test.saveQueryError)
+			}
+
+			if test.deleteGenreCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.deleteGenreQuery)).
+					WithArgs(test.deleteGenreQueryArgs...).
+					WillReturnResult(test.deleteGenreQueryResult).
+					WillReturnError(test.deleteGenreQueryError)
+			}
+
+			if test.createGenreCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.createGenreQuery)).
+					WithArgs(test.createGenreQueryArgs...).
+					WillReturnResult(test.createGenreQueryResult).
+					WillReturnError(test.createGenreQueryError)
+			}
+
+			if test.deletePictureCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.deletePictureQuery)).
+					WithArgs(test.deletePictureQueryArgs...).
+					WillReturnResult(test.deletePictureQueryResult).
+					WillReturnError(test.deletePictureQueryError)
+			}
+
+			if test.createPictureCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.createPictureQuery)).
+					WithArgs(test.createPictureQueryArgs...).
+					WillReturnResult(test.createPictureQueryResult).
+					WillReturnError(test.createPictureQueryError)
+			}
+
+			if test.deleteRelatedCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.deleteRelatedQuery)).
+					WithArgs(test.deleteRelatedQueryArgs...).
+					WillReturnResult(test.deleteRelatedQueryResult).
+					WillReturnError(test.deleteRelatedQueryError)
+			}
+
+			if test.createRelatedCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.createRelatedQuery)).
+					WithArgs(test.createRelatedQueryArgs...).
+					WillReturnResult(test.createRelatedQueryResult).
+					WillReturnError(test.createRelatedQueryError)
+			}
+
+			if test.deleteStudioCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.deleteStudioQuery)).
+					WithArgs(test.deleteStudioQueryArgs...).
+					WillReturnResult(test.deleteStudioQueryResult).
+					WillReturnError(test.deleteStudioQueryError)
+			}
+
+			if test.createStudioCalled {
+				suite.dbMock.ExpectExec(regexp.QuoteMeta(test.createStudioQuery)).
+					WithArgs(test.createStudioQueryArgs...).
+					WillReturnResult(test.createStudioQueryResult).
+					WillReturnError(test.createStudioQueryError)
+			}
+
+			if test.createHistoryCalled {
+				suite.dbMock.ExpectQuery(regexp.QuoteMeta(test.createHistoryQuery)).
+					WithArgs(test.createHistoryQueryArgs...).
+					WillReturnRows(test.createHistoryQueryReturn...).
+					WillReturnError(test.createHistoryQueryError)
+			}
+
+			if test.rollbackCalled {
+				suite.dbMock.ExpectRollback()
+			}
+
+			if test.commitCalled {
+				suite.dbMock.ExpectCommit().WillReturnError(test.commitError)
+			}
+
+			sql := sql.New(suite.db, 0, 0, 0)
+
+			code, err := sql.Update(ctx, test.param)
 			suite.Equal(test.expectedCode, code)
 			suite.ErrorIs(test.expectedError, err)
 			suite.Nil(suite.dbMock.ExpectationsWereMet())
