@@ -237,7 +237,7 @@ github.com/newrelic/go-agent/v3/integrations/nrgrpc
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/redis/go-redis/v9 v9.6.1
+# github.com/redis/go-redis/v9 v9.6.3
 ## explicit; go 1.18
 github.com/redis/go-redis/v9
 github.com/redis/go-redis/v9/internal
@@ -276,8 +276,6 @@ github.com/rl404/nagato
 github.com/rl404/nagato/internal/limiter
 github.com/rl404/nagato/internal/playground
 github.com/rl404/nagato/mal
-# github.com/rogpeppe/go-internal v1.13.1
-## explicit; go 1.22
 # github.com/rs/zerolog v1.33.0
 ## explicit; go 1.15
 github.com/rs/zerolog

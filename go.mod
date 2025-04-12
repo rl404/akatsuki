@@ -74,8 +74,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/redis/go-redis/v9 v9.6.1 // indirect
-	github.com/rogpeppe/go-internal v1.13.1 // indirect
+	github.com/redis/go-redis/v9 v9.6.3 // indirect
 	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/segmentio/go-camelcase v0.0.0-20160726192923-7085f1e3c734 // indirect
 	github.com/segmentio/go-snakecase v1.2.0 // indirect
