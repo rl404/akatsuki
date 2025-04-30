@@ -56,3 +56,14 @@ func malToRewatchValue(v nagato.RewatchValueType) RewatchValue {
 		nagato.RewatchValueVeryHigh: RewatchValueVeryHigh,
 	}[v]
 }
+
+// StrToStatus to convert string to status.
+func StrToStatus(status string) Status {
+	return map[string]Status{
+		string(nagato.UserAnimeStatusWatching):    StatusWatching,
+		string(nagato.UserAnimeStatusCompleted):   StatusCompleted,
+		string(nagato.UserAnimeStatusOnHold):      StatusOnHold,
+		string(nagato.UserAnimeStatusDropped):     StatusDropped,
+		string(nagato.UserAnimeStatusPlanToWatch): StatusPlanned,
+	}[status]
+}

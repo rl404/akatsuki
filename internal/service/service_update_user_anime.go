@@ -64,7 +64,7 @@ func (s *service) updateUserAnime(ctx context.Context, username, status string) 
 	}
 
 	// Delete anime not in list.
-	if code, err := s.userAnime.DeleteNotInList(ctx, username, ids, status); err != nil {
+	if code, err := s.userAnime.DeleteNotInList(ctx, username, ids, userEntity.StrToStatus(status)); err != nil {
 		return code, stack.Wrap(ctx, err)
 	}
 
