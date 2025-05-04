@@ -86,7 +86,11 @@ func (sql *SQL) GetOldUsernames(ctx context.Context) ([]string, int, error) {
 
 // DeleteNotInList to delete anime not in list.
 func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int64, status entity.Status) (int, error) {
-	if err := sql.db.WithContext(ctx).Where("username = ? and anime_id not in ? and status = ?", username, ids, status).Delete(&UserAnime{}).Error; err != nil {
+	query := sql.db.WithContext(ctx).Where("username = ? and status = ?", username, status)
+	if len(ids) > 0 {
+		query = query.Where("anime_id not in ?", ids)
+	}
+	if err := query.Delete(&UserAnime{}).Error; err != nil {
 		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
