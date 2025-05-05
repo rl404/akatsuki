@@ -60,7 +60,6 @@ func (sql *SQL) Update(ctx context.Context, data entity.UserAnime) (int, error) 
 	userAnime.ID = ua.ID
 	userAnime.CreatedAt = ua.CreatedAt
 	userAnime.UpdatedAt = time.Now()
-	userAnime.DeletedAt = gorm.DeletedAt{}
 
 	if err := sql.db.WithContext(ctx).Save(userAnime).Error; err != nil {
 		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
@@ -89,7 +88,7 @@ func (sql *SQL) GetOldUsernames(ctx context.Context) ([]string, int, error) {
 
 // DeleteNotInList to delete anime not in list.
 func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int64, status entity.Status) (int, error) {
-	query := sql.db.WithContext(ctx).Where("username = ? and status = ?", username, status)
+	query := sql.db.WithContext(ctx).Unscoped().Where("username = ? and status = ?", username, status)
 	if len(ids) > 0 {
 		query = query.Where("anime_id not in ?", ids)
 	}
@@ -101,7 +100,7 @@ func (sql *SQL) DeleteNotInList(ctx context.Context, username string, ids []int6
 
 // DeleteByAnimeID to delete by anime id.
 func (sql *SQL) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error) {
-	if err := sql.db.WithContext(ctx).Where("anime_id = ?", animeID).Delete(&UserAnime{}).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Unscoped().Where("anime_id = ?", animeID).Delete(&UserAnime{}).Error; err != nil {
 		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
@@ -109,7 +108,7 @@ func (sql *SQL) DeleteByAnimeID(ctx context.Context, animeID int64) (int, error)
 
 // DeleteByUsername to delete by username.
 func (sql *SQL) DeleteByUsername(ctx context.Context, username string) (int, error) {
-	if err := sql.db.WithContext(ctx).Where("username = ?", username).Delete(&UserAnime{}).Error; err != nil {
+	if err := sql.db.WithContext(ctx).Unscoped().Where("username = ?", username).Delete(&UserAnime{}).Error; err != nil {
 		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
 	}
 	return http.StatusOK, nil
