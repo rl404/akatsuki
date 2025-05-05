@@ -60,7 +60,6 @@ func (sql *SQL) Update(ctx context.Context, data entity.UserAnime) (int, error) 
 	userAnime.ID = ua.ID
 	userAnime.CreatedAt = ua.CreatedAt
 	userAnime.UpdatedAt = time.Now()
-	userAnime.DeletedAt = gorm.DeletedAt{}
 
 	if err := sql.db.WithContext(ctx).Save(userAnime).Error; err != nil {
 		return http.StatusInternalServerError, stack.Wrap(ctx, err, errors.ErrInternalDB)
