@@ -32,7 +32,7 @@ func (s *service) updateUserAnime(ctx context.Context, username, status string) 
 			Offset:   offset,
 		})
 		if err != nil {
-			if code == http.StatusNotFound {
+			if code == http.StatusNotFound || code == http.StatusForbidden {
 				// Delete existing data.
 				if code, err := s.userAnime.DeleteByUsername(ctx, username); err != nil {
 					return code, stack.Wrap(ctx, err)
