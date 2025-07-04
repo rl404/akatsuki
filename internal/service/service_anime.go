@@ -45,7 +45,7 @@ type Anime struct {
 type GetAnimeRequest struct {
 	Title           string        `mod:"lcase,trim"`
 	NSFW            *bool         ``
-	Type            entity.Type   `validate:"omitempty,oneof=TV OVA ONA MOVIE SPECIAL MUSIC" mod:"ucase,no_space"`
+	Type            entity.Type   `validate:"omitempty,oneof=TV OVA ONA MOVIE SPECIAL MUSIC CM PV TV_SPECIAL" mod:"ucase,no_space"`
 	Status          entity.Status `validate:"omitempty,oneof=FINISHED RELEASING NOT_YET" mod:"ucase,no_space"`
 	Season          entity.Season `validate:"omitempty,oneof=WINTER SPRING SUMMER FALL" mod:"ucase,no_space"`
 	SeasonYear      int           `validate:"gte=0"`
