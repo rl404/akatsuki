@@ -18,12 +18,15 @@ const (
 	MediaUnknown MediaType = "unknown"
 
 	// Anime.
-	MediaTV      MediaType = "tv"
-	MediaOVA     MediaType = "ova"
-	MediaMovie   MediaType = "movie"
-	MediaSpecial MediaType = "special"
-	MediaONA     MediaType = "ona"
-	MediaMusic   MediaType = "music"
+	MediaTV        MediaType = "tv"
+	MediaOVA       MediaType = "ova"
+	MediaMovie     MediaType = "movie"
+	MediaSpecial   MediaType = "special"
+	MediaONA       MediaType = "ona"
+	MediaMusic     MediaType = "music"
+	MediaPV        MediaType = "pv"         // Undocumented.
+	MediaCM        MediaType = "cm"         // Undocumented.
+	MediaTVSpecial MediaType = "tv_special" // Undocumented.
 
 	// Manga.
 	MediaManga      MediaType = "manga"

@@ -101,13 +101,16 @@ func AnimeFromMal(ctx context.Context, anime *nagato.Anime) Anime {
 
 func malToType(t nagato.MediaType) Type {
 	return map[nagato.MediaType]Type{
-		"":                  TypeUnknown,
-		nagato.MediaTV:      TypeTV,
-		nagato.MediaOVA:     TypeOVA,
-		nagato.MediaMovie:   TypeMovie,
-		nagato.MediaSpecial: TypeSpecial,
-		nagato.MediaONA:     TypeONA,
-		nagato.MediaMusic:   TypeMusic,
+		"":                    TypeUnknown,
+		nagato.MediaTV:        TypeTV,
+		nagato.MediaOVA:       TypeOVA,
+		nagato.MediaMovie:     TypeMovie,
+		nagato.MediaSpecial:   TypeSpecial,
+		nagato.MediaONA:       TypeONA,
+		nagato.MediaMusic:     TypeMusic,
+		nagato.MediaCM:        TypeCM,
+		nagato.MediaPV:        TypePV,
+		nagato.MediaTVSpecial: TypeTVSpecial,
 	}[t]
 }
 
