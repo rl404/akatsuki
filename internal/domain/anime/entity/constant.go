@@ -5,13 +5,16 @@ type Type string
 
 // Available anime types.
 const (
-	TypeTV      Type = "TV"
-	TypeOVA     Type = "OVA"
-	TypeONA     Type = "ONA"
-	TypeMovie   Type = "MOVIE"
-	TypeSpecial Type = "SPECIAL"
-	TypeMusic   Type = "MUSIC"
-	TypeUnknown Type = ""
+	TypeTV        Type = "TV"
+	TypeOVA       Type = "OVA"
+	TypeONA       Type = "ONA"
+	TypeMovie     Type = "MOVIE"
+	TypeSpecial   Type = "SPECIAL"
+	TypeMusic     Type = "MUSIC"
+	TypeCM        Type = "CM"
+	TypePV        Type = "PV"
+	TypeTVSpecial Type = "TV_SPECIAL"
+	TypeUnknown   Type = ""
 )
 
 // Status is anime airing status.

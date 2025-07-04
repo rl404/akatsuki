@@ -9,7 +9,9 @@ import (
 	"bytes"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gosimple/unidecode"
 )
@@ -35,6 +37,18 @@ var (
 	// Lowercase defines if the resulting slug is transformed to lowercase.
 	// Default is true.
 	Lowercase = true
+
+	// DisableMultipleDashTrim defines if multiple dashes should be preserved.
+	// Default is false (multiple dashes will be replaced with single dash).
+	DisableMultipleDashTrim = false
+
+	// DisableEndsTrim defines if the slug should keep leading and trailing
+	// dashes and underscores. Default is false (trim enabled).
+	DisableEndsTrim = false
+
+	// Append timestamp to the end in order to make slug unique
+	// Default is false
+	AppendTimestamp = false
 
 	regexpNonAuthorizedChars = regexp.MustCompile("[^a-zA-Z0-9-_]")
 	regexpMultipleDashes     = regexp.MustCompile("-+")
@@ -93,6 +107,8 @@ func MakeLang(s string, lang string) (slug string) {
 		slug = SubstituteRune(slug, nnSub)
 	case "pl", "pol":
 		slug = SubstituteRune(slug, plSub)
+	case "pt", "prt", "pt-br", "br", "bra", "por":
+		slug = SubstituteRune(slug, ptSub)
 	case "ro", "rou":
 		slug = SubstituteRune(slug, roSub)
 	case "sl", "slv":
@@ -118,11 +134,19 @@ func MakeLang(s string, lang string) (slug string) {
 
 	// Process all remaining symbols
 	slug = regexpNonAuthorizedChars.ReplaceAllString(slug, "-")
-	slug = regexpMultipleDashes.ReplaceAllString(slug, "-")
-	slug = strings.Trim(slug, "-_")
+	if !DisableMultipleDashTrim {
+		slug = regexpMultipleDashes.ReplaceAllString(slug, "-")
+	}
+	if !DisableEndsTrim {
+		slug = strings.Trim(slug, "-_")
+	}
 
 	if MaxLength > 0 && EnableSmartTruncate {
 		slug = smartTruncate(slug)
+	}
+
+	if AppendTimestamp {
+		slug = slug + "-" + timestamp()
 	}
 
 	return slug
@@ -133,7 +157,7 @@ func MakeLang(s string, lang string) (slug string) {
 // order. Many passes, on one substitution another one could apply.
 func Substitute(s string, sub map[string]string) (buf string) {
 	buf = s
-	var keys []string
+	keys := make([]string, 0, len(sub))
 	for k := range sub {
 		keys = append(keys, k)
 	}
@@ -173,6 +197,11 @@ func smartTruncate(text string) string {
 		}
 	}
 	return text[:MaxLength]
+}
+
+// timestamp returns current timestamp as string
+func timestamp() string {
+	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
 // IsSlug returns True if provided text does not contain white characters,

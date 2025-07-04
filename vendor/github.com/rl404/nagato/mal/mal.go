@@ -11,7 +11,7 @@ import (
 )
 
 const host = "https://api.myanimelist.net/v2"
-const version = "0.3.4"
+const version = "0.4.0"
 
 // Client is myanimelist API client.
 //
