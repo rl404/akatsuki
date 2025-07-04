@@ -59,7 +59,7 @@ func (suite *animeTestSuite) TestGetAnime() {
 			expectedReturn:     nil,
 			expectedPagination: nil,
 			expectedCode:       http.StatusBadRequest,
-			expectedError:      errors.ErrOneOfField("type", "TV/OVA/ONA/MOVIE/SPECIAL/MUSIC"),
+			expectedError:      errors.ErrOneOfField("type", "TV/OVA/ONA/MOVIE/SPECIAL/MUSIC/CM/PV/TV_SPECIAL"),
 		},
 		{
 			name:               "error-get",

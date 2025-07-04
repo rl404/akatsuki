@@ -1,20 +1,31 @@
 basePath: /
 definitions:
+  service.AlternativeTitle:
+    properties:
+      english:
+        type: string
+      japanese:
+        type: string
+      synonyms:
+        items:
+          type: string
+        type: array
+    type: object
   service.Anime:
     properties:
       alternative_titles:
-        $ref: '#/definitions/service.alternativeTitle'
+        $ref: '#/definitions/service.AlternativeTitle'
       background:
         type: string
       broadcast:
-        $ref: '#/definitions/service.broadcast'
+        $ref: '#/definitions/service.Broadcast'
       end_date:
-        $ref: '#/definitions/service.date'
+        $ref: '#/definitions/service.Date'
       episode:
-        $ref: '#/definitions/service.episode'
+        $ref: '#/definitions/service.Episode'
       genres:
         items:
-          $ref: '#/definitions/service.genre'
+          $ref: '#/definitions/service.AnimeGenre'
         type: array
       id:
         type: integer
@@ -38,21 +49,21 @@ definitions:
         type: string
       related:
         items:
-          $ref: '#/definitions/service.related'
+          $ref: '#/definitions/service.AnimeRelated'
         type: array
       season:
-        $ref: '#/definitions/service.season'
+        $ref: '#/definitions/service.Season'
       source:
         type: string
       start_date:
-        $ref: '#/definitions/service.date'
+        $ref: '#/definitions/service.Date'
       stats:
-        $ref: '#/definitions/service.stats'
+        $ref: '#/definitions/service.Stats'
       status:
         type: string
       studios:
         items:
-          $ref: '#/definitions/service.studio'
+          $ref: '#/definitions/service.AnimeStudio'
         type: array
       synopsis:
         type: string
@@ -60,10 +71,15 @@ definitions:
         type: string
       type:
         type: string
-      updated_at:
-        type: string
       voter:
         type: integer
+    type: object
+  service.AnimeGenre:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
     type: object
   service.AnimeHistory:
     properties:
@@ -92,6 +108,47 @@ definitions:
       week:
         type: integer
       year:
+        type: integer
+    type: object
+  service.AnimeRelated:
+    properties:
+      id:
+        type: integer
+      picture:
+        type: string
+      relation:
+        type: string
+      title:
+        type: string
+    type: object
+  service.AnimeStudio:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  service.Broadcast:
+    properties:
+      day:
+        type: string
+      time:
+        type: string
+    type: object
+  service.Date:
+    properties:
+      day:
+        type: integer
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
+  service.Episode:
+    properties:
+      count:
+        type: integer
+      duration:
         type: integer
     type: object
   service.Genre:
@@ -133,6 +190,31 @@ definitions:
       page:
         type: integer
       total:
+        type: integer
+    type: object
+  service.Season:
+    properties:
+      season:
+        type: string
+      year:
+        type: integer
+    type: object
+  service.Stats:
+    properties:
+      status:
+        $ref: '#/definitions/service.StatsStatus'
+    type: object
+  service.StatsStatus:
+    properties:
+      completed:
+        type: integer
+      dropped:
+        type: integer
+      on_hold:
+        type: integer
+      planned:
+        type: integer
+      watching:
         type: integer
     type: object
   service.Studio:
@@ -196,90 +278,6 @@ definitions:
         items:
           $ref: '#/definitions/service.userAnimeRelationNode'
         type: array
-    type: object
-  service.alternativeTitle:
-    properties:
-      english:
-        type: string
-      japanese:
-        type: string
-      synonyms:
-        items:
-          type: string
-        type: array
-    type: object
-  service.broadcast:
-    properties:
-      day:
-        type: string
-      time:
-        type: string
-    type: object
-  service.date:
-    properties:
-      day:
-        type: integer
-      month:
-        type: integer
-      year:
-        type: integer
-    type: object
-  service.episode:
-    properties:
-      count:
-        type: integer
-      duration:
-        type: integer
-    type: object
-  service.genre:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
-  service.related:
-    properties:
-      id:
-        type: integer
-      picture:
-        type: string
-      relation:
-        type: string
-      title:
-        type: string
-    type: object
-  service.season:
-    properties:
-      season:
-        type: string
-      year:
-        type: integer
-    type: object
-  service.stats:
-    properties:
-      status:
-        $ref: '#/definitions/service.statsStatus'
-    type: object
-  service.statsStatus:
-    properties:
-      completed:
-        type: integer
-      dropped:
-        type: integer
-      on_hold:
-        type: integer
-      planned:
-        type: integer
-      watching:
-        type: integer
-    type: object
-  service.studio:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
     type: object
   service.userAnimeRelationLink:
     properties:
@@ -359,6 +357,9 @@ paths:
         - MOVIE
         - SPECIAL
         - MUSIC
+        - CM
+        - PV
+        - TV_SPECIAL
         in: query
         name: type
         type: string

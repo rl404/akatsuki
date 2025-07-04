@@ -17,7 +17,7 @@ import (
 // @produce json
 // @param title query string false "title"
 // @param nsfw query string false "nsfw" enums(true,false)
-// @param type query string false "type" enums(TV,OVA,ONA,MOVIE,SPECIAL,MUSIC)
+// @param type query string false "type" enums(TV,OVA,ONA,MOVIE,SPECIAL,MUSIC,CM,PV,TV_SPECIAL)
 // @param status query string false "status" enums(FINISHED,RELEASING,NOT_YET)
 // @param season query string false "season" enums(WINTER,SPRING,SUMMER,FALL)
 // @param season_year query integer false "season year"
