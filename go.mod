@@ -1,8 +1,6 @@
 module github.com/rl404/akatsuki
 
-go 1.23.0
-
-toolchain go1.24.5
+go 1.24.5
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
@@ -12,7 +10,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/newrelic/go-agent/v3 v3.39.0
 	github.com/rl404/fairy v0.26.0
-	github.com/rl404/nagato v0.4.0
+	github.com/rl404/nagato v0.4.1
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
@@ -90,11 +88,11 @@ require (
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	google.golang.org/api v0.195.0 // indirect
