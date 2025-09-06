@@ -142,13 +142,15 @@ func (c *g[T]) Raw(sql string, values ...interface{}) ExecInterface[T] {
 	return execG[T]{g: &g[T]{
 		db: c.db,
 		ops: append(c.ops, func(db *DB) *DB {
-			return db.Raw(sql, values...)
+			var r T
+			return db.Model(r).Raw(sql, values...)
 		}),
 	}}
 }
 
 func (c *g[T]) Exec(ctx context.Context, sql string, values ...interface{}) error {
-	return c.apply(ctx).Exec(sql, values...).Error
+	var r T
+	return c.apply(ctx).Model(r).Exec(sql, values...).Error
 }
 
 type createG[T any] struct {
@@ -425,12 +427,12 @@ func (c chainG[T]) Preload(association string, query func(db PreloadBuilder) err
 			relation, ok := db.Statement.Schema.Relationships.Relations[association]
 			if !ok {
 				if preloadFields := strings.Split(association, "."); len(preloadFields) > 1 {
-					relationships := db.Statement.Schema.Relationships
+					relationships := &db.Statement.Schema.Relationships
 					for _, field := range preloadFields {
 						var ok bool
 						relation, ok = relationships.Relations[field]
 						if ok {
-							relationships = relation.FieldSchema.Relationships
+							relationships = &relation.FieldSchema.Relationships
 						} else {
 							db.AddError(fmt.Errorf("relation %s not found", association))
 							return nil
