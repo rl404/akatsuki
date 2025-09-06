@@ -48,7 +48,7 @@ jobs:
       - name: Set up Go environment
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.25"
       - name: Run Test
         env:
           AKATSUKI_TEST_CACHE_DIALECT: ${{ secrets.AKATSUKI_TEST_CACHE_DIALECT }}
