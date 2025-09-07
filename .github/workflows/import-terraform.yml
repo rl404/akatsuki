@@ -11,7 +11,7 @@ jobs:
         working-directory: ./deployment/terraform
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Auth gcloud
         uses: google-github-actions/auth@v2
         with:
