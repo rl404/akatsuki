@@ -191,9 +191,10 @@ const (
 	RelationParentStory        RelationType = "parent_story"
 	RelationSummary            RelationType = "summary"
 	RelationFullStory          RelationType = "full_story"
-	RelationSpinOff            RelationType = "spin_off"  // Undocumented.
-	RelationOther              RelationType = "other"     // Undocumented.
-	RelationCharacter          RelationType = "character" // Undocumented.
+	RelationSpinOff            RelationType = "spin_off"   // Undocumented.
+	RelationOther              RelationType = "other"      // Undocumented.
+	RelationCharacter          RelationType = "character"  // Undocumented.
+	RelationAdaptation         RelationType = "adaptation" // Undocumented.
 )
 
 // RankingType is ranking types.

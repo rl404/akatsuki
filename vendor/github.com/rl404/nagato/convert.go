@@ -376,6 +376,7 @@ func (c *Client) relationToRelation(r string) RelationType {
 		"spin_off":            RelationSpinOff,
 		"other":               RelationOther,
 		"character":           RelationCharacter,
+		"adaptation":          RelationAdaptation,
 	}[r]
 }
 
