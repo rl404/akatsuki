@@ -296,7 +296,7 @@ github.com/segmentio/go-camelcase
 # github.com/segmentio/go-snakecase v1.2.0
 ## explicit
 github.com/segmentio/go-snakecase
-# github.com/spf13/cobra v1.10.1
+# github.com/spf13/cobra v1.10.2
 ## explicit; go 1.15
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.9
