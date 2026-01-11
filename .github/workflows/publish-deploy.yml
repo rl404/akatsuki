@@ -54,10 +54,10 @@ jobs:
           file: ./build/package/Dockerfile
           push: true
           tags: |
-            rl404/akatsuki:latest
-            rl404/akatsuki:${{ env.IMG_TAG }}
-            ghcr.io/rl404/akatsuki:latest
-            ghcr.io/rl404/akatsuki:${{ env.IMG_TAG }}
+            # rl404/akatsuki:latest
+            # rl404/akatsuki:${{ env.IMG_TAG }}
+            # ghcr.io/rl404/akatsuki:latest
+            # ghcr.io/rl404/akatsuki:${{ env.IMG_TAG }}
             ${{ secrets.GCR_HOSTNAME }}/${{ secrets.GCP_PROJECT_ID }}/akatsuki:${{ env.IMG_TAG }}
   deploy:
     name: Deploy

@@ -51,7 +51,13 @@ swagger:
 # Generate grpc proto buff.
 .PHONY: grpc
 grpc:
-	@$(PROTOC) --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative internal/delivery/grpc/schema/*.proto
+	@$(PROTOC) \
+	--proto_path=internal/delivery/grpc/proto \
+	--go_out=internal/delivery/grpc/schema \
+	--go_opt=paths=source_relative \
+	--go-grpc_out=internal/delivery/grpc/schema \
+	--go-grpc_opt=paths=source_relative \
+	internal/delivery/grpc/proto/*.proto
 
 # Install library.
 .PHONY: install

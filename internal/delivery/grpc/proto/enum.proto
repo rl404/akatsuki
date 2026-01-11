@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+option go_package = "github.com/rl404/akatsuki/internal/delivery/grpc/schema";
+
+enum Type {
+    TYPE_UNKNOWN = 0;
+    TYPE_TV = 1;
+    TYPE_OVA = 2;
+    TYPE_ONA = 3;
+    TYPE_MOVIE = 4;
+    TYPE_SPECIAL = 5;
+    TYPE_MUSIC = 6;
+    TYPE_CM = 7;
+    TYPE_PV = 8;
+    TYPE_TV_SPECIAL = 9;
+}
+
+enum Status {
+    STATUS_UNKNOWN = 0;
+    STATUS_FINISHED = 1;
+    STATUS_RELEASING = 2;
+    STATUS_NOT_YET = 3;
+}
+
+enum Season {
+    SEASON_UNKNOWN = 0;
+    SEASON_WINTER = 1;
+    SEASON_SPRING = 2;
+    SEASON_SUMMER = 3;
+    SEASON_FALL = 4;
+}
+
+enum Day {
+    DAY_UNKNOWN = 0;
+    DAY_MONDAY = 1;
+    DAY_TUESDAY = 2;
+    DAY_WEDNESDAY = 3;
+    DAY_THURSDAY = 4;
+    DAY_FRIDAY = 5;
+    DAY_SATURDAY = 6;
+    DAY_SUNDAY = 7;
+    DAY_OTHER = 8;
+}
+
+enum Source {
+    SOURCE_UNKNOWN = 0;
+    SOURCE_ORIGINAL = 1;
+    SOURCE_MANGA = 2;
+    SOURCE_4_KOMA_MANGA = 3;
+    SOURCE_WEB_MANGA = 4;
+    SOURCE_DIGITAL_MANGA = 5; 
+    SOURCE_NOVEL = 6;
+    SOURCE_LIGHT_NOVEL = 7;
+    SOURCE_VISUAL_NOVEL = 8;
+    SOURCE_GAME = 9;
+    SOURCE_CARD_GAME = 10;
+    SOURCE_BOOK = 11;
+    SOURCE_PICTURE_BOOK = 12;
+    SOURCE_RADIO = 13;
+    SOURCE_MUSIC = 14;
+    SOURCE_OTHER = 15;
+    SOURCE_WEB_NOVEL = 16;
+    SOURCE_MIXED_MEDIA = 17;
+}
+
+enum Rating {
+    RATING_UNKNOWN = 0;
+    RATING_G = 1;
+    RATING_PG = 2;
+    RATING_PG13 = 3;
+    RATING_R = 4;
+    RATING_R_PLUS = 5;
+    RATING_RX = 6;
+}
+
+enum Relation {
+    RELATION_UNKNOWN = 0;
+    RELATION_SEQUEL = 1;
+    RELATION_PREQUEL = 2;
+    RELATION_ALTERNATIVE_SETTING = 3;
+    RELATION_ALTERNATIVE_VERSION = 4;
+    RELATION_SIDE_STORY = 5;
+    RELATION_PARENT_STORY = 6;
+    RELATION_SUMMARY = 7;
+    RELATION_FULL_STORY = 8;
+    RELATION_SPIN_OFF = 9;
+    RELATION_ADAPTATION = 10;
+    RELATION_CHARACTER = 11;
+    RELATION_OTHER = 12;
+}
+
+enum UserAnimeStatus {
+    USER_ANIME_STATUS_UNKNOWN = 0;
+    USER_ANIME_STATUS_WATCHING = 1;
+    USER_ANIME_STATUS_COMPLETED = 2;
+    USER_ANIME_STATUS_ON_HOLD = 3;
+    USER_ANIME_STATUS_DROPPED = 4;
+    USER_ANIME_STATUS_PLANNED = 5;
+}

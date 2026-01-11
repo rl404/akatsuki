@@ -7,8 +7,8 @@ import (
 
 // API contains all functions for api endpoints.
 type API struct {
-	service service.Service
 	schema.UnimplementedAPIServer
+	service service.Service
 }
 
 // New to create new api endpoints.

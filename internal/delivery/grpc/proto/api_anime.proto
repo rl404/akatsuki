@@ -2,14 +2,14 @@ syntax = "proto3";
 
 option go_package = "github.com/rl404/akatsuki/internal/delivery/grpc/schema";
 
-import "google/protobuf/timestamp.proto";
-
-service API {
-    rpc GetAnimeByID(GetAnimeByIDRequest) returns (Anime);
-}
+import "enum.proto";
 
 message GetAnimeByIDRequest {
     int64 id = 1;
+}
+
+message GetAnimeByIDResponse {
+    Anime data = 1;
 }
 
 message Anime {
@@ -22,23 +22,23 @@ message Anime {
     string synopsis = 7;
     string background= 8;
     bool nsfw = 9;
-    string type = 10;
-    string status = 11;
-    Season season = 12;
-    Broadcast broadcast = 13;
-    string source = 14;
-    string rating = 15;
-    double mean = 16;
-    int32 rank = 17;
-    int32 popularity = 18;
-    int32 member = 19;
-    int32 voter = 20;
-    Stats stats = 21;
-    repeated Genre genres = 22;
-    repeated string pictures = 23;
-    repeated Related related = 24;
-    repeated Studio studios = 25;
-    google.protobuf.Timestamp updated_at = 26;
+    Type type = 10;
+    Status status = 11;
+    Episode episode = 12;
+    AnimeSeason season = 13;
+    Broadcast broadcast = 14;
+    Source source = 15;
+    Rating rating = 16;
+    double mean = 17;
+    int32 rank = 18;
+    int32 popularity = 19;
+    int32 member = 20;
+    int32 voter = 21;
+    Stats stats = 22;
+    repeated AnimeGenre genres = 23;
+    repeated string pictures = 24;
+    repeated AnimeRelated related = 25;
+    repeated AnimeStudio studios = 26;
 }
 
 message AlternativeTitles {
@@ -58,13 +58,13 @@ message Episode {
     int32 duration = 2;
 }
 
-message Season {
-    string season = 1;
+message AnimeSeason {
+    Season season = 1;
     int32 year = 2;
 }
 
 message Broadcast {
-    Date day = 1;
+    Day day = 1;
     string time = 2;
 }
 
@@ -80,19 +80,19 @@ message StatsStatus {
     int32 planned = 5;
 }
 
-message Genre {
+message AnimeGenre {
     int64 id = 1;
     string name = 2;
 }
 
-message Related {
+message AnimeRelated {
     int64 id = 1;
     string title = 2;
     string picture = 3;
-    string relation = 4;
+    Relation relation = 4;
 }
 
-message Studio {
+message AnimeStudio {
     int64 id = 1;
     string name = 2;
 }

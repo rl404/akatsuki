@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "github.com/rl404/akatsuki/internal/delivery/grpc/schema";
+
+import "api_anime.proto";
+import "api_user_anime.proto";
+
+// API service.
+service API {
+    // GetAnimeByID to get anime by id.
+    rpc GetAnimeByID(GetAnimeByIDRequest) returns (GetAnimeByIDResponse);
+    // GetUserAnimeRelations to get user anime relations.
+    rpc GetUserAnimeRelations(GetUserAnimeRelationsRequest) returns (GetUserAnimeRelationsResponse);
+}

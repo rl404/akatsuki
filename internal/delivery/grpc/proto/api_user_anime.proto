@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option go_package = "github.com/rl404/akatsuki/internal/delivery/grpc/schema";
+
+import "enum.proto";
+
+message GetUserAnimeRelationsRequest {
+    string username = 1;
+}
+
+message GetUserAnimeRelationsResponse {
+    UserAnimeRelation data = 1;
+}
+
+message UserAnimeRelation {
+    repeated UserAnimeRelationNode nodes = 1;
+    repeated UserAnimeRelationLink links = 2;
+}
+
+message UserAnimeRelationNode {
+    int64 anime_id = 1;
+    string title = 2;
+    Status status = 3;
+    double score = 4;
+    Type type = 5;
+    Source source = 6;
+    int32 episode_count = 7;
+    int32 episode_duration = 8;
+    int32 start_year = 9;
+    Season season = 10;
+    int32 season_year = 11;
+    UserAnimeStatus user_anime_status = 12;
+    int32 user_anime_score = 13;
+    int32 user_episode_count = 14;
+}
+
+message UserAnimeRelationLink {
+    int64 anime_id1 = 1;
+    int64 anime_id2 = 2;
+    Relation relation = 3;
+}
