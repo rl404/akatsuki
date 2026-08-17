@@ -6,13 +6,14 @@ import (
 	"os"
 	"sync"
 
-	"cloud.google.com/go/pubsub"
+	"cloud.google.com/go/pubsub/v2"
 	_pubsub "github.com/rl404/fairy/pubsub"
 )
 
 // Client is google pubsub client.
 type Client struct {
 	sync.Mutex
+	projectID         string
 	client            *pubsub.Client
 	middlewares       []func(_pubsub.HandlerFunc) _pubsub.HandlerFunc
 	topicExist        map[string]bool
@@ -39,6 +40,7 @@ func New(projectID, serviceAccountCredentialPath string) (*Client, error) {
 	}
 
 	return &Client{
+		projectID:         projectID,
 		client:            client,
 		topicExist:        make(map[string]bool),
 		subscriptionExist: make(map[string]string),
@@ -59,12 +61,12 @@ func (c *Client) applyMiddlewares(handlerFunc _pubsub.HandlerFunc) _pubsub.Handl
 
 // Publish to publish message.
 func (c *Client) Publish(ctx context.Context, topic string, data []byte) error {
-	t, err := c.getTopic(topic)
+	publisher, err := c.getPublisher(topic)
 	if err != nil {
 		return err
 	}
 
-	if _, err := t.Publish(ctx, &pubsub.Message{
+	if _, err := publisher.Publish(ctx, &pubsub.Message{
 		Data: data,
 	}).Get(ctx); err != nil {
 		return err
@@ -75,31 +77,30 @@ func (c *Client) Publish(ctx context.Context, topic string, data []byte) error {
 
 // Subscribe to subscribe topic.
 func (c *Client) Subscribe(ctx context.Context, topic string, handlerFunc _pubsub.HandlerFunc) error {
-	subscription, err := c.getSubscription(topic)
+	subscriber, err := c.getSubscriber(topic)
 	if err != nil {
 		return err
 	}
 
 	// Limit to 1 so you can have multiple consumer
 	// for the same topic.
-	subscription.ReceiveSettings.NumGoroutines = 1
-	subscription.ReceiveSettings.MaxOutstandingMessages = 1
+	subscriber.ReceiveSettings.NumGoroutines = 1
+	subscriber.ReceiveSettings.MaxOutstandingMessages = 1
 
-	go func(s *pubsub.Subscription, h _pubsub.HandlerFunc) {
+	go func(s *pubsub.Subscriber, h _pubsub.HandlerFunc) {
 		h = c.applyMiddlewares(h)
-
 		if err := s.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 			msg.Ack()
 			h(ctx, msg.Data)
 		}); err != nil {
 			panic(err)
 		}
-	}(subscription, handlerFunc)
+	}(subscriber, handlerFunc)
 
 	return nil
 }
 
-// Close to close subscription.
+// Close to close client.
 func (c *Client) Close() error {
 	return c.client.Close()
 }
