@@ -62,7 +62,6 @@ github.com/allegro/bigcache/v3/queue
 github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
-github.com/davecgh/go-spew/spew
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 ## explicit
 # github.com/dlclark/regexp2 v1.10.0
@@ -248,7 +247,6 @@ github.com/newrelic/go-agent/v3/newrelic
 github.com/newrelic/go-agent/v3/integrations/nrgrpc
 # github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 ## explicit
-github.com/pmezard/go-difflib/difflib
 # github.com/redis/go-redis/v9 v9.22.0
 ## explicit; go 1.24
 github.com/redis/go-redis/v9
@@ -315,13 +313,15 @@ github.com/spf13/pflag
 # github.com/streadway/amqp v1.1.0
 ## explicit; go 1.10
 github.com/streadway/amqp
-# github.com/stretchr/objx v0.5.2
+# github.com/stretchr/objx v0.5.3
 ## explicit; go 1.20
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.11.1
+# github.com/stretchr/testify v1.12.0
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
+github.com/stretchr/testify/internal/difflib
+github.com/stretchr/testify/internal/spew
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
