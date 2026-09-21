@@ -70,7 +70,8 @@ func HTTPHandlerWithLog(logger Logger, next http.Handler, middlewareConfig ...AP
 
 		// Prepare map for logging.
 		ctx = initMultipartRequestBody(ctx)
-		m := logHTTPRequest(r.WithContext(ctx), cfg)
+		r = r.WithContext(ctx)
+		m := logHTTPRequest(r, cfg)
 
 		// Call next handler.
 		next.ServeHTTP(&rw, r.WithContext(ctx))
