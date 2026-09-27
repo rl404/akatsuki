@@ -119,6 +119,8 @@ github.com/google/go-cmp v0.5.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.3/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
+github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 h1:LMLX+LgTNWpfvCBdFebv6EsYotImrt/Ppc5cXIriCSo=
+github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3/go.mod h1:jl5iWTm0/hd5PjEYEOuwAJ57L/CibdZfrqZ5XA5GrCk=
 github.com/google/s2a-go v0.1.9 h1:LGD7gtMgezd8a/Xak7mEWL0PjoTQFvpRudN895yqKW0=
 github.com/google/s2a-go v0.1.9/go.mod h1:YA0Ei2ZQL3acow2O62kdp9UlnvMmU7kA6Eutn0dXayM=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
@@ -188,6 +190,8 @@ github.com/newrelic/csec-go-agent v0.4.0 h1:xvsVNshn0PztJzD2bnQiR1NkUzv+7LdEmvVF
 github.com/newrelic/csec-go-agent v0.4.0/go.mod h1:dM8F4FOZ/CX3h2zMQ5npGqNuND2E0noklLjAx8YUXBU=
 github.com/newrelic/go-agent/v3 v3.44.2 h1:5/a6TTwk0IGgXqAhpABRloYRsw6npAcmnyuH7bOGzlQ=
 github.com/newrelic/go-agent/v3 v3.44.2/go.mod h1:5A2u/S0na/zIg5hS197XdK+ZkLqTRq5baFzJfVWrc3Q=
+github.com/newrelic/go-agent/v3 v3.45.0 h1:6Y/NvrdVOY+UuvGDPytBDqAECuvCb2uvU6k0qq8gxnE=
+github.com/newrelic/go-agent/v3 v3.45.0/go.mod h1:2aY3paC/QaI9wf/qz9iD0lWP5AQ7UQ9Ks35iDA40ndU=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.10 h1:lT++K9HeRb6Vno2hkmC/Kd5zQ+VZYSDxbp3mJaHdfHs=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.10/go.mod h1:xNauOF8uhywl4+Jy+euoZ9+JQZYKYHSQ7NhebCnNLr0=
 github.com/newrelic/go-agent/v3/integrations/nrsecurityagent v1.1.0 h1:gqkTDYUHWUyiG+u0PJQCRh98rcHLxP/w7GtIbJDVULY=
