@@ -1,10 +1,8 @@
-version: "2.4"
-
 services:
   akatsuki-consumer:
     container_name: akatsuki-consumer
     image: rl404/akatsuki:latest
-    command: ./akatsuki consumer
-    restart: always
-    env_file: ./../.env
+    command: consumer
+    restart: unless-stopped
+    env_file: ../.env
     network_mode: host

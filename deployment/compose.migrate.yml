@@ -1,9 +1,9 @@
-version: "2.4"
-
 services:
   akatsuki-migrate:
     container_name: akatsuki-migrate
     image: rl404/akatsuki:latest
-    command: ./akatsuki migrate
-    env_file: ./../.env
+    command: migrate
+    env_file: ../.env
     network_mode: host
+    profiles:
+      - migrate

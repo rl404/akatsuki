@@ -1,0 +1,12 @@
+services:
+  akatsuki-lint:
+    container_name: akatsuki-lint
+    image: golangci/golangci-lint:v2.15.0
+    working_dir: /akatsuki
+    command: golangci-lint run ./...
+    environment:
+      - GOFLAGS=-mod=vendor
+    volumes:
+      - ../:/akatsuki:ro
+    profiles:
+      - lint
