@@ -36,7 +36,7 @@ grpc: ## Generate grpc proto buf.
 		--go_out=. \
 		--go_opt=paths=source_relative \
 		--go-grpc_out=. \
-		--go-grpc_opt=paths=source_relative internal/delivery/grpc/schema/*.proto
+		--go-grpc_opt=paths=source_relative api/*.proto
 
 test: ## Run test.
 	@$(GO) test -v -cover -race -timeout=1m -coverprofile=$(COVER_OUT) ./...

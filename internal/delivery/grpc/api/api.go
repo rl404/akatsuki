@@ -1,14 +1,14 @@
 package api
 
 import (
-	"github.com/rl404/akatsuki/internal/delivery/grpc/schema"
+	"github.com/rl404/akatsuki/api"
 	"github.com/rl404/akatsuki/internal/service"
 )
 
 // API contains all functions for api endpoints.
 type API struct {
+	api.UnimplementedAPIServer
 	service service.Service
-	schema.UnimplementedAPIServer
 }
 
 // New to create new api endpoints.
