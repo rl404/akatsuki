@@ -97,7 +97,7 @@ type newrelicConfig struct {
 	LicenseKey string `envconfig:"LICENSE_KEY"`
 }
 
-const envPath = "../../.env"
+const envPath = ".env"
 const envPrefix = "AKATSUKI"
 const pubsubTopic = "akatsuki-pubsub"
 
