@@ -14,7 +14,7 @@ BINARY_NAME := akatsuki
 BINARY_PATH := $(CMD_PATH)/$(BINARY_NAME)
 
 .PHONY: fmt clean lint swagger grpc test install-linter install-swagger install-grpc \
-	build run migrate consumer cron-update cron-fill
+	build api migrate consumer cron-update cron-fill
 
 ##@ Tools
 
@@ -60,7 +60,7 @@ build: clean fmt ## Build the project executable binary.
 migrate: build ## Build and migrate database.
 	@$(BINARY_PATH) migrate
 
-run: build ## Build and run the server.
+api: build ## Build and run API server.
 	@$(BINARY_PATH) server
 
 consumer: build ## Build and run consumer.
