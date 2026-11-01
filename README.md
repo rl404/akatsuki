@@ -3,7 +3,7 @@
 ![License: MIT](https://img.shields.io/github/license/rl404/akatsuki)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/rl404/akatsuki)
 [![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/rl404/akatsuki)](https://hub.docker.com/r/rl404/akatsuki)
-[![CI](https://github.com/rl404/akatsuki/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/rl404/akatsuki/actions/workflows/publish.yml)
+[![CI](https://github.com/rl404/akatsuki/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/rl404/akatsuki/actions/workflows/ci.yml)
 
 Akatsuki is [MyAnimeList](https://myanimelist.net/) anime database dump and REST API.
 
