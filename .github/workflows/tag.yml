@@ -11,6 +11,7 @@ concurrency:
 
 jobs:
   tag:
+    name: Tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
