@@ -116,7 +116,6 @@ github.com/go-sql-driver/mysql
 # github.com/golang/protobuf v1.5.4
 ## explicit; go 1.17
 github.com/golang/protobuf/proto
-github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3
 ## explicit; go 1.25.0
 github.com/google/pprof/profile
