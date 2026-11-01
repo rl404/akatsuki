@@ -131,7 +131,7 @@ func getConfig() (*config, error) {
 
 	// Handle google pubsub credential.
 	if cfg.PubSub.Dialect == "google" {
-		credFilename, err := generateGoogleServiceAccountJSON("gcp-service-account.json", cfg.PubSub.Password)
+		credFilename, err := generateGoogleServiceAccountJSON("configs/gcp-service-account.json", cfg.PubSub.Password)
 		if err != nil {
 			return nil, err
 		}
@@ -192,6 +192,9 @@ func newDB(cfg dbConfig) (*gorm.DB, error) {
 }
 
 func generateGoogleServiceAccountJSON(filename, value string) (string, error) {
+	if err := os.MkdirAll("configs", 0755); err != nil {
+		return "", err
+	}
 	if err := os.WriteFile(filename, []byte(value), 0644); err != nil {
 		return "", err
 	}
