@@ -75,7 +75,6 @@ github.com/gabriel-vasile/mimetype/internal/scan
 # github.com/go-chi/chi/v5 v5.5.0
 ## explicit; go 1.24
 github.com/go-chi/chi/v5
-github.com/go-chi/chi/v5/middleware
 # github.com/go-logr/logr v1.4.4
 ## explicit; go 1.18
 github.com/go-logr/logr
