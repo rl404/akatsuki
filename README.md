@@ -1,10 +1,9 @@
 # Akatsuki
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/rl404/akatsuki)](https://goreportcard.com/report/github.com/rl404/akatsuki)
 ![License: MIT](https://img.shields.io/github/license/rl404/akatsuki)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/rl404/akatsuki)
 [![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/rl404/akatsuki)](https://hub.docker.com/r/rl404/akatsuki)
-[![publish & deploy](https://github.com/rl404/akatsuki/actions/workflows/publish-deploy.yml/badge.svg)](https://github.com/rl404/akatsuki/actions/workflows/publish-deploy.yml)
+[![CI](https://github.com/rl404/akatsuki/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/rl404/akatsuki/actions/workflows/publish.yml)
 
 Akatsuki is [MyAnimeList](https://myanimelist.net/) anime database dump and REST API.
 
@@ -62,31 +61,31 @@ _More will be coming soon..._
 
 1. Clone the repository.
 
-```sh
-git clone github.com/rl404/akatsuki
-```
+   ```sh
+   git clone github.com/rl404/akatsuki
+   ```
 
 2. Rename `.env.sample` to `.env` and modify the values according to your setup.
 3. Create the database according to your `.env`.
 4. Migrate the tables.
 
-```sh
-make migrate
-```
+   ```sh
+   make migrate
+   ```
 
 5. Run. You need at least 2 consoles/terminals.
 
-```sh
-# Run the API.
-make
+   ```sh
+   # Run the API.
+   make api
 
-# Run the consumer.
-make consumer
-```
+   # Run the consumer.
+   make consumer
+   ```
 
 6. [localhost:45001](http://localhost:45001) is ready (port may varies depend on your `.env`).
 
-#### Other commands
+#### Other Commands
 
 ```sh
 # Update old anime data.
@@ -94,47 +93,50 @@ make cron-update
 
 # Fill missing anime data.
 make cron-fill
+
+# Show help.
+make help
 ```
 
 ### With [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
 
 1. Clone the repository.
 
-```sh
-git clone github.com/rl404/akatsuki
-```
+   ```sh
+   git clone github.com/rl404/akatsuki
+   ```
 
 2. Rename `.env.sample` to `.env` and modify the values according to your setup.
 3. Create the database according to your `.env`.
 4. Get docker image.
 
-```sh
-# Pull existing image.
-docker pull rl404/akatsuki
+   ```sh
+   # Pull existing image.
+   docker pull rl404/akatsuki
 
-# Or build your own.
-make docker-build
-```
+   # Or build your own.
+   make docker-build
+   ```
 
 5. Migrate the tables.
 
-```sh
-make docker-migrate
-```
+   ```sh
+   make docker-migrate
+   ```
 
 6. Run the container. You need at least 2 consoles/terminals.
 
-```sh
-# Run the API.
-make docker-api
+   ```sh
+   # Run the API.
+   make docker-api
 
-# Run the consumer.
-make docker-consumer
-```
+   # Run the consumer.
+   make docker-consumer
+   ```
 
 7. [localhost:45001](http://localhost:45001) is ready (port may varies depend on your `.env`).
 
-#### Other commands
+#### Other Docker Commands
 
 ```sh
 # Update old anime data.
@@ -145,6 +147,9 @@ make docker-cron-fill
 
 # Stop running containers.
 make docker-stop
+
+# Show help.
+make help
 ```
 
 ## Environment Variables
@@ -182,6 +187,9 @@ make docker-stop
 | `AKATSUKI_CRON_USER_ANIME_AGE`   |       `7`        | Age of old user anime list (in days).                                                                      |
 | `AKATSUKI_NEWRELIC_NAME`         |    `akatsuki`    | Newrelic application name.                                                                                 |
 | `AKATSUKI_NEWRELIC_LICENSE_KEY`  |                  | Newrelic license key.                                                                                      |
+| `AKATSUKI_LOG_LEVEL`             |       `-1`       | Log level                                                                                                  |
+| `AKATSUKI_LOG_JSON`              |     `false`      | Log JSON format                                                                                            |
+| `AKATSUKI_LOG_COLOR`             |      `true`      | Log color                                                                                                  |
 
 ## Trivia
 
