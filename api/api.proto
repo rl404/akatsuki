@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/rl404/akatsuki/internal/delivery/grpc/schema";
+option go_package = "github.com/rl404/akatsuki/api";
 
 import "google/protobuf/timestamp.proto";
 

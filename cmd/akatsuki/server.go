@@ -6,10 +6,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	grpcPB "github.com/rl404/akatsuki/api"
 	grpcAPI "github.com/rl404/akatsuki/internal/delivery/grpc/api"
-	"github.com/rl404/akatsuki/internal/delivery/grpc/schema"
 	httpAPI "github.com/rl404/akatsuki/internal/delivery/rest/api"
 	"github.com/rl404/akatsuki/internal/delivery/rest/ping"
 	"github.com/rl404/akatsuki/internal/delivery/rest/swagger"
@@ -157,7 +156,6 @@ func server() error {
 	utils.Info("http server initialized")
 
 	r := httpServer.Router()
-	r.Use(middleware.RealIP)
 	r.Use(utils.Recoverer)
 	utils.Info("http server middleware initialized")
 
@@ -190,7 +188,7 @@ func server() error {
 	utils.Info("grpc server initialized")
 
 	// Register api route.
-	schema.RegisterAPIServer(grpcServer.Server(), grpcAPI.New(service))
+	grpcPB.RegisterAPIServer(grpcServer.Server(), grpcAPI.New(service))
 	utils.Info("grpc route api initialized")
 
 	// Run grpc server.

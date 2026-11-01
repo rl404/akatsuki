@@ -1,8 +1,8 @@
-version: "2.4"
-
 services:
   akatsuki-build:
     image: rl404/akatsuki:latest
     build:
       context: ./..
       dockerfile: ./build/package/Dockerfile
+    profiles: 
+      - build
