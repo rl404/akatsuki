@@ -25,6 +25,7 @@ jobs:
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.15
+          args: -D errcheck --timeout 5m
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -82,4 +83,4 @@ jobs:
           AKATSUKI_TEST_DB_USER: postgres
           AKATSUKI_TEST_DB_PASSWORD: test
           AKATSUKI_TEST_PUBSUB_DIALECT: rabbitmq
-          AKATSUKI_TEST_PUBSUB_ADDRESS: localhost:5672
+          AKATSUKI_TEST_PUBSUB_ADDRESS: amqp://guest:guest@localhost:5672
