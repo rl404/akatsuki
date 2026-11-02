@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: rl404/akatsuki
           tags: |
@@ -80,7 +80,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/rl404/akatsuki
           tags: |
@@ -116,7 +116,7 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.gcp_auth.outputs.access_token }}
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ secrets.GCR_HOSTNAME }}/${{ secrets.GCP_PROJECT_ID }}/akatsuki
           tags: |
