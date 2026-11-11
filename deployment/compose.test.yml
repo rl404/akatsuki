@@ -1,7 +1,7 @@
 services:
   akatsuki-test:
     container_name: akatsuki-test
-    image: golang:1.27.3
+    image: golang:1.27.4
     working_dir: /akatsuki
     command: make test
     network_mode: host
