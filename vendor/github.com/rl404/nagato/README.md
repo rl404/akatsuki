@@ -1,7 +1,7 @@
 # Nagato
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/rl404/nagato)](https://goreportcard.com/report/github.com/rl404/nagato)
 ![License: MIT](https://img.shields.io/github/license/rl404/nagato.svg)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/rl404/nagato)
 [![Go Reference](https://pkg.go.dev/badge/github.com/rl404/nagato.svg)](https://pkg.go.dev/github.com/rl404/nagato)
 
 **_nagato_** is just another API wrapper library to use [MyAnimeList](https://myanimelist.net/) API.
